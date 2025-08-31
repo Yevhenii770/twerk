@@ -24,3 +24,17 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+/* animation */
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  } /* половина, т.к. две одинаковые дорожки */
+}
+
+@utility animate-marquee {
+  animation: marquee var(--marquee-duration, 15s) linear infinite;
+  will-change: transform;
+}
