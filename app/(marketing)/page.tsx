@@ -72,17 +72,21 @@ export default function Home() {
         </div>
       </SectionContainer>
       <SectionContainer>
-        <div className="flex-1 p-8 md:p-12">
-          <h2 className="text-2xl font-bold mb-6">Our Founders</h2>
-          <p className="text-lg mb-4">
-            "Find your flow, and dance your truth."
-          </p>
-          <p className="text-gray-400">— Sophia Bennett</p>
+        <div className="flex-1 flex flex-col justify-center p-8 md:p-12 bg-white">
+          <h2 className="text-3xl md:text-4xl font-bold mb-12 text-black">
+            Our Founders
+          </h2>
+
+          <blockquote className="border-l-4 border-gray-300 pl-6 italic text-xl md:text-2xl leading-relaxed text-gray-800">
+            “Find your flow, and dance your truth.”
+          </blockquote>
+
+          <p className="mt-6 text-gray-500">— Sophia Bennett</p>
         </div>
 
         <div className="flex-1 grid grid-rows-2">
           <div className="relative h-[250px] md:h-[350px]">
-            <ImageSetup src="/iryna.jpg" alt="Classes image" />
+            <ImageSetup src="/iryna.jpg" alt="Iryna Pytska" />
             <div className="absolute bottom-0 left-0 w-full bg-fuchsia-500 p-4">
               <h3 className="font-bold">Iryna Pytska</h3>
               <p>Founder & Instructor</p>
@@ -90,14 +94,27 @@ export default function Home() {
           </div>
 
           <div className="relative h-[250px] md:h-[350px]">
-            <ImageSetup src="/yevhenii.jpg" alt="Classes image" />
+            <ImageSetup src="/yevhenii.jpg" alt="Yevhenii Sitolenko" />
             <div className="absolute bottom-0 left-0 w-full bg-cyan-100 p-4">
               <h3 className="font-bold text-black">Yevhenii Sitolenko</h3>
-              <p className="text-black">Web developer</p>
+              <p className="text-black">Web Developer</p>
             </div>
           </div>
         </div>
       </SectionContainer>
+
+      <div className="w-full bg-blue-600 flex items-center justify-center py-24 px-6 text-center">
+        <div className="max-w-3xl mx-auto flex flex-col gap-6">
+          <h2 className="text-3xl md:text-4xl font-bold text-white leading-snug">
+            Whether you're a beginner looking to explore expressive movement or
+            an advanced dancer ready to refine your technique, we have classes
+            for you!
+          </h2>
+          <div className="flex justify-center">
+            <Button variant="primary">Reserve your spot</Button>
+          </div>
+        </div>
+      </div>
     </>
   );
 }
