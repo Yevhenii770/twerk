@@ -17,24 +17,24 @@ export default function Button({
   ...props
 }: ButtonProps) {
   const baseStyles =
-    "font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ";
+    "cursor-pointer font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ";
 
   const variants = {
     primary:
-      "bg-purple-600 text-white hover:bg-purple-700 active:bg-purple-800",
+      "bg-[rgb(34,0,255)] text-white hover:bg-[rgb(20,0,200)] active:bg-[rgb(15,0,150)]",
     secondary:
       "bg-gray-200 text-gray-900 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600",
     outline:
-      "border border-gray-300 bg-transparent hover:bg-gray-100 dark:border-dark-border-medium dark:hover:bg-gray-800 dark:hover:text-gray-100 dark:text-gray-100",
+      "border border-gray-300 bg-transparent hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-800",
     ghost:
-      "bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-100 dark:text-gray-100",
+      "bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 dark:text-gray-100",
     danger: "bg-red-600 text-white hover:bg-red-700",
   };
 
   const sizes = {
-    sm: "h-8 px-3 text-xs rounded-md",
-    md: "h-10 px-4 py-2 text-sm rounded-md",
-    lg: "h-12 px-6 py-3 text-base rounded-lg",
+    sm: "px-3 py-1.5 text-sm",
+    md: "px-6 py-3 text-base",
+    lg: "px-8 py-4 text-lg",
   };
 
   return (
