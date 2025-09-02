@@ -15,6 +15,8 @@ export default function Home() {
         ]}
         durationSec={18}
       />
+
+      {/* --- First Section --- */}
       <SectionContainer>
         <div className="flex flex-col md:flex-row w-full">
           <div className="relative w-full md:w-1/2 h-[60vh] md:h-[80vh] overflow-hidden">
@@ -25,11 +27,12 @@ export default function Home() {
             <div className="flex flex-col gap-6 w-full">
               <h3 className="text-black text-2xl font-bold">Who we are</h3>
               <p className="text-black">
-                At Movement Studio, we’re passionate about creating a supportive
-                and inspiring environment for dancers of all levels. Whether
-                you’re a complete beginner eager to explore the world of modern
-                dance, a seasoned performer looking to refine your technique, or
-                simply someone who finds joy in moving, you’ll find a home here.
+                At Movement Studio, we&apos;re passionate about creating a
+                supportive and inspiring environment for dancers of all levels.
+                Whether you&apos;re a complete beginner eager to explore the
+                world of modern dance, a seasoned performer looking to refine
+                your technique, or simply someone who finds joy in moving,
+                you&apos;ll find a home here.
               </p>
               <Link href="/about" className="w-fit">
                 <Button
@@ -44,6 +47,8 @@ export default function Home() {
           </div>
         </div>
       </SectionContainer>
+
+      {/* --- Second Section --- */}
       <SectionContainer>
         <div className="flex flex-col md:flex-row w-full">
           <div className="relative w-full md:w-1/2 h-[60vh] md:h-[80vh] overflow-hidden">
@@ -71,6 +76,8 @@ export default function Home() {
           </div>
         </div>
       </SectionContainer>
+
+      {/* --- Founders Section --- */}
       <SectionContainer>
         <div className="flex-1 flex flex-col justify-center p-8 md:p-12 bg-white">
           <h2 className="text-3xl md:text-4xl font-bold mb-12 text-black">
@@ -78,7 +85,7 @@ export default function Home() {
           </h2>
 
           <blockquote className="border-l-4 border-gray-300 pl-6 italic text-xl md:text-2xl leading-relaxed text-gray-800">
-            “Find your flow, and dance your truth.”
+            &quot;Find your flow, and dance your truth.&quot;
           </blockquote>
 
           <p className="mt-6 text-gray-500">— Sophia Bennett</p>
@@ -103,12 +110,13 @@ export default function Home() {
         </div>
       </SectionContainer>
 
+      {/* --- CTA Section --- */}
       <div className="w-full bg-blue-600 flex items-center justify-center py-24 px-6 text-center">
         <div className="max-w-3xl mx-auto flex flex-col gap-6">
           <h2 className="text-3xl md:text-4xl font-bold text-white leading-snug">
-            Whether you're a beginner looking to explore expressive movement or
-            an advanced dancer ready to refine your technique, we have classes
-            for you!
+            Whether you&apos;re a beginner looking to explore expressive
+            movement or an advanced dancer ready to refine your technique, we
+            have classes for you!
           </h2>
           <div className="flex justify-center">
             <Button variant="primary">Reserve your spot</Button>
