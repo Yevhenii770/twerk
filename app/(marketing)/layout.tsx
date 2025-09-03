@@ -1,40 +1,51 @@
 import Link from "next/link";
+import { Logo } from "@/components/ui/Logo";
+import { BurgerMenu } from "@/components/BurgerMenu";
 
-export default async function MarketingLayout({
+export default function MarketingLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
     <>
-      <header className="border-b border-gray-200 dark:border-dark-border-subtle bg-dark dark:bg-dark-base   w-full ">
-        <div className="flex items-center justify-between divide-x-1 divide-gray-600">
-          <div className="p-6  mr-auto ">
-            <Link href="/" className="text-xl font-bold ">
-              Bounce lab.
-            </Link>
-          </div>
-          <nav className="hidden md:flex ">
+      <header className="border-b border-gray-200 dark:border-dark-border-subtle bg-dark dark:bg-dark-base w-full relative">
+        <div className="flex items-center justify-between">
+          <Logo />
+
+          {/* Desktop menu */}
+          <nav className="hidden md:flex mr-auto">
             <ul className="flex divide-x-1 divide-gray-600">
               <li className="p-6 hover:bg-blue-600 transition-colors duration-300 border-l border-gray-600">
-                <Link href="/classes" className="text-sm   font-medium ">
+                <Link href="/classes" className="text-sm font-medium">
                   Classes
                 </Link>
               </li>
               <li className="p-6 hover:bg-blue-600 transition-colors duration-300">
-                {" "}
-                <Link href="/about" className="text-sm   font-medium ">
+                <Link href="/about" className="text-sm font-medium">
                   About
                 </Link>
               </li>
-              <li className="p-6 hover:bg-blue-600 transition-colors duration-300 ">
-                {" "}
-                <Link href="/faq" className="text-sm   font-medium ">
+              <li className="p-6 hover:bg-blue-600 transition-colors duration-300 border-r border-gray-600">
+                <Link href="/faq" className="text-sm font-medium">
                   FAQ
                 </Link>
               </li>
             </ul>
           </nav>
+
+          {/* Desktop auth buttons */}
+          <div className="hidden md:flex gap-4 ml-6">
+            <Link href="/signin" className="hover:underline">
+              Sign in
+            </Link>
+            <Link href="/signup" className="hover:underline">
+              Sign up
+            </Link>
+          </div>
+
+          {/* Mobile burger menu */}
+          <BurgerMenu />
         </div>
       </header>
 
@@ -43,11 +54,7 @@ export default async function MarketingLayout({
       <footer className="w-full">
         <div className="flex flex-col md:flex-row bg-cyan-100 text-black p-12">
           <div className="flex-1">
-            <h2 className="text-6xl font-extrabold leading-none">
-              Bounce
-              <br />
-              Lab
-            </h2>
+            <Logo />
           </div>
 
           <div className="flex-1 grid md:grid-cols-2 gap-8 text-sm mt-8 md:mt-0">

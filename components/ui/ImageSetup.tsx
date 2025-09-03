@@ -19,7 +19,7 @@ export default function ImageSetup({
       alt={alt}
       fill
       priority
-      className={`object-${variant} w-full h-full ${className}`}
+      className={`object-${variant} ${className}`}
       sizes="(max-width: 768px) 100vw, 50vw"
     />
   );

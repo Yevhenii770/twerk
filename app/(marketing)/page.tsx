@@ -7,6 +7,7 @@ import Link from "next/link";
 export default function Home() {
   return (
     <>
+      {/* --- News Ticker --- */}
       <NewsTicker
         items={[
           "New Contemporary Dance Classes Now Enrolling - Secure Your Spot",
@@ -19,10 +20,12 @@ export default function Home() {
       {/* --- First Section --- */}
       <SectionContainer>
         <div className="flex flex-col md:flex-row w-full">
-          <div className="relative w-full md:w-1/2 h-[60vh] md:h-[80vh] overflow-hidden">
+          {/* Left column: image */}
+          <div className="relative w-full md:w-1/2 h-[60vh] md:h-[80vh]">
             <ImageSetup src="/sample.png" alt="Vision image" variant="cover" />
           </div>
 
+          {/* Right column: text */}
           <div className="flex w-full md:w-1/2 items-center bg-white p-8 md:p-12">
             <div className="flex flex-col gap-6 w-full">
               <h3 className="text-black text-2xl font-bold">Who we are</h3>
@@ -51,10 +54,12 @@ export default function Home() {
       {/* --- Second Section --- */}
       <SectionContainer>
         <div className="flex flex-col md:flex-row w-full">
-          <div className="relative w-full md:w-1/2 h-[60vh] md:h-[80vh] overflow-hidden">
+          {/* Left column: image */}
+          <div className="relative w-full md:w-1/2 h-[60vh] md:h-[80vh]">
             <ImageSetup src="/sample.png" alt="Classes image" variant="cover" />
           </div>
 
+          {/* Right column: text */}
           <div className="flex w-full md:w-1/2 items-center bg-white p-8 md:p-12">
             <div className="flex flex-col gap-6 w-full">
               <h3 className="text-black text-2xl font-bold">Our Classes</h3>
@@ -79,6 +84,7 @@ export default function Home() {
 
       {/* --- Founders Section --- */}
       <SectionContainer>
+        {/* Left column: text */}
         <div className="flex-1 flex flex-col justify-center p-8 md:p-12 bg-white">
           <h2 className="text-3xl md:text-4xl font-bold mb-12 text-black">
             Our Founders
@@ -91,9 +97,10 @@ export default function Home() {
           <p className="mt-6 text-gray-500">— Sophia Bennett</p>
         </div>
 
+        {/* Right column: images */}
         <div className="flex-1 grid grid-rows-2">
           <div className="relative h-[250px] md:h-[350px]">
-            <ImageSetup src="/iryna.jpg" alt="Iryna Pytska" />
+            <ImageSetup src="/iryna.jpg" alt="Iryna Pytska" variant="cover" />
             <div className="absolute bottom-0 left-0 w-full bg-fuchsia-500 p-4">
               <h3 className="font-bold">Iryna Pytska</h3>
               <p>Founder & Instructor</p>
@@ -101,7 +108,11 @@ export default function Home() {
           </div>
 
           <div className="relative h-[250px] md:h-[350px]">
-            <ImageSetup src="/yevhenii.jpg" alt="Yevhenii Sitolenko" />
+            <ImageSetup
+              src="/yevhenii.jpg"
+              alt="Yevhenii Sitolenko"
+              variant="cover"
+            />
             <div className="absolute bottom-0 left-0 w-full bg-cyan-100 p-4">
               <h3 className="font-bold text-black">Yevhenii Sitolenko</h3>
               <p className="text-black">Web Developer</p>
@@ -110,7 +121,7 @@ export default function Home() {
         </div>
       </SectionContainer>
 
-      {/* --- CTA Section --- */}
+      {/* --- Call To Action Section --- */}
       <div className="w-full bg-blue-600 flex items-center justify-center py-24 px-6 text-center">
         <div className="max-w-3xl mx-auto flex flex-col gap-6">
           <h2 className="text-3xl md:text-4xl font-bold text-white leading-snug">
