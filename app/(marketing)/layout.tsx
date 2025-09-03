@@ -35,11 +35,11 @@ export default function MarketingLayout({
           </nav>
 
           {/* Desktop auth buttons */}
-          <div className="hidden md:flex gap-4 ml-6">
-            <Link href="/signin" className="hover:underline">
+          <div className="hidden md:flex">
+            <Link href="/signin" className="hover:underline p-6">
               Sign in
             </Link>
-            <Link href="/signup" className="hover:underline">
+            <Link href="/signup" className="hover:underline p-6">
               Sign up
             </Link>
           </div>
