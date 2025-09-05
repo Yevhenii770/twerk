@@ -1,25 +1,32 @@
 import Image from "next/image";
 
 type ImageSetupProps = {
-  alt: string;
   src: string;
+  alt: string;
   className?: string;
   variant?: "cover" | "contain";
+  position?: string;
+  priority?: boolean;
 };
 
 export default function ImageSetup({
-  alt,
   src,
+  alt,
   className = "",
   variant = "cover",
+  position = "center",
+  priority = false,
 }: ImageSetupProps) {
   return (
     <Image
       src={src}
       alt={alt}
       fill
-      priority
-      className={`object-${variant} ${className}`}
+      priority={priority}
+      style={{ objectPosition: position }}
+      className={`${
+        variant === "cover" ? "object-cover" : "object-contain"
+      } ${className}`}
       sizes="(max-width: 768px) 100vw, 50vw"
     />
   );

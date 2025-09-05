@@ -2,6 +2,7 @@ import SectionContainer from "@/components/SectionContainer";
 import ImageSetup from "@/components/ui/ImageSetup";
 import NewsTicker from "@/components/ui/NewsTicker";
 import Button from "@/components/ui/Button";
+import OverlayTitle from "@/components/OverlayTitle";
 import Link from "next/link";
 
 export default function Home() {
@@ -23,6 +24,7 @@ export default function Home() {
           {/* Left column: image */}
           <div className="relative w-full md:w-1/2 h-[60vh] md:h-[80vh]">
             <ImageSetup src="/sample.png" alt="Vision image" variant="cover" />
+            <OverlayTitle text="Vision" />
           </div>
 
           {/* Right column: text */}
@@ -57,6 +59,7 @@ export default function Home() {
           {/* Left column: image */}
           <div className="relative w-full md:w-1/2 h-[60vh] md:h-[80vh]">
             <ImageSetup src="/sample.png" alt="Classes image" variant="cover" />
+            <OverlayTitle text="Classes" />
           </div>
 
           {/* Right column: text */}
@@ -85,33 +88,46 @@ export default function Home() {
       {/* --- Founders Section --- */}
       <SectionContainer>
         {/* Left column: text */}
-        <div className="flex-1 flex flex-col justify-center p-8 md:p-12 bg-white">
-          <h2 className="text-3xl md:text-4xl font-bold mb-12 text-black">
-            Our Founders
-          </h2>
+        <div className="flex-1 flex flex-col justify-center  bg-white">
+          <div className="flex items-center  h-full p-12">
+            <div className="flex flex-col gap-40 md:gap-80">
+              <div className="">
+                <h2 className="text-3xl md:text-4xl font-bold text-black ">
+                  Our Founders
+                </h2>
+              </div>
 
-          <blockquote className="border-l-4 border-gray-300 pl-6 italic text-xl md:text-2xl leading-relaxed text-gray-800">
-            &quot;Find your flow, and dance your truth.&quot;
-          </blockquote>
-
-          <p className="mt-6 text-gray-500">— Sophia Bennett</p>
+              <div className="">
+                <blockquote className="border-l-4 border-gray-300 pl-6 italic text-xl md:text-2xl leading-relaxed text-gray-800">
+                  &quot;Find your flow, and dance your truth.&quot;
+                </blockquote>
+                <p className="text-gray-500">— Sophia Bennett</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Right column: images */}
         <div className="flex-1 grid grid-rows-2">
-          <div className="relative h-[250px] md:h-[350px]">
-            <ImageSetup src="/iryna.jpg" alt="Iryna Pytska" variant="cover" />
+          <div className="relative h-[350px] md:h-[450px]">
+            <ImageSetup
+              src="/iryna.jpg"
+              alt="Iryna Pytska"
+              variant="cover"
+              position="center 55%"
+            />
             <div className="absolute bottom-0 left-0 w-full bg-fuchsia-500 p-4">
               <h3 className="font-bold">Iryna Pytska</h3>
               <p>Founder & Instructor</p>
             </div>
           </div>
 
-          <div className="relative h-[250px] md:h-[350px]">
+          <div className="relative h-[350px] md:h-[450px]">
             <ImageSetup
               src="/yevhenii.jpg"
               alt="Yevhenii Sitolenko"
               variant="cover"
+              position="center 38%"
             />
             <div className="absolute bottom-0 left-0 w-full bg-cyan-100 p-4">
               <h3 className="font-bold text-black">Yevhenii Sitolenko</h3>
