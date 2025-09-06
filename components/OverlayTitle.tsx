@@ -9,7 +9,7 @@ export default function OverlayTitle({
 }: OverlayTitleProps) {
   return (
     <div className={`absolute top-0 left-0 p-6 ${className}`}>
-      <h2 className="text-5xl md:text-6xl font-bold text-white ">{text}</h2>
+      <h2 className="text-5xl md:text-7xl font-bold text-white ">{text}</h2>
     </div>
   );
 }

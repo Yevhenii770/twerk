@@ -1,7 +1,10 @@
-import SectionContainer from "@/components/SectionContainer";
 import ImageSetup from "@/components/ui/ImageSetup";
 import NewsTicker from "@/components/ui/NewsTicker";
+import SectionTitle from "@/components/ui/SectionTitle";
+import SectionText from "@/components/ui/SectionText";
+import BlockQuote from "@/components/ui/BlockQuote";
 import Button from "@/components/ui/Button";
+import SectionContainer from "@/components/SectionContainer";
 import OverlayTitle from "@/components/OverlayTitle";
 import Link from "next/link";
 
@@ -30,15 +33,15 @@ export default function Home() {
           {/* Right column: text */}
           <div className="flex w-full md:w-1/2 items-center bg-white p-8 md:p-12">
             <div className="flex flex-col gap-6 w-full">
-              <h3 className="text-black text-2xl font-bold">Who we are</h3>
-              <p className="text-black">
+              <SectionTitle>Who we are</SectionTitle>
+              <SectionText>
                 At Movement Studio, we&apos;re passionate about creating a
                 supportive and inspiring environment for dancers of all levels.
                 Whether you&apos;re a complete beginner eager to explore the
                 world of modern dance, a seasoned performer looking to refine
                 your technique, or simply someone who finds joy in moving,
                 you&apos;ll find a home here.
-              </p>
+              </SectionText>
               <Link href="/about" className="w-fit">
                 <Button
                   type="submit"
@@ -58,19 +61,23 @@ export default function Home() {
         <div className="flex flex-col md:flex-row w-full">
           {/* Left column: image */}
           <div className="relative w-full md:w-1/2 h-[60vh] md:h-[80vh]">
-            <ImageSetup src="/sample.png" alt="Classes image" variant="cover" />
+            <ImageSetup
+              src="/red_sample.png"
+              alt="Classes image"
+              variant="cover"
+            />
             <OverlayTitle text="Classes" />
           </div>
 
           {/* Right column: text */}
           <div className="flex w-full md:w-1/2 items-center bg-white p-8 md:p-12">
             <div className="flex flex-col gap-6 w-full">
-              <h3 className="text-black text-2xl font-bold">Our Classes</h3>
-              <p className="text-black">
+              <SectionTitle>Our Classes</SectionTitle>
+              <SectionText>
                 Get your groove on with Hip Hop, find your rhythm in Jazz, and
                 explore connection in Contact Improvisation. Movement Studio
                 offers a diverse range of classes for every dancer.
-              </p>
+              </SectionText>
               <Link href="/classes" className="w-fit">
                 <Button
                   type="submit"
@@ -92,16 +99,18 @@ export default function Home() {
           <div className="flex items-center  h-full p-12">
             <div className="flex flex-col gap-40 md:gap-80">
               <div className="">
-                <h2 className="text-3xl md:text-4xl font-bold text-black ">
+                <SectionTitle className="text-3xl md:text-4xl font-bold text-black ">
                   Our Founders
-                </h2>
+                </SectionTitle>
               </div>
 
-              <div className="">
-                <blockquote className="border-l-4 border-gray-300 pl-6 italic text-xl md:text-2xl leading-relaxed text-gray-800">
+              <div>
+                <BlockQuote>
                   &quot;Find your flow, and dance your truth.&quot;
-                </blockquote>
-                <p className="text-gray-500">— Sophia Bennett</p>
+                </BlockQuote>
+                <SectionText className="text-gray-500">
+                  — Sophia Bennett
+                </SectionText>
               </div>
             </div>
           </div>
@@ -146,7 +155,9 @@ export default function Home() {
             have classes for you!
           </h2>
           <div className="flex justify-center">
-            <Button variant="primary">Reserve your spot</Button>
+            <Link href="/dashboard">
+              <Button variant="primary">Reserve your spot</Button>
+            </Link>
           </div>
         </div>
       </div>
