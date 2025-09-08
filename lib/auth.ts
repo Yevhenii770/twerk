@@ -1,0 +1,80 @@
+import { compare, hash } from "bcryptjs";
+import { nanoid } from "nanoid";
+import { cookies } from "next/headers";
+import { db } from "@/db";
+import { users } from "@/db/schema";
+import * as jose from "jose";
+import { cache } from "react";
+
+// JWT types
+interface JWTPayload {
+  userId: string;
+  [key: string]: string | number | boolean | null | undefined;
+}
+// Generate a JWT token
+export async function generateJWT(payload: JWTPayload) {
+  return await new jose.SignJWT(payload)
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .setExpirationTime(JWT_EXPIRATION)
+    .sign(JWT_SECRET);
+}
+
+// Secret key for JWT signing (in a real app, use an environment variable)
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.JWT_SECRET || "your-secret-key-min-32-chars-long!!!"
+);
+
+// JWT expiration time
+const JWT_EXPIRATION = "7d"; // 7 days
+
+// Token refresh threshold (refresh if less than this time left)
+const REFRESH_THRESHOLD = 24 * 60 * 60; // 24 hours in seconds
+
+// Hash a password
+export async function hashPassword(password: string) {
+  return hash(password, 10);
+}
+
+// Create a new user
+export async function createUser(email: string, password: string) {
+  const hashedPassword = await hashPassword(password);
+  const id = nanoid();
+
+  try {
+    await db.insert(users).values({
+      id,
+      email,
+      password: hashedPassword,
+    });
+
+    return { id, email };
+  } catch (error) {
+    console.error("Error creating user:", error);
+    return null;
+  }
+}
+// Create a session using JWT
+export async function createSession(userId: string) {
+  try {
+    // Create JWT with user data
+    const token = await generateJWT({ userId });
+
+    // Store JWT in a cookie
+    const cookieStore = await cookies();
+    cookieStore.set({
+      name: "auth_token",
+      value: token,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 60 * 60 * 24 * 7, // 1 week
+      path: "/",
+      sameSite: "lax",
+    });
+
+    return true;
+  } catch (error) {
+    console.error("Error creating session:", error);
+    return false;
+  }
+}
