@@ -56,18 +56,14 @@ export default function SignUpPage() {
         <h2 className="mt-2 text-center text-2xl font-bold text-gray-900 dark:text-white">
           Create a new account
         </h2>
-        <Link href="/">
-          <Button
-            type="submit"
-            className="self-start md:w-auto"
-            variant="primary"
-          >
-            Back to home page
-          </Button>
-        </Link>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <Link href="/">
+          <Button size="sm" variant="ghost">
+            To home page
+          </Button>
+        </Link>
         <div className="bg-dark dark:bg-[#1A1A1A] py-8 px-4 shadow sm:rounded-lg sm:px-10 border border-gray-100 dark:border-dark-border-subtle">
           <Form action={formAction} className="space-y-6">
             {state?.message && !state.success && (
@@ -134,7 +130,12 @@ export default function SignUpPage() {
             </FormGroup>
 
             <div>
-              <Button type="submit" className="w-full" isLoading={isPending}>
+              <Button
+                variant="primary"
+                type="submit"
+                className="w-full"
+                isLoading={isPending}
+              >
                 Sign up
               </Button>
             </div>

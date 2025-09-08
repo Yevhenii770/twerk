@@ -21,9 +21,7 @@ export async function generateJWT(payload: JWTPayload) {
 }
 
 // Secret key for JWT signing (in a real app, use an environment variable)
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || "your-secret-key-min-32-chars-long!!!"
-);
+const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
 
 // JWT expiration time
 const JWT_EXPIRATION = "7d"; // 7 days
@@ -34,6 +32,10 @@ const REFRESH_THRESHOLD = 24 * 60 * 60; // 24 hours in seconds
 // Hash a password
 export async function hashPassword(password: string) {
   return hash(password, 10);
+}
+// Verify a password
+export async function verifyPassword(password: string, hashedPassword: string) {
+  return compare(password, hashedPassword);
 }
 
 // Create a new user
