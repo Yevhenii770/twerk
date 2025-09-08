@@ -1,3 +1,4 @@
+"use server";
 import { z } from "zod";
 import { createUser } from "@/lib/auth";
 import { mockDelay } from "@/lib/utils";
@@ -22,7 +23,6 @@ const SignUpSchema = z
     path: ["confirmPassword"],
   });
 
-export type SignInData = z.infer<typeof SignInSchema>;
 export type SignUpData = z.infer<typeof SignUpSchema>;
 
 export type ActionResponse = {
