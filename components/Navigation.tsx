@@ -24,7 +24,7 @@ export default function Navigation() {
           label="Dashboard"
         />
         <NavLink
-          href="/issues/new"
+          href="/reservation/new"
           icon={<PlusIcon size={20} />}
           label="New reservation"
         />

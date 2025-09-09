@@ -9,9 +9,6 @@ export default function ParallaxImage() {
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start 100%", "150% end"],
-    // "start 50%" → анимация запускается,
-    // когда верх блока доходит до середины экрана
-    // "end start" → заканчивается, когда низ блока у верхушки экрана
   });
 
   const y = useTransform(scrollYProgress, [0, 1], ["20px", "100px"]);

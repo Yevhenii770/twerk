@@ -13,6 +13,8 @@ export const users = pgTable("users", {
 export const calendarBookings = pgTable("calendar_bookings", {
   id: serial("id").primaryKey(),
   userId: text("user_id").notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
   date: timestamp("date", { mode: "date" }).notNull(),
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
 });
