@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/ui/Logo";
 import { BurgerMenu } from "@/components/BurgerMenu";
+import DashBoardButton from "@/components/DashBoardButton";
 
 export default function MarketingLayout({
   children,
@@ -36,12 +37,7 @@ export default function MarketingLayout({
 
           {/* Desktop auth buttons */}
           <div className="hidden md:flex">
-            <Link href="/signin" className="hover:underline p-6">
-              Sign in
-            </Link>
-            <Link href="/signup" className="hover:underline p-6">
-              Sign up
-            </Link>
+            <DashBoardButton />
           </div>
 
           {/* Mobile burger menu */}

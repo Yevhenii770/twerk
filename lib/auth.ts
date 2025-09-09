@@ -117,3 +117,9 @@ export const getSession = cache(async () => {
     return null;
   }
 });
+
+// Delete session by clearing the JWT cookie
+export async function deleteSession() {
+  const cookieStore = await cookies()
+  cookieStore.delete("auth_token")
+}

@@ -1,7 +1,7 @@
 import { db } from "@/db";
-// import { getSession } from "./auth";
+import { getSession } from "./auth";
 import { eq } from "drizzle-orm";
-// import { cache } from "react";
+import { cache } from "react";
 import { calendarBookings, users } from "@/db/schema";
 // import { mockDelay } from "./utils";
 // import { unstable_cacheTag as cacheTag } from "next/cache";
@@ -19,3 +19,19 @@ export const getUserByEmail = async (email: string) => {
     return null;
   }
 };
+//Get current user
+export const getCurrentUser = cache(async () => {
+  const session = await getSession();
+  if (!session) return null;
+
+  try {
+    const result = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, session.userId));
+    return result[0] || null;
+  } catch (e) {
+    console.error("Error getting user by ID:", e);
+    return null;
+  }
+});

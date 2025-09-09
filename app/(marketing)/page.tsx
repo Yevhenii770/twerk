@@ -1,5 +1,5 @@
 import ImageSetup from "@/components/ui/ImageSetup";
-import NewsTicker from "@/components/ui/NewsTicker";
+import NewsTicker from "@/components/NewsTicker";
 import SectionTitle from "@/components/ui/SectionTitle";
 import SectionText from "@/components/ui/SectionText";
 import BlockQuote from "@/components/ui/BlockQuote";

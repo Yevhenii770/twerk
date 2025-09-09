@@ -1,7 +1,14 @@
 "use server";
+
 import { z } from "zod";
 import { mockDelay } from "@/lib/utils";
-import { createSession, createUser, verifyPassword } from "@/lib/auth";
+import {
+  createSession,
+  createUser,
+  verifyPassword,
+  deleteSession,
+} from "@/lib/auth";
+import { redirect } from "next/navigation";
 import { getUserByEmail } from "@/lib/dal";
 
 // Define Zod schema for signin validation
@@ -152,3 +159,13 @@ export async function signIn(formData: FormData): Promise<ActionResponse> {
     };
   }
 }
+export const signOut = async (): Promise<void> => {
+  try {
+    await deleteSession();
+  } catch (error) {
+    console.error("Sign out error:", error);
+    throw new Error("Failed to sign out");
+  } finally {
+    redirect("/");
+  }
+};
