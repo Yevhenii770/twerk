@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Logo } from "@/components/ui/Logo";
 import { BurgerMenu } from "@/components/BurgerMenu";
 import DashBoardButton from "@/components/DashBoardButton";
+import { Suspense } from "react";
 
 export default function MarketingLayout({
   children,
@@ -37,7 +38,9 @@ export default function MarketingLayout({
 
           {/* Desktop auth buttons */}
           <div className="hidden md:flex">
-            <DashBoardButton />
+            <Suspense fallback={<div className="p-2 text-sm">Loading...</div>}>
+              <DashBoardButton />
+            </Suspense>
           </div>
 
           {/* Mobile burger menu */}
