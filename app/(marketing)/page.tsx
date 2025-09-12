@@ -1,10 +1,12 @@
-import ImageSetup from "@/components/ui/ImageSetup";
+import {
+  ImageSetup,
+  SectionTitle,
+  SectionText,
+  BlockQuote,
+  Button,
+  SectionContainer,
+} from "@/components/ui";
 import NewsTicker from "@/components/NewsTicker";
-import SectionTitle from "@/components/ui/SectionTitle";
-import SectionText from "@/components/ui/SectionText";
-import BlockQuote from "@/components/ui/BlockQuote";
-import Button from "@/components/ui/Button";
-import SectionContainer from "@/components/SectionContainer";
 import OverlayTitle from "@/components/OverlayTitle";
 import Link from "next/link";
 

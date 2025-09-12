@@ -24,6 +24,7 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
 /* animation */
 @keyframes marquee {
   0% {
@@ -39,6 +40,7 @@ body {
   will-change: transform;
 }
 
+/* Calendar */
 .react-calendar {
   @apply border border-gray-300 rounded-xl shadow-lg p-4 bg-white;
 }

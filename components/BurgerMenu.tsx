@@ -8,7 +8,6 @@ export const BurgerMenu = () => {
 
   return (
     <>
-      {/* Mobile burger button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="md:hidden p-6 focus:outline-none"
@@ -16,7 +15,6 @@ export const BurgerMenu = () => {
         {isOpen ? <X size={28} /> : <Menu size={28} />}
       </button>
 
-      {/* Mobile dropdown menu */}
       {isOpen && (
         <div className="md:hidden absolute top-full left-0 w-full bg-black text-white flex flex-col divide-y divide-gray-700 z-50">
           <Link
