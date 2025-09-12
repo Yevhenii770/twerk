@@ -8,6 +8,7 @@ interface ClassCardProps {
   time: string;
   imageUrl: string;
   bookingUrl?: string;
+  isUnavailable?: boolean;
 }
 
 export default function ClassCard({
@@ -17,9 +18,14 @@ export default function ClassCard({
   time,
   imageUrl,
   bookingUrl = "#",
+  isUnavailable = false,
 }: ClassCardProps) {
   return (
-    <div className="flex flex-col bg-white shadow-md  overflow-hidden  ">
+    <div
+      className={`flex flex-col divide-x divide-y divide-gray-200 ${
+        isUnavailable ? "card-disabled" : "card-active"
+      }`}
+    >
       {/* Image + ID */}
       <div className="relative">
         <Image
@@ -35,20 +41,26 @@ export default function ClassCard({
       </div>
 
       {/* Content */}
-      <div className="p-4 flex flex-col gap-2 flex-1">
-        <h3 className="text-xl font-semibold">{title}</h3>
+      <div className="p-4 flex flex-col gap-2 flex-1 ">
+        <h3 className="text-xl font-semibold text-black">{title}</h3>
         <p className="text-gray-600 text-sm flex-1">{description}</p>
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between border-t px-4 py-2">
+      <div className="flex items-center justify-between border-t px-4 py-2 ">
         <span className="text-blue-600 font-medium">{time}</span>
-        <Link
-          href={bookingUrl}
-          className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800 transition"
-        >
-          Book Now
-        </Link>
+        {isUnavailable ? (
+          <button className="px-4 py-2 bg-gray-400 text-gray-200 rounded cursor-not-allowed">
+            Unavaible
+          </button>
+        ) : (
+          <Link
+            href={bookingUrl}
+            className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800 transition"
+          >
+            Book Now
+          </Link>
+        )}
       </div>
     </div>
   );

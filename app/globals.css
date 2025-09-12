@@ -76,3 +76,14 @@ body {
 .react-calendar__month-view__days__day--weekend {
   @apply text-red-500;
 }
+
+/* Cards style */
+.card-disabled {
+  background-color: #d1d5db;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.card-active {
+  background-color: white;
+}
