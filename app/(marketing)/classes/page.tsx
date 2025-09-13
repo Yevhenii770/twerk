@@ -15,11 +15,8 @@ export default function Classes() {
     <>
       <SectionContainer>
         <div className="flex-wrap gap-6 md:w-6/11">
-          <div className="relative w-full md:w-1/2 h-[30vh] md:h-[70vh]">
-            <OverlayTitle
-              text="Booking Experience for Classes
-"
-            />
+          <div className="relative w-[40vh] md:w-[90vh] h-[15vh]">
+            <OverlayTitle text="Booking Experience for Classes" size="sm" />
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 md:w-5/11">
@@ -29,7 +26,7 @@ export default function Classes() {
             description="This class introduces hip hop dance, including isolations, popping, locking, and basic footwork."
             time="Tuesdays 7:00 PM - 9:00 PM"
             imageUrl="/red_sample.png"
-            bookingUrl="/booking/hiphop-foundations"
+            bookingUrl="/dashboard"
           />
           <ClassCard
             id="B1"
@@ -37,7 +34,7 @@ export default function Classes() {
             description="This class helps you develop your own unique movement vocabulary and respond to music in the moment."
             time="Wednesdays 6:00 PM - 8:00 PM"
             imageUrl="/red_sample.png"
-            bookingUrl="/booking/hiphop-freestyle"
+            bookingUrl="/dashboard"
           />
           <ClassCard
             id="C3"
@@ -45,7 +42,7 @@ export default function Classes() {
             description="Learn top rock, down rock, and freeze basics in this introduction to breaking."
             time="Fridays 5:00 PM - 7:00 PM"
             imageUrl="/red_sample.png"
-            bookingUrl="/booking/breaking"
+            bookingUrl="/dashboard"
             isUnavailable={true}
           />
           <ClassCard
@@ -54,7 +51,7 @@ export default function Classes() {
             description="This class introduces hip hop dance, including isolations, popping, locking, and basic footwork."
             time="Tuesdays 7:00 PM - 9:00 PM"
             imageUrl="/red_sample.png"
-            bookingUrl="/booking/hiphop-foundations"
+            bookingUrl="/dashboard"
             isUnavailable={true}
           />
         </div>
@@ -62,22 +59,24 @@ export default function Classes() {
 
       <SectionContainer>
         <div className="flex-wrap gap-6 md:w-6/11">
-          <div className="relative md:w-1/5 h-[30vh] md:h-[50vh]">
-            <OverlayTitle text="Our Promise" />
+          <div className="relative w-[40vh] md:w-[90vh] h-[15vh]">
+            <OverlayTitle text="Our Promise" size="sm" />
           </div>
         </div>
 
         <div className="md:w-5/11">
-          <div className=" bg-blue-600">
-            <p className=" text-white sm:text-2xl md:text-3xl font-bold p-7">
-              Whether you're a beginner looking to explore expressive movement
-              or an advanced dancer ready to refine your technique, we have
-              classes for you!
-            </p>
+          <div className=" bg-blue-600 ">
+            <div className="w-fll md:w-[80vh]">
+              <p className=" text-white text-3xl md:text-4xl font-bold p-7">
+                Whether you're a beginner looking to explore expressive movement
+                or an advanced dancer ready to refine your technique, we have
+                classes for you!
+              </p>
+            </div>
           </div>
-          <div className="relative flex items-center justify-center w-full h-[60vh] overflow-hidden">
+          <div className="relative flex items-center justify-center h-[40vh] md:h-[60vh] overflow-hidden">
             <ImageSetup
-              src="/red_sample.png"
+              src="/promise.jpg"
               alt="Our Promise"
               variant="cover"
               className="z-0"

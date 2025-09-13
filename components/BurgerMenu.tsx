@@ -10,7 +10,7 @@ export const BurgerMenu = () => {
     <>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="md:hidden p-6 focus:outline-none"
+        className="md:hidden p-5 md:p-6 focus:outline-none"
       >
         {isOpen ? <X size={28} /> : <Menu size={28} />}
       </button>

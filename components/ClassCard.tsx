@@ -33,9 +33,9 @@ export default function ClassCard({
           alt={title}
           width={400}
           height={250}
-          className="w-full h-64 object-cover"
+          className="w-full h-80 object-cover"
         />
-        <span className="absolute top-2 left-2 text-5xl font-bold text-white drop-shadow-lg">
+        <span className="absolute top-6 left-7 text-6xl md:text-8xl font-bold text-white drop-shadow-lg">
           {id}
         </span>
       </div>

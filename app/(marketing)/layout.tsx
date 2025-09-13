@@ -11,7 +11,7 @@ export default function MarketingLayout({
 }) {
   return (
     <>
-      <header className="border-b border-gray-200 dark:border-dark-border-subtle bg-dark dark:bg-dark-base w-full relative">
+      <header className="border-b border-gray-500  bg-black text-white w-full relative">
         <div className="flex items-center justify-between">
           <Logo />
 

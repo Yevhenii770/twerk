@@ -8,6 +8,9 @@ import {
 } from "@/components/ui";
 import NewsTicker from "@/components/NewsTicker";
 import OverlayTitle from "@/components/OverlayTitle";
+import CallToActionSection from "@/components/CallToActionSection";
+import FounderCard from "@/components/FounderCard";
+
 import Link from "next/link";
 
 export default function Home() {
@@ -29,7 +32,7 @@ export default function Home() {
           {/* Left column: image */}
           <div className="relative w-full md:w-1/2 h-[60vh] md:h-[80vh]">
             <ImageSetup src="/sample.png" alt="Vision image" variant="cover" />
-            <OverlayTitle text="Vision" />
+            <OverlayTitle text="Vision" size="lg" />
           </div>
 
           {/* Right column: text */}
@@ -68,7 +71,7 @@ export default function Home() {
               alt="Classes image"
               variant="cover"
             />
-            <OverlayTitle text="Classes" />
+            <OverlayTitle text="Classes" size="lg" />
           </div>
 
           {/* Right column: text */}
@@ -98,9 +101,9 @@ export default function Home() {
       <SectionContainer>
         {/* Left column: text */}
         <div className="flex-1 flex flex-col justify-center  bg-white">
-          <div className="flex items-center  h-full p-12">
+          <div className="flex items-center h-full p-12">
             <div className="flex flex-col gap-40 md:gap-80">
-              <div className="">
+              <div>
                 <SectionTitle className="text-3xl md:text-4xl font-bold text-black ">
                   Our Founders
                 </SectionTitle>
@@ -120,49 +123,24 @@ export default function Home() {
 
         {/* Right column: images */}
         <div className="flex-1 grid grid-rows-2">
-          <div className="relative h-[350px] md:h-[450px]">
-            <ImageSetup
-              src="/iryna.jpg"
-              alt="Iryna Pytska"
-              variant="cover"
-              position="center 55%"
-            />
-            <div className="absolute bottom-0 left-0 w-full bg-fuchsia-500 p-4">
-              <h3 className="font-bold">Iryna Pytska</h3>
-              <p>Founder & Instructor</p>
-            </div>
-          </div>
+          <FounderCard
+            src="/iryna.jpg"
+            title="Iryna Pytska"
+            position="Founder & Instructor"
+            color="bg-fuchsia-500"
+          />
 
-          <div className="relative h-[350px] md:h-[450px]">
-            <ImageSetup
-              src="/yevhenii.jpg"
-              alt="Yevhenii Sitolenko"
-              variant="cover"
-              position="center 38%"
-            />
-            <div className="absolute bottom-0 left-0 w-full bg-cyan-100 p-4">
-              <h3 className="font-bold text-black">Yevhenii Sitolenko</h3>
-              <p className="text-black">Web Developer</p>
-            </div>
-          </div>
+          <FounderCard
+            src="/yevhenii.jpg"
+            title="Yevhenii Sitolenko"
+            position="Web Developer"
+            color="bg-cyan-100"
+          />
         </div>
       </SectionContainer>
 
       {/* --- Call To Action Section --- */}
-      <div className="w-full bg-blue-600 flex items-center justify-center py-24 px-6 text-center">
-        <div className="max-w-3xl mx-auto flex flex-col gap-6">
-          <h2 className="text-3xl md:text-4xl font-bold text-white leading-snug">
-            Whether you&apos;re a beginner looking to explore expressive
-            movement or an advanced dancer ready to refine your technique, we
-            have classes for you!
-          </h2>
-          <div className="flex justify-center">
-            <Link href="/dashboard">
-              <Button variant="primary">Reserve your spot</Button>
-            </Link>
-          </div>
-        </div>
-      </div>
+      <CallToActionSection />
     </>
   );
 }
