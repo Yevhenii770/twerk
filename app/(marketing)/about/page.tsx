@@ -18,7 +18,7 @@ export default function About() {
         durationSec={18}
       />
       <SectionContainer>
-        <div className="relative w-full h-[15vh] md:w-5/11">
+        <div className="relative w-full h-[20vh] sm:h-[20vh] md:w-5/11 bg-black md:h-full">
           <OverlayTitle text="Founders" />
         </div>
         <div className=" w-full flex md:w-6/11">
@@ -45,8 +45,8 @@ export default function About() {
           <ImageSetup src="/studio.jpg" alt="Our Promise" priority />
         </div>
         <div className="p-5 pl-12 pr-12 bg-black md:w-3/11">
-          <h2 className="text-2xl pb-4">Our Space</h2>
-          <p>
+          <h2 className="text-2xl pb-4 text-white">Our Space</h2>
+          <p className="text-white">
             Whether you're a beginner looking to explore expressive movement or
             an advanced dancer ready to refine your technique, we have classes
             for you! Join our weekly sessions, drop in for open-level classes,
