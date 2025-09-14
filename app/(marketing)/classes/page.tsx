@@ -14,8 +14,8 @@ export default function Classes() {
   return (
     <>
       <SectionContainer>
-        <div className="flex-wrap gap-6 md:w-6/11">
-          <div className="relative w-[40vh] md:w-[90vh] h-[15vh]">
+        <div className="flex-wrap gap-6 md:w-6/11 bg-black">
+          <div className="relative h-[25vh]">
             <OverlayTitle text="Booking Experience for Classes" size="sm" />
           </div>
         </div>
@@ -58,15 +58,15 @@ export default function Classes() {
       </SectionContainer>
 
       <SectionContainer>
-        <div className="flex-wrap gap-6 md:w-6/11">
-          <div className="relative w-[40vh] md:w-[90vh] h-[15vh]">
+        <div className="flex-wrap gap-6 md:w-6/11 bg-black">
+          <div className="relative h-[15vh]">
             <OverlayTitle text="Our Promise" size="sm" />
           </div>
         </div>
 
         <div className="md:w-5/11">
           <div className=" bg-blue-600 ">
-            <div className="w-fll md:w-[80vh]">
+            <div className="w-fll">
               <p className=" text-white text-3xl md:text-4xl font-bold p-7">
                 Whether you're a beginner looking to explore expressive movement
                 or an advanced dancer ready to refine your technique, we have
