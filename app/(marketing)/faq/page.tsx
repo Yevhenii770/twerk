@@ -50,7 +50,9 @@ export default function Faq() {
           <ul>
             {faqs.map((ell, i) => (
               <li key={i} className="mb-10">
-                <h3 className="text-2xl text-bold mb-2">{ell.question}</h3>
+                <h3 className="text-2xl text-bold mb-2 text-white">
+                  {ell.question}
+                </h3>
                 <p className="text-white">{ell.answer}</p>
               </li>
             ))}
