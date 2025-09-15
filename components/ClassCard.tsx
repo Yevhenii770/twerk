@@ -22,7 +22,7 @@ export default function ClassCard({
 }: ClassCardProps) {
   return (
     <div
-      className={`flex flex-col divide-x divide-y divide-gray-200 ${
+      className={`relative flex flex-col divide-x divide-y divide-gray-200 w-full ${
         isUnavailable ? "card-disabled" : "card-active"
       }`}
     >

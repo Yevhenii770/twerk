@@ -44,14 +44,14 @@ const faqs = [
 export default function Faq() {
   return (
     <SectionContainer>
-      <div className="p-5 bg-black h-full w-full">
+      <div className=" p-5 sm:p-5 md:p-0 bg-black h-full w-full">
         <div className="flex flex-col items-center">
-          <h2 className="mb-10 text-4xl">Frequently Asked Questions</h2>
+          <h2 className="mb-10 text-4xl mt-10">Frequently Asked Questions</h2>
           <ul>
             {faqs.map((ell, i) => (
               <li key={i} className="mb-10">
                 <h3 className="text-2xl text-bold mb-2">{ell.question}</h3>
-                <p>{ell.answer}</p>
+                <p className="text-white">{ell.answer}</p>
               </li>
             ))}
           </ul>

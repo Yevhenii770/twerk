@@ -18,7 +18,7 @@ export default function About() {
         durationSec={18}
       />
       <SectionContainer>
-        <div className="relative w-full h-[20vh] sm:h-[20vh] md:w-5/11 bg-black md:h-full">
+        <div className="relative w-full bg-black h-[20vh] md:w-5/11  md:h-auto lg:h-auto">
           <OverlayTitle text="Founders" />
         </div>
         <div className=" w-full flex md:w-6/11">

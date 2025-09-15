@@ -19,41 +19,55 @@ export default function Classes() {
             <OverlayTitle text="Booking Experience for Classes" size="sm" />
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 md:w-5/11">
-          <ClassCard
-            id="A1"
-            title="Twerk Choreo"
-            description="This class introduces hip hop dance, including isolations, popping, locking, and basic footwork."
-            time="Tuesdays 7:00 PM - 9:00 PM"
-            imageUrl="/red_sample.png"
-            bookingUrl="/dashboard"
-          />
-          <ClassCard
-            id="B1"
-            title="Twerk Choreo (Advanced)"
-            description="This class helps you develop your own unique movement vocabulary and respond to music in the moment."
-            time="Wednesdays 6:00 PM - 8:00 PM"
-            imageUrl="/red_sample.png"
-            bookingUrl="/dashboard"
-          />
-          <ClassCard
-            id="C3"
-            title="Breaking Basics"
-            description="Learn top rock, down rock, and freeze basics in this introduction to breaking."
-            time="Fridays 5:00 PM - 7:00 PM"
-            imageUrl="/red_sample.png"
-            bookingUrl="/dashboard"
-            isUnavailable={true}
-          />
-          <ClassCard
-            id="C1"
-            title="Hip Hop Foundations"
-            description="This class introduces hip hop dance, including isolations, popping, locking, and basic footwork."
-            time="Tuesdays 7:00 PM - 9:00 PM"
-            imageUrl="/red_sample.png"
-            bookingUrl="/dashboard"
-            isUnavailable={true}
-          />
+        {/* grid grid-cols-1 md:grid-cols-2 */}
+        <div className="md:w-5/11">
+          <div className="flex flex-col lg:flex-row">
+            <div className="flex-1 flex">
+              <ClassCard
+                id="A1"
+                title="Twerk Choreo"
+                description="This class introduces hip hop dance, including isolations, popping, locking, and basic footwork."
+                time="Tuesdays 7:00 PM - 9:00 PM"
+                imageUrl="/red_sample.png"
+                bookingUrl="/dashboard"
+              />
+            </div>
+            <div className="flex-1 flex">
+              <ClassCard
+                id="B1"
+                title="Twerk Choreo (Advanced)"
+                description="This class helps you develop your own unique movement vocabulary and respond to music in the moment."
+                time="Wednesdays 6:00 PM - 8:00 PM"
+                imageUrl="/red_sample.png"
+                bookingUrl="/dashboard"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col lg:flex-row ">
+            <div className="flex-1 flex ">
+              <ClassCard
+                id="C3"
+                title="Breaking Basics"
+                description="Learn top rock, down rock, and freeze basics in this introduction to breaking."
+                time="Fridays 5:00 PM - 7:00 PM"
+                imageUrl="/red_sample.png"
+                bookingUrl="/dashboard"
+                isUnavailable={true}
+              />
+            </div>
+            <div className="flex-1 flex">
+              <ClassCard
+                id="C1"
+                title="Hip Hop Foundations"
+                description="This class introduces hip hop dance, including isolations, popping, locking, and basic footwork."
+                time="Tuesdays 7:00 PM - 9:00 PM"
+                imageUrl="/red_sample.png"
+                bookingUrl="/dashboard"
+                isUnavailable={true}
+              />
+            </div>
+          </div>
         </div>
       </SectionContainer>
 
