@@ -46,7 +46,9 @@ export default function Faq() {
     <SectionContainer>
       <div className=" p-5 sm:p-5 md:p-0 bg-black h-full w-full">
         <div className="flex flex-col items-center">
-          <h2 className="mb-10 text-4xl mt-10">Frequently Asked Questions</h2>
+          <h2 className="mb-10 text-4xl mt-10 text-white">
+            Frequently Asked Questions
+          </h2>
           <ul>
             {faqs.map((ell, i) => (
               <li key={i} className="mb-10">

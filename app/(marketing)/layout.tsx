@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Logo } from "@/components/ui/Logo";
-import { BurgerMenu } from "@/components/BurgerMenu";
+import ServerMenu from "@/components/ServerMenu";
 import DashBoardButton from "@/components/DashBoardButton";
 import { Suspense } from "react";
 
@@ -44,7 +44,7 @@ export default function MarketingLayout({
           </div>
 
           {/* Mobile burger menu */}
-          <BurgerMenu />
+          <ServerMenu />
         </div>
       </header>
 
