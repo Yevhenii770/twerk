@@ -6,16 +6,16 @@ import { Suspense } from "react";
 export default async function ServerMenu() {
   return (
     <BurgerMenuClient>
-      <div className="flex flex-col divide-y w-auto divide-gray-700">
-        <Link href="/classes" className="p-4 hover:bg-blue-600">
+      <div className="flex flex-col divide-y divide-gray-700">
+        <Link href="/classes" className="px-6 py-3 hover:bg-blue-600">
           Classes
         </Link>
 
-        <Link href="/about" className="p-4 hover:bg-blue-600">
+        <Link href="/about" className="px-6 py-3 hover:bg-blue-600">
           About
         </Link>
 
-        <Link href="/faq" className="p-4 hover:bg-blue-600">
+        <Link href="/faq" className="px-6 py-3 hover:bg-blue-600">
           FAQ
         </Link>
 

@@ -20,7 +20,7 @@ export const BurgerMenuClient = ({
       </button>
       {isOpen && (
         <div
-          className="absolute top-full left-0 bg-black text-white z-50"
+          className="absolute top-full left-0 bg-black text-white z-50 w-full"
           onClick={() => setIsOpen(false)}
         >
           {children}
