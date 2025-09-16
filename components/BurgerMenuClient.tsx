@@ -10,7 +10,7 @@ export const BurgerMenuClient = ({
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className=" md:hidden">
+    <div className=" md:hidden ">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="p-4 focus:outline-none"
@@ -19,7 +19,10 @@ export const BurgerMenuClient = ({
         {isOpen ? <X size={28} /> : <Menu size={28} />}
       </button>
       {isOpen && (
-        <div className="absolute top-full left-0 w-screen bg-black text-white z-50">
+        <div
+          className="absolute top-full left-0 bg-black text-white z-50"
+          onClick={() => setIsOpen(false)}
+        >
           {children}
         </div>
       )}

@@ -7,11 +7,9 @@ const DashBoardButton = async () => {
   return (
     <>
       {user ? (
-        <div className="block md:hidden lg:hidden ">
-          <Link href="/dashboard">
-            <Button variant="underline">Go to Dashboard</Button>
-          </Link>
-        </div>
+        <Link href="/dashboard">
+          <Button variant="underline">Go to Dashboard</Button>
+        </Link>
       ) : (
         <div className="flex items-center space-x-4">
           <Link href="/signin">
