@@ -17,7 +17,11 @@ export default function BookingCalendar() {
         tileDisabled={({ date }) => date.getDay() !== 5}
       />
 
-      <input type="hidden" name="date" value={date ? date.toISOString() : ""} />
+      <input
+        type="hidden"
+        name="date"
+        value={date ? date.toISOString().split("T")[0] : ""}
+      />
 
       <p className="mt-4">
         {date

@@ -1,11 +1,4 @@
-import {
-  ImageSetup,
-  SectionTitle,
-  SectionText,
-  BlockQuote,
-  Button,
-  SectionContainer,
-} from "@/components/ui";
+import { ImageSetup, SectionContainer } from "@/components/ui";
 import OverlayTitle from "@/components/OverlayTitle";
 
 import ClassCard from "@/components/ClassCard";

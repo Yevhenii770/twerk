@@ -47,7 +47,7 @@ export const createBooking = async (
 
     await db.insert(calendarBookings).values({
       userId: user.id,
-      date: new Date(validatedData.date),
+      date: validatedData.date,
       name: validatedData.name,
       description: validatedData.description || null,
     });

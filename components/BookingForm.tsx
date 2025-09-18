@@ -26,10 +26,10 @@ export default function BookingForm() {
   const [state, formAction, isPending] = useActionState<
     ActionResponse,
     FormData
-  >(async (prevState: ActionResponse, formData: FormData) => {
+  >(async (_prevState: ActionResponse, formData: FormData) => {
     const data = {
       name: formData.get("name") as string,
-      description: formData.get("description") as string | null,
+      description: (formData.get("description") as string) || null,
       date: formData.get("date") as string,
     };
 
@@ -86,7 +86,7 @@ export default function BookingForm() {
       <FormGroup>
         <FormLabel>Select Training Date</FormLabel>
         <div className="p-2 border rounded-md">
-          <BookingCalendar />
+          <BookingCalendar name="date" />
         </div>
         {state?.errors?.date && (
           <p className="text-sm text-red-500">{state.errors.date[0]}</p>

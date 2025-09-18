@@ -12,20 +12,20 @@ export default function Navigation() {
           href="/"
           className="text-xl font-bold tracking-tight text-gray-900 dark:text-white"
         >
-          <span className="hidden md:inline">Bounce lab</span>
-          <span className="md:hidden">B</span>
+          <span className="hidden md:inline text-2xl">Bounce lab</span>
+          <span className="md:hidden text-2xl">B</span>
         </Link>
       </div>
 
       <nav className="flex-1 flex flex-col space-y-1">
         <NavLink
           href="/dashboard"
-          icon={<HomeIcon size={20} />}
+          icon={<HomeIcon size={25} />}
           label="Dashboard"
         />
         <NavLink
           href="/reservation/new"
-          icon={<PlusIcon size={20} />}
+          icon={<PlusIcon size={25} />}
           label="New reservation"
         />
       </nav>

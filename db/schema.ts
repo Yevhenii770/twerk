@@ -15,7 +15,7 @@ export const calendarBookings = pgTable("calendar_bookings", {
   userId: text("user_id").notNull(),
   name: text("name").notNull(),
   description: text("description"),
-  date: timestamp("date", { mode: "date" }).notNull(),
+  date: text("date").notNull(), //
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
 });
 

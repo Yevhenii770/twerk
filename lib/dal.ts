@@ -38,8 +38,8 @@ export const getCurrentUser = cache(async () => {
 });
 
 export async function getReservations(userId?: string) {
-  "use cache";
-  cacheTag("reservations");
+  // "use cache";
+  // cacheTag("reservations");
   try {
     const result = await db.query.calendarBookings.findMany({
       where: userId ? eq(calendarBookings.userId, userId) : undefined,
