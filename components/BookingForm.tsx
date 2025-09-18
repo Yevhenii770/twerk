@@ -86,7 +86,7 @@ export default function BookingForm() {
       <FormGroup>
         <FormLabel>Select Training Date</FormLabel>
         <div className="p-2 border rounded-md">
-          <BookingCalendar name="date" />
+          <BookingCalendar />
         </div>
         {state?.errors?.date && (
           <p className="text-sm text-red-500">{state.errors.date[0]}</p>
