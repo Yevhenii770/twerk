@@ -7,6 +7,9 @@ import { useState } from "react";
 export default function BookingCalendar() {
   const [date, setDate] = useState<Date | null>(null);
 
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   return (
     <div>
       <Calendar
@@ -15,6 +18,7 @@ export default function BookingCalendar() {
         onChange={(value) => setDate(value as Date)}
         value={date}
         tileDisabled={({ date }) => date.getDay() !== 5}
+        minDate={today}
       />
 
       <input

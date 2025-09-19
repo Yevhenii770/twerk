@@ -4,7 +4,7 @@ export default function ReservationsSkeleton() {
       <h2 className="text-xl font-bold mb-4">My reservations:</h2>
 
       <div className="space-y-3">
-        {Array.from({ length: 6 }).map((_, i) => (
+        {Array.from({ length: 4 }).map((_, i) => (
           <div
             key={i}
             className="p-4 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"

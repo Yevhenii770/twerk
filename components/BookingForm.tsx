@@ -59,7 +59,7 @@ export default function BookingForm() {
         <FormInput
           id="name"
           name="name"
-          placeholder="John Doe"
+          placeholder="Emma Smith"
           required
           minLength={2}
           disabled={isPending}
