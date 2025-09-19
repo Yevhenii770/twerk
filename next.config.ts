@@ -3,6 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   experimental: {
     cacheComponents: true,
+    dynamicIO: true,
   },
   typescript: {
     ignoreBuildErrors: true,
