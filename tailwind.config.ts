@@ -42,15 +42,6 @@ const config = {
       boxShadow: {
         mode: "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)",
       },
-      keyframes: {
-        marquee: {
-          "0%": { transform: "translateX(100%)" },
-          "100%": { transform: "translateX(-100%)" },
-        },
-      },
-      animation: {
-        marquee: "marquee 15s linear infinite",
-      },
     },
   },
   plugins: [],
