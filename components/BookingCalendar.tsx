@@ -13,7 +13,7 @@ export default function BookingCalendar() {
   return (
     <div>
       <Calendar
-        className="custom-calendar border border-gray-300 rounded-lg shadow-lg"
+        className="custom-calendar"
         locale="en-US"
         onChange={(value) => setDate(value as Date)}
         value={date}

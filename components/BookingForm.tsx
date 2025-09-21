@@ -84,10 +84,10 @@ export default function BookingForm() {
 
       {/* Calendar */}
       <FormGroup>
-        <FormLabel>Select Training Date</FormLabel>
-        <div className="p-2 border rounded-md">
-          <BookingCalendar />
-        </div>
+        <FormLabel className="">Select Training Date</FormLabel>
+
+        <BookingCalendar />
+
         {state?.errors?.date && (
           <p className="text-sm text-red-500">{state.errors.date[0]}</p>
         )}
@@ -102,7 +102,7 @@ export default function BookingForm() {
         >
           Cancel
         </Button>
-        <Button type="submit" isLoading={isPending}>
+        <Button type="submit" variant="primary" isLoading={isPending}>
           Book Training
         </Button>
       </div>

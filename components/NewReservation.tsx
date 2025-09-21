@@ -10,11 +10,7 @@ const NewReservation = async () => {
     redirect("/signin");
   }
 
-  return (
-    <div>
-      <BookingForm />
-    </div>
-  );
+  return <BookingForm />;
 };
 
 export default NewReservation;

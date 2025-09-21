@@ -1,9 +1,10 @@
 "use server";
 
 import { db } from "@/db";
-import { calendarBookings } from "@/db/schema";
+import { bookingsRelations, calendarBookings } from "@/db/schema";
 import { getCurrentUser } from "@/lib/dal";
 import { z } from "zod";
+import { eq } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
 
 const BookingSchema = z.object({
@@ -64,3 +65,21 @@ export const createBooking = async (
     };
   }
 };
+
+export async function deleteBooking(id: number) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      throw new Error("Unauthorized");
+    }
+    await db.delete(calendarBookings).where(eq(calendarBookings.id, id));
+    revalidateTag("reservations");
+  } catch (error) {
+    console.error("Error deleting issue:", error);
+    return {
+      success: false,
+      message: "An error occurred while deleting the issue",
+      error: "Failed to delete issue",
+    };
+  }
+}
