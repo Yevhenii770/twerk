@@ -6,7 +6,6 @@ import { eq } from "drizzle-orm";
 import { cache } from "react";
 import { calendarBookings, users } from "@/db/schema";
 import { unstable_cacheTag as cacheTag } from "next/cache";
-// import { ca } from "zod/locales";
 
 // Get user by email
 export const getUserByEmail = async (email: string) => {
@@ -20,6 +19,7 @@ export const getUserByEmail = async (email: string) => {
     return null;
   }
 };
+
 //Get current user
 export const getCurrentUser = cache(async () => {
   const session = await getSession();

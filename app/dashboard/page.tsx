@@ -1,6 +1,7 @@
 import { getReservations, getCurrentUser } from "@/lib/dal";
 import { redirect } from "next/navigation";
 import { DeleteReservationButton } from "@/components/DeleteReservationButton";
+import { getNextFridayFormatted } from "@/lib/utils";
 
 export default async function DashboardPage() {
   const user = await getCurrentUser();
@@ -13,6 +14,13 @@ export default async function DashboardPage() {
 
   return (
     <>
+      <div className="flex flex-col mb-6">
+        <span className="text-xl font-bold">Next lesson will be:</span>
+        <div>
+          <span className="text-green-500">{getNextFridayFormatted()}</span>
+          <span>{" at 6:00 pm"}</span>
+        </div>
+      </div>
       <h2 className="text-lg font-bold mb-4">My reservations:</h2>
 
       {bookings.length === 0 ? (
@@ -21,16 +29,16 @@ export default async function DashboardPage() {
         <div className="flex flex-col gap-4 ">
           {bookings.map((booking) => (
             <div key={booking.id} className="w-full md:w-1/2 lg:w-1/3">
-              <div className="border rounded p-4 flex flex-row justify-between gap-4 shadow-md">
+              <div className=" border-gray-50 dark:bg-white rounded p-4 flex flex-row justify-between gap-4 shadow-md">
                 <div className="flex flex-col">
-                  <span className="font-semibold break-anywhere">
+                  <span className="font-semibold break-anywhere dark:text-black">
                     {booking.name}
                   </span>
-                  <span className="text-sm text-gray-500 ">
+                  <span className="text-sm text-gray-500 dark:text-black">
                     {booking.date.toString()}
                   </span>
                   {booking.description && (
-                    <span className="text-sm break-words break-anywhere">
+                    <span className="text-sm break-words break-anywhere dark:text-black">
                       {booking.description}
                     </span>
                   )}

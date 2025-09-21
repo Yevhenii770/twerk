@@ -6,6 +6,8 @@ import { getCurrentUser } from "@/lib/dal";
 import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
+import { and } from "drizzle-orm";
+import toast from "react-hot-toast";
 
 const BookingSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -45,6 +47,20 @@ export const createBooking = async (
     }
 
     const validatedData = validationResult.data;
+
+    const existing = await db.query.calendarBookings.findFirst({
+      where: and(
+        eq(calendarBookings.userId, user.id),
+        eq(calendarBookings.date, validatedData.date)
+      ),
+    });
+
+    if (existing) {
+      return {
+        success: false,
+        message: "You already have a reservation for this date",
+      };
+    }
 
     await db.insert(calendarBookings).values({
       userId: user.id,
