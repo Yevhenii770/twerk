@@ -25,8 +25,10 @@ export function DeleteReservationButton({ id }: DeleteReservationButtonProps) {
   };
 
   return (
-    <Button size="sm" onClick={() => handleDelete()}>
-      <Trash2Icon size={16} className="mr-1" />
-    </Button>
+    <div>
+      <Button size="sm" onClick={() => handleDelete()}>
+        <Trash2Icon size={16} />
+      </Button>
+    </div>
   );
 }
