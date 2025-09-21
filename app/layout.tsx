@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Encode_Sans_Semi_Condensed } from "next/font/google";
+import { Toaster } from "react-hot-toast";
+
 import "./globals.css";
 
 const encodeSans = Encode_Sans_Semi_Condensed({
@@ -19,7 +21,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${encodeSans.className} antialiased`}>{children}</body>
+      <body className={`${encodeSans.className} antialiased`}>
+        {children} <Toaster position="top-right" reverseOrder={false} />
+      </body>
     </html>
   );
 }

@@ -8,6 +8,11 @@ html,
 body {
   overflow-x: hidden;
 }
+.break-anywhere {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
 
 @theme inline {
   --color-background: var(--background);

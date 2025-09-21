@@ -13,6 +13,7 @@ import {
 } from "./ui/Form";
 import BookingCalendar from "./BookingCalendar";
 import { createBooking, type ActionResponse } from "@/app/actions/booking";
+import toast from "react-hot-toast";
 
 const initialState: ActionResponse = {
   success: false,
@@ -36,11 +37,13 @@ export default function BookingForm() {
     try {
       const result = await createBooking(data);
       if (result.success) {
+        toast.success("Reservation created successfully!");
         router.refresh();
         router.push("/dashboard");
       }
       return result;
     } catch (err) {
+      toast.error("Failed to create reservation");
       return {
         success: false,
         message: (err as Error).message || "An error occurred",

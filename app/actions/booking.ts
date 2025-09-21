@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { bookingsRelations, calendarBookings } from "@/db/schema";
+import { calendarBookings } from "@/db/schema";
 import { getCurrentUser } from "@/lib/dal";
 import { z } from "zod";
 import { eq } from "drizzle-orm";
