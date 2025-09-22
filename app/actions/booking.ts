@@ -7,7 +7,6 @@ import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
 import { and } from "drizzle-orm";
-import toast from "react-hot-toast";
 
 const BookingSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),

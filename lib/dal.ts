@@ -2,7 +2,7 @@
 
 import { db } from "@/db";
 import { getSession } from "./auth";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { cache } from "react";
 import { calendarBookings, users } from "@/db/schema";
 import { unstable_cacheTag as cacheTag } from "next/cache";
@@ -52,5 +52,17 @@ export async function getReservations(userId?: string) {
   } catch (error) {
     console.error("Error fetching reservations:", error);
     throw new Error("Failed to fetch reservations");
+  }
+}
+
+export async function getAllUsers() {
+  try {
+    const result = await db.query.users.findMany({
+      orderBy: desc(users.createdAt),
+    });
+    return result;
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    throw new Error("Failed to fetch users");
   }
 }

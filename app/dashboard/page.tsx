@@ -16,9 +16,16 @@ export default async function DashboardPage() {
     <>
       <div className="flex flex-col mb-6">
         <span className="text-xl font-bold">Next lesson will be:</span>
-        <div>
+        <div className="mb-2">
           <span className="text-green-500">{getNextFridayFormatted()}</span>
           <span>{" at 6:00 pm"}</span>
+        </div>
+        <div className="md:w-1/2">
+          <p className="text-black dark:text-white">
+            Here you’ll see your reservations. You can only book one spot per
+            training. Once reserved, just come and enjoy your class at the
+            scheduled time!
+          </p>
         </div>
       </div>
       <h2 className="text-lg font-bold mb-4">My reservations:</h2>
