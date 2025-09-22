@@ -57,10 +57,12 @@ export async function getReservations(userId?: string) {
 
 export async function getAllUsers() {
   try {
-    const result = await db.query.users.findMany({
+    return await db.query.users.findMany({
       orderBy: desc(users.createdAt),
+      with: {
+        bookings: true,
+      },
     });
-    return result;
   } catch (error) {
     console.error("Error fetching users:", error);
     throw new Error("Failed to fetch users");
