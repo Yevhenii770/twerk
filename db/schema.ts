@@ -1,4 +1,11 @@
-import { pgTable, text, timestamp, serial } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  timestamp,
+  serial,
+  uniqueIndex,
+  date,
+} from "drizzle-orm/pg-core";
 import { InferSelectModel, relations } from "drizzle-orm";
 
 // Users table
@@ -10,14 +17,25 @@ export const users = pgTable("users", {
 });
 
 // Calendar bookings table
-export const calendarBookings = pgTable("calendar_bookings", {
-  id: serial("id").primaryKey(),
-  userId: text("user_id").notNull(),
-  name: text("name").notNull(),
-  description: text("description"),
-  date: text("date").notNull(), //
-  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
-});
+export const calendarBookings = pgTable(
+  "calendar_bookings",
+  {
+    id: serial("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id),
+    name: text("name").notNull(),
+    description: text("description"),
+    date: date("date").notNull(),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+  },
+  (table) => ({
+    uniqueUserDate: uniqueIndex("unique_user_date").on(
+      table.userId,
+      table.date
+    ),
+  })
+);
 
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({

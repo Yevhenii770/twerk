@@ -9,7 +9,8 @@
     "lint": "eslint",
     "seed": "tsx scripts/seed.ts",
     "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "migrate:prod": "drizzle-kit push --config=drizzle.config.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.1",

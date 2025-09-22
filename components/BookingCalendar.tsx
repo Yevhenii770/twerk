@@ -19,6 +19,9 @@ export default function BookingCalendar() {
         value={date}
         tileDisabled={({ date }) => date.getDay() !== 5}
         minDate={today}
+        tileClassName={({ date }) =>
+          date.getDay() === 5 ? "bg-green-100" : undefined
+        }
       />
 
       <input
@@ -29,7 +32,12 @@ export default function BookingCalendar() {
 
       <p className="mt-4">
         {date
-          ? `You selected: ${date.toDateString()}`
+          ? `You selected: ${date.toLocaleDateString("en-US", {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}`
           : "Select a date (Fridays only)"}
       </p>
     </div>
