@@ -86,7 +86,7 @@ body {
   @apply text-red-500;
 }
 
-/* Cards style */
+/* Class-Cards style */
 .card-disabled {
   background-color: #d1d5db;
   opacity: 0.6;

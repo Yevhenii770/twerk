@@ -11,7 +11,7 @@ export default async function ServerMenu() {
           Classes
         </Link>
 
-        <Link href="/about" className="px-6 py-3 hover:bg-blue-600">
+        <Link href="/about" className="px-6 py-3 hover:bg-blue-600 ">
           About
         </Link>
 

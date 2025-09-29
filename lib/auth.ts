@@ -5,9 +5,10 @@ import { db } from "@/db";
 import { users } from "@/db/schema";
 import * as jose from "jose";
 import { cache } from "react";
+import { eq } from "drizzle-orm";
 
 // JWT types
-interface JWTPayload {
+export interface JWTPayload {
   userId: string;
   [key: string]: string | number | boolean | null | undefined;
 }
@@ -27,7 +28,6 @@ const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
 const JWT_EXPIRATION = "7d"; // 7 days
 
 // Token refresh threshold (refresh if less than this time left)
-const REFRESH_THRESHOLD = 24 * 60 * 60; // 24 hours in seconds
 
 // Hash a password
 export async function hashPassword(password: string) {
@@ -59,8 +59,15 @@ export async function createUser(email: string, password: string) {
 // Create a session using JWT
 export async function createSession(userId: string) {
   try {
-    // Create JWT with user data
-    const token = await generateJWT({ userId });
+    // Fetch user to include role in the token
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, userId),
+    });
+
+    const role = user?.role ?? "user";
+
+    // Create JWT with user data (include role)
+    const token = await generateJWT({ userId, role });
 
     // Store JWT in a cookie
     const cookieStore = await cookies();
