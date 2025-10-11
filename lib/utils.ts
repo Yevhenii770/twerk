@@ -5,9 +5,7 @@ import { twMerge } from "tailwind-merge";
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
-export function mockDelay(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+
 
 // Next lesson date calculation
 export function getNextFridayFormatted(): string {
