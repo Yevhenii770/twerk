@@ -16,14 +16,14 @@ export function getNextFridayFormatted(): string {
   // when friday
   let diff = (5 - day + 7) % 7
   // if day is friday, return today
-  if (diff === 0) diff = 0;
+  if (diff === 0) diff = 7;
 // if day is after friday, return next friday
   const nextFriday = new Date(today);
   // date of next friday
   nextFriday.setDate(today.getDate() + diff);
 
 
-  return today.toLocaleDateString("en-US", {
+  return nextFriday.toLocaleDateString("en-US", {
     day: "numeric",
     month: "long",
   });
