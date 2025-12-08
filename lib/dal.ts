@@ -5,7 +5,6 @@ import { getSession } from "./auth";
 import { eq, desc } from "drizzle-orm";
 import { cache } from "react";
 import { calendarBookings, users } from "@/db/schema";
-import { unstable_cacheTag as cacheTag } from "next/cache";
 
 // Get user by email
 export const getUserByEmail = async (email: string) => {
@@ -38,8 +37,6 @@ export const getCurrentUser = cache(async () => {
 });
 
 export async function getReservations(userId?: string) {
-  "use cache";
-  cacheTag("reservations");
   try {
     const result = await db.query.calendarBookings.findMany({
       where: userId ? eq(calendarBookings.userId, userId) : undefined,
