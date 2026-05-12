@@ -11,28 +11,33 @@ export default function HeroVideo() {
     if (!video) return
 
     const isMobile = window.matchMedia('(max-width: 768px)').matches
-    if (isMobile) {
-      video.src = '/hero-video-mobile.mp4'
+    video.src = isMobile ? '/hero-video-mobile.mp4' : '/hero-video.mp4'
+    video.muted = true
+
+    const tryPlay = () => {
+      video.play()
+        .then(() => setPlaying(true))
+        .catch(() => {
+          // заблокировано (Telegram, Low Power Mode) — ждём касания
+          const unlock = () => {
+            video.play().then(() => setPlaying(true)).catch(() => {})
+          }
+          document.addEventListener('touchstart', unlock, { once: true })
+          document.addEventListener('click', unlock, { once: true })
+        })
     }
 
-    video.muted = true
-    video.play()
-      .then(() => setPlaying(true))
-      .catch(() => {
-        const unlock = () => {
-          video.play().then(() => setPlaying(true)).catch(() => {})
-        }
-        document.addEventListener('touchstart', unlock, { once: true })
-        document.addEventListener('click', unlock, { once: true })
-      })
+    // ждём пока браузер загрузит достаточно данных
+    video.addEventListener('canplay', tryPlay, { once: true })
+    video.load()
+
+    return () => video.removeEventListener('canplay', tryPlay)
   }, [])
 
   return (
     <div style={{ position: 'absolute', inset: 0 }}>
       <video
         ref={ref}
-        src="/hero-video.mp4"
-        autoPlay
         muted
         loop
         playsInline
