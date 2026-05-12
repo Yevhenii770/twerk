@@ -35,6 +35,11 @@ body {
   color: #111 !important;
 }
 
+/* White background override for admin/dashboard body */
+body:has(.light-page) {
+  background: #fff !important;
+}
+
 .break-anywhere {
   word-break: break-word;
   overflow-wrap: anywhere;
