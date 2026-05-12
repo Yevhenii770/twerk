@@ -4,8 +4,11 @@ import * as jose from "jose";
 import type { JWTPayload } from "./lib/auth";
 
 export async function middleware(req: NextRequest) {
+  if (!process.env.JWT_SECRET) {
+    return NextResponse.redirect(new URL("/signin", req.url));
+  }
+
   const token = req.cookies.get("auth_token")?.value;
-  // If the request is for the admin area, require an auth token and admin role
   if (!token) {
     return NextResponse.redirect(new URL("/signin", req.url));
   }
@@ -13,7 +16,7 @@ export async function middleware(req: NextRequest) {
   try {
     const { payload } = await jose.jwtVerify(
       token,
-      new TextEncoder().encode(process.env.JWT_SECRET!)
+      new TextEncoder().encode(process.env.JWT_SECRET)
     );
 
     // Require basic userId in payload

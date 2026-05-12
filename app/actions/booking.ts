@@ -1,100 +1,161 @@
 "use server";
 
 import { db } from "@/db";
-import { calendarBookings } from "@/db/schema";
-import { getCurrentUser } from "@/lib/dal";
+import { bookings } from "@/db/schema";
+import { eq, and } from "drizzle-orm";
 import { z } from "zod";
-import { eq } from "drizzle-orm";
+import { getCurrentUser } from "@/lib/dal";
 import { revalidateTag } from "next/cache";
-import { and } from "drizzle-orm";
+
+const CLASS_DAYS: Record<string, number> = {
+  twerk: 1,
+  highheels: 2,
+  stretching: 6,
+};
+
+const PRICES: Record<string, Record<string, number>> = {
+  twerk:      { dropin: 25, monthly: 80 },
+  highheels:  { dropin: 30, monthly: 100 },
+  stretching: { dropin: 20 },
+};
 
 const BookingSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  description: z.string().optional().nullable(),
-  date: z.string().min(1, "Date is required"),
+  name:        z.string().min(2, "Minimum 2 characters"),
+  phone:       z.string().min(10, "Enter a valid phone number").regex(/^[\d\s\-\+\(\)]{10,}$/, "Enter a valid phone number"),
+  email:       z.string().email().optional().or(z.literal("")),
+  classType:   z.enum(["twerk", "highheels", "stretching"]),
+  bookingType: z.enum(["dropin", "monthly"]).default("dropin"),
+  date:        z.string().min(1, "Select a date"),
 });
 
-export type BookingData = z.infer<typeof BookingSchema>;
+export async function createBooking(_: unknown, formData: FormData) {
+  const raw = {
+    name:        formData.get("name"),
+    phone:       formData.get("phone"),
+    email:       formData.get("email") || "",
+    classType:   formData.get("classType"),
+    bookingType: formData.get("bookingType") || "dropin",
+    date:        formData.get("date"),
+  };
 
-export type ActionResponse = {
-  success: boolean;
-  message: string;
-  errors?: Record<string, string[]>;
-  error?: string;
-};
-
-export const createBooking = async (
-  data: BookingData
-): Promise<ActionResponse> => {
-  try {
-    const user = await getCurrentUser();
-    if (!user) {
-      return {
-        success: false,
-        message: "Unauthorized access",
-        error: "Unauthorized",
-      };
-    }
-
-    const validationResult = BookingSchema.safeParse(data);
-    if (!validationResult.success) {
-      return {
-        success: false,
-        message: "Validation failed",
-        errors: validationResult.error.flatten().fieldErrors,
-      };
-    }
-
-    const validatedData = validationResult.data;
-
-    const existing = await db.query.calendarBookings.findFirst({
-      where: and(
-        eq(calendarBookings.userId, user.id),
-        eq(calendarBookings.date, validatedData.date)
-      ),
-    });
-
-    if (existing) {
-      return {
-        success: false,
-        message: "You already have a reservation for this date",
-      };
-    }
-
-    await db.insert(calendarBookings).values({
-      userId: user.id,
-      date: validatedData.date,
-      name: validatedData.name,
-      description: validatedData.description || null,
-    });
-
-    revalidateTag("reservations");
-
-    return { success: true, message: "Reservation created successfully" };
-  } catch (error) {
-    console.error("Error creating reservation:", error);
-    return {
-      success: false,
-      message: "An error occurred while creating the reservation",
-      error: "Failed to create reservation",
-    };
+  const parsed = BookingSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { success: false, errors: parsed.error.flatten().fieldErrors };
   }
-};
+
+  const { name, phone, email, classType, bookingType, date } = parsed.data;
+
+  const dayOfWeek = new Date(date + "T12:00:00").getDay();
+  if (dayOfWeek !== CLASS_DAYS[classType]) {
+    return { success: false, errors: { date: ["Wrong day for this class"] } };
+  }
+
+  const price = PRICES[classType]?.[bookingType];
+  if (price === undefined) {
+    return { success: false, errors: { _: ["Invalid booking type for this class"] } };
+  }
+
+  const existing = await db.select({ id: bookings.id }).from(bookings)
+    .where(and(
+      eq(bookings.phone, phone),
+      eq(bookings.classType, classType),
+      eq(bookings.date, date),
+    ))
+    .limit(1);
+
+  if (existing.length > 0) {
+    return { success: false, errors: { date: ["You already have a booking for this class on this date"] } };
+  }
+
+  try {
+    await db.insert(bookings).values({
+      name,
+      phone,
+      email: email || null,
+      classType,
+      bookingType,
+      date,
+      price,
+      status: "pending",
+    });
+
+    revalidateTag("bookings");
+    await sendTelegramNotification({ name, phone, email: email || null, classType, bookingType, date, price });
+    return { success: true, data: { name, classType, date, price, bookingType } };
+  } catch {
+    return { success: false, errors: { _: ["Something went wrong, please try again"] } };
+  }
+}
+
+export async function updateBookingStatus(id: number, status: string) {
+  const user = await getCurrentUser();
+  if (!user || user.role !== "admin") return { success: false };
+  await db.update(bookings).set({ status }).where(eq(bookings.id, id));
+  revalidateTag("bookings");
+  return { success: true };
+}
 
 export async function deleteBooking(id: number) {
-  try {
-    const user = await getCurrentUser();
-    if (!user) {
-      throw new Error("Unauthorized");
-    }
-    await db.delete(calendarBookings).where(eq(calendarBookings.id, id));
-    revalidateTag("reservations");
-  } catch (error) {
-    console.error("Error deleting issue:", error);
-    return {
-      success: false,
-      message: "An error occurred while deleting the issue",
-      error: "Failed to delete issue",
-    };
-  }
+  const user = await getCurrentUser();
+  if (!user || user.role !== "admin") return { success: false };
+  await db.delete(bookings).where(eq(bookings.id, id));
+  revalidateTag("bookings");
+  return { success: true };
+}
+
+const CLASS_LABELS: Record<string, string> = {
+  twerk:     "Twerk",
+  highheels: "High Heels",
+  stretching: "Stretching",
+};
+
+async function sendTelegramNotification(data: {
+  name: string;
+  phone: string;
+  email: string | null;
+  classType: string;
+  bookingType: string;
+  date: string;
+  price: number;
+}) {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_CHAT_ID;
+  if (!token || !chatId) return;
+
+  const dateFormatted = new Date(data.date + "T12:00:00").toLocaleDateString("en-US", {
+    weekday: "long", month: "long", day: "numeric", year: "numeric",
+  });
+
+  const typeLabel = data.bookingType === "monthly" ? "Monthly pass · 4 classes" : "Drop-in";
+  const classLabel = CLASS_LABELS[data.classType] ?? data.classType;
+
+  const lines = [
+    `🎉 <b>New Booking — ${classLabel}</b>`,
+    `<blockquote>`,
+    `👤  <b>Name</b>`,
+    `     ${data.name}`,
+    ``,
+    `📱  <b>Phone</b>`,
+    `     ${data.phone}`,
+    data.email ? `\n📧  <b>Email</b>\n     ${data.email}` : null,
+    ``,
+    `💃  <b>Class</b>`,
+    `     ${classLabel}`,
+    ``,
+    `🗓  <b>Date</b>`,
+    `     ${dateFormatted}`,
+    ``,
+    `🎟  <b>Type</b>`,
+    `     ${typeLabel}`,
+    ``,
+    `💵  <b>Price</b>`,
+    `     $${data.price}`,
+    `</blockquote>`,
+  ].filter((l) => l !== null).join("\n");
+
+  await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chat_id: chatId, text: lines, parse_mode: "HTML" }),
+  }).catch(() => {});
 }

@@ -4,67 +4,40 @@ import { db } from "@/db";
 import { getSession } from "./auth";
 import { eq, desc } from "drizzle-orm";
 import { cache } from "react";
-import { calendarBookings, users } from "@/db/schema";
-import { unstable_cacheTag as cacheTag } from "next/cache";
+import { unstable_cache } from "next/cache";
+import { bookings, users } from "@/db/schema";
 
-// Get user by email
 export const getUserByEmail = async (email: string) => {
   try {
-    const user = await db.query.users.findFirst({
-      where: eq(users.email, email),
-    });
-    return user;
-  } catch (e) {
-    console.error(e);
+    return await db.query.users.findFirst({ where: eq(users.email, email) });
+  } catch {
     return null;
   }
 };
 
-//Get current user
 export const getCurrentUser = cache(async () => {
   const session = await getSession();
   if (!session) return null;
-
   try {
-    const result = await db
-      .select()
-      .from(users)
-      .where(eq(users.id, session.userId));
+    const result = await db.select().from(users).where(eq(users.id, session.userId));
     return result[0] || null;
-  } catch (e) {
-    console.error("Error getting user by ID:", e);
+  } catch {
     return null;
   }
 });
 
-export async function getReservations(userId?: string) {
-  "use cache";
-  cacheTag("reservations");
-  try {
-    const result = await db.query.calendarBookings.findMany({
-      where: userId ? eq(calendarBookings.userId, userId) : undefined,
-      with: {
-        user: true,
-      },
-      orderBy: (calendarBookings, { desc }) => [desc(calendarBookings.date)],
-    });
-    return result;
-  } catch (error) {
-    console.error("Error fetching reservations:", error);
-    throw new Error("Failed to fetch reservations");
-  }
-}
+export const getAllBookings = unstable_cache(
+  async () => db.select().from(bookings).orderBy(desc(bookings.date)),
+  ["all-bookings"],
+  { tags: ["bookings"] }
+);
+
+export const getBookingsByStatus = unstable_cache(
+  async (status: string) => db.select().from(bookings).where(eq(bookings.status, status)).orderBy(desc(bookings.date)),
+  ["bookings-by-status"],
+  { tags: ["bookings"] }
+);
 
 export async function getAllUsers() {
-  try {
-    return await db.query.users.findMany({
-      orderBy: desc(users.createdAt),
-      with: {
-        bookings: true,
-      },
-    });
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    throw new Error("Failed to fetch users");
-  }
+  return db.select().from(users).orderBy(desc(users.createdAt));
 }

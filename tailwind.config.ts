@@ -9,43 +9,46 @@ const config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
+        heading: ["var(--font-cormorant)", "Georgia", "serif"],
+        sans: ["var(--font-montserrat)", "system-ui", "sans-serif"],
       },
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
-        primary: {
-          50: "#faf5ff",
-          100: "#f3e8ff",
-          200: "#e9d5ff",
-          300: "#d8b4fe",
-          400: "#c084fc",
-          500: "#a855f7",
-          600: "#9333ea",
-          700: "#7e22ce",
-          800: "#6b21a8",
-          900: "#581c87",
-          950: "#3b0764",
+        // Design palette
+        gold: {
+          light: "#E2C78A",
+          DEFAULT: "#C9A96E",
+          dark: "#A8883D",
+        },
+        rose: {
+          light: "#F08090",
+          DEFAULT: "#E8637A",
+          dark: "#C94060",
+        },
+        cream: {
+          DEFAULT: "#F5EDE0",
+          muted: "#D9C9B5",
         },
         dark: {
-          base: "#121212",
+          base: "#0D0D0D",
           elevated: "#1A1A1A",
           high: "#222222",
           border: {
             subtle: "#2A2A2A",
-            default: "#333333",
+            DEFAULT: "#333333",
             medium: "#444444",
             strong: "#555555",
           },
         },
       },
       boxShadow: {
-        mode: "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)",
+        gold: "0 0 20px rgba(201, 169, 110, 0.15)",
+        rose: "0 0 20px rgba(232, 99, 122, 0.2)",
       },
     },
   },
   plugins: [],
-  darkMode: "media",
 } satisfies Config;
 
 export default config;

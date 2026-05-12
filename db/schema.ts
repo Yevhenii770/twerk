@@ -3,12 +3,11 @@ import {
   text,
   timestamp,
   serial,
-  uniqueIndex,
+  integer,
   date,
 } from "drizzle-orm/pg-core";
-import { InferSelectModel, relations } from "drizzle-orm";
+import { InferSelectModel } from "drizzle-orm";
 
-// Users table
 export const users = pgTable("users", {
   id: text("id").primaryKey(),
   email: text("email").notNull().unique(),
@@ -17,39 +16,19 @@ export const users = pgTable("users", {
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
 });
 
-// Calendar bookings table
-export const calendarBookings = pgTable(
-  "calendar_bookings",
-  {
-    id: serial("id").primaryKey(),
-    userId: text("user_id")
-      .notNull()
-      .references(() => users.id),
-    name: text("name").notNull(),
-    description: text("description"),
-    date: date("date").notNull(),
-    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
-  },
-  (table) => ({
-    uniqueUserDate: uniqueIndex("unique_user_date").on(
-      table.userId,
-      table.date
-    ),
-  })
-);
+export const bookings = pgTable("bookings", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  phone: text("phone").notNull(),
+  email: text("email"),
+  classType: text("class_type").notNull(), // twerk | highheels | stretching
+  bookingType: text("booking_type").default("dropin").notNull(), // dropin | monthly
+  date: date("date").notNull(),
+  price: integer("price").notNull(),
+  status: text("status").default("pending").notNull(), // pending | confirmed | paid | cancelled
+  adminNotes: text("admin_notes"),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+});
 
-// Relations
-export const usersRelations = relations(users, ({ many }) => ({
-  bookings: many(calendarBookings),
-}));
-
-export const bookingsRelations = relations(calendarBookings, ({ one }) => ({
-  user: one(users, {
-    fields: [calendarBookings.userId],
-    references: [users.id],
-  }),
-}));
-
-// Types
 export type User = InferSelectModel<typeof users>;
-export type CalendarBooking = InferSelectModel<typeof calendarBookings>;
+export type Booking = InferSelectModel<typeof bookings>;

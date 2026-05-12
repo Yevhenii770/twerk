@@ -78,7 +78,7 @@ export async function createSession(userId: string) {
       secure: process.env.NODE_ENV === "production",
       maxAge: 60 * 60 * 24 * 7, // 1 week
       path: "/",
-      sameSite: "lax",
+      sameSite: "strict",
     });
 
     return true;

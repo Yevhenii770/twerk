@@ -16,7 +16,7 @@ export function DeleteReservationButton({ id }: DeleteReservationButtonProps) {
       const result = await deleteBooking(id);
 
       if (!result || !result.success) {
-        throw new Error(result?.error || "Failed to delete reservation");
+        throw new Error("Failed to delete reservation");
       }
       router.refresh();
     } catch (error) {
