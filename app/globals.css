@@ -110,6 +110,11 @@ body:has(.light-page) {
   backdrop-filter: blur(16px);
   border-bottom-color: var(--border);
 }
+.mk-header.menu-open {
+  background: var(--cream);
+  border-bottom-color: var(--border);
+}
+.mk-header.menu-open .mk-hamburger span { background: var(--dark); }
 .mk-header .header-logo img { height: 36px; width: auto; }
 .mk-header .nav-links { display: flex; gap: 0; }
 .mk-header .nav-links a {

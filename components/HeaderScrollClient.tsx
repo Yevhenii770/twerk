@@ -46,14 +46,25 @@ export default function HeaderScrollClient({ user }: { user?: { role: string } |
   const scrollTo = (id: string) => (e: React.MouseEvent) => {
     if (isHome) {
       e.preventDefault()
-      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
     }
+    // Restore body before scrolling (fixed body blocks scrollIntoView)
+    const top = document.body.style.top
+    document.body.style.overflow = ''
+    document.body.style.position = ''
+    document.body.style.top = ''
+    document.body.style.width = ''
+    if (top) window.scrollTo(0, -parseInt(top))
     setMenuOpen(false)
+    if (isHome) {
+      requestAnimationFrame(() => {
+        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
+      })
+    }
   }
 
   return (
     <>
-      <header className={`mk-header${scrolled ? ' scrolled' : ''}`}>
+      <header className={`mk-header${scrolled ? ' scrolled' : ''}${menuOpen ? ' menu-open' : ''}`}>
         <Link href="/" className="header-logo">
           <Image src="/logo.png" alt="bounce lab" width={120} height={36} priority />
         </Link>
