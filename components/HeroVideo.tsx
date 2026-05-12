@@ -8,10 +8,14 @@ export default function HeroVideo() {
   useEffect(() => {
     const video = ref.current
     if (!video) return
+
+    const isMobile = window.matchMedia('(max-width: 768px)').matches
+    const src = isMobile ? '/hero-video-mobile.mp4' : '/hero-video.mp4'
+
+    video.src = src
     video.muted = true
-    video.play().catch(() => {
-      // autoplay blocked — видео останется на poster
-    })
+    video.load()
+    video.play().catch(() => {})
   }, [])
 
   return (
@@ -24,8 +28,6 @@ export default function HeroVideo() {
       preload="auto"
       poster="/studio.jpg"
       style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-    >
-      <source src="/hero-video.mp4" type="video/mp4" />
-    </video>
+    />
   )
 }
