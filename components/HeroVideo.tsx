@@ -11,20 +11,16 @@ export default function HeroVideo() {
     if (!video) return
 
     const isMobile = window.matchMedia('(max-width: 768px)').matches
-    video.src = isMobile ? '/hero-video-mobile.mp4' : '/hero-video.mp4'
-    video.muted = true
-    video.load()
+    if (isMobile) {
+      video.src = '/hero-video-mobile.mp4'
+    }
 
+    video.muted = true
     video.play()
       .then(() => setPlaying(true))
       .catch(() => {
-        // Telegram / restricted browser — wait for user tap
         const unlock = () => {
-          video.play().then(() => {
-            setPlaying(true)
-            document.removeEventListener('touchstart', unlock)
-            document.removeEventListener('click', unlock)
-          }).catch(() => {})
+          video.play().then(() => setPlaying(true)).catch(() => {})
         }
         document.addEventListener('touchstart', unlock, { once: true })
         document.addEventListener('click', unlock, { once: true })
@@ -35,6 +31,7 @@ export default function HeroVideo() {
     <div style={{ position: 'absolute', inset: 0 }}>
       <video
         ref={ref}
+        src="/hero-video.mp4"
         autoPlay
         muted
         loop
@@ -43,7 +40,6 @@ export default function HeroVideo() {
         poster="/studio.jpg"
         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
       />
-      {/* Показываем poster пока видео не играет */}
       {!playing && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
