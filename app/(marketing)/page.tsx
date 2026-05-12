@@ -3,6 +3,7 @@ import Link from 'next/link'
 import ClassesWithModals from '@/components/ClassesWithModals'
 import WeekCalendarClient from '@/components/WeekCalendarClient'
 import { fetchInstagramPosts } from '@/lib/instagram'
+import HeroVideo from '@/components/HeroVideo'
 
 const INSTA_SVG = (
   <svg viewBox="0 0 24 24" fill="currentColor" style={{ width: 12, height: 12, color: 'var(--pink)' }}>
@@ -36,9 +37,7 @@ export default async function HomePage() {
       {/* ═══ HERO ═══ */}
       <section className="mk-hero">
         <div className="mk-hero-video">
-          <video autoPlay muted loop playsInline poster="/studio.jpg">
-            <source src="/hero-video.mp4" type="video/mp4" />
-          </video>
+          <HeroVideo />
         </div>
         <div className="mk-hero-overlay" />
         <div className="mk-hero-content">
