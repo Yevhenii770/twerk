@@ -19,7 +19,7 @@ const montserrat = Montserrat({
 
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://bouncelab.nyc"),
+  metadataBase: new URL("https://bounce-lab.com"),
   title: {
     default: "Bounce Lab — Twerk, High Heels & Stretching Classes in Portland, OR",
     template: "%s | Bounce Lab Dance Studio Portland",
@@ -45,7 +45,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "bounce lab — Twerk, High Heels & Stretching in Portland, OR",
     description: "Judgment-free dance studio for women in Portland, Oregon. Twerk · High Heels · Stretching. Drop-in from $20. Book your spot online.",
-    url: "https://bouncelab.nyc",
+    url: "https://bounce-lab.com",
     siteName: "bounce lab Dance Studio",
     images: [{ url: "/studio.jpg", width: 1200, height: 630, alt: "bounce lab Dance Studio Portland Oregon" }],
     type: "website",
@@ -63,7 +63,7 @@ export const metadata: Metadata = {
     googleBot: { index: true, follow: true, "max-image-preview": "large" },
   },
   alternates: {
-    canonical: "https://bouncelab.nyc",
+    canonical: "https://bounce-lab.com",
   },
 };
 
@@ -72,7 +72,7 @@ const jsonLd = {
   "@type": "DanceSchool",
   "name": "bounce lab Dance Studio",
   "description": "Twerk, High Heels & Stretching dance classes in Portland, Oregon. Beginner-friendly, judgment-free studio for women.",
-  "url": "https://bouncelab.nyc",
+  "url": "https://bounce-lab.com",
   "telephone": "+16465554567",
   "email": "hello@bouncelab.com",
   "address": {
