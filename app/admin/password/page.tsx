@@ -10,14 +10,16 @@ export default function ChangePasswordPage() {
   return (
     <div className="light-page" style={{ minHeight: '100vh', background: '#fff', color: '#111', fontFamily: 'inherit' }}>
       {/* Header */}
-      <div style={{ borderBottom: '2px solid #111', padding: '20px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#111' }}>
-        <div>
-          <p style={{ fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#C9A96E', marginBottom: 4 }}>bounce lab</p>
-          <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, color: '#fff' }}>Change Password</h1>
+      <div style={{ borderBottom: '2px solid #111', background: '#111' }}>
+        <div style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <p style={{ fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#C9A96E', marginBottom: 4 }}>bounce lab</p>
+            <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0, color: '#fff' }}>Change Password</h1>
+          </div>
+          <Link href="/admin" style={{ fontSize: 12, color: '#fff', textDecoration: 'none', border: '1px solid #555', padding: '7px 14px', whiteSpace: 'nowrap' }}>
+            ← Admin
+          </Link>
         </div>
-        <Link href="/admin" style={{ fontSize: 12, color: '#fff', textDecoration: 'none', border: '1px solid #555', padding: '6px 14px' }}>
-          ← Admin
-        </Link>
       </div>
 
       <div style={{ maxWidth: 480, margin: '60px auto', padding: '0 24px' }}>

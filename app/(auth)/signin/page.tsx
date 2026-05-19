@@ -16,7 +16,7 @@ export default function SignInPage() {
       const result = await signIn(formData);
       if (result.success) {
         toast.success("Signed in successfully");
-        router.push("/dashboard");
+        router.push("/admin");
         router.refresh();
       }
       return result;

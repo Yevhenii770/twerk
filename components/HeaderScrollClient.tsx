@@ -78,7 +78,7 @@ export default function HeaderScrollClient({ user }: { user?: { role: string } |
 
         <div className="header-right">
           {user && (
-            <Link href={user.role === 'admin' ? '/admin' : '/dashboard'} className="btn-signin">
+            <Link href={'/admin'} className="btn-signin">
               Dashboard
             </Link>
           )}
@@ -100,7 +100,7 @@ export default function HeaderScrollClient({ user }: { user?: { role: string } |
         <Link href="/#pricing" onClick={scrollTo('pricing')}>Pricing</Link>
         <Link href="/#about" onClick={scrollTo('about')}>Studio</Link>
         {user && (
-          <Link href={user.role === 'admin' ? '/admin' : '/dashboard'} onClick={close}>
+          <Link href={'/admin'} onClick={close}>
             Dashboard
           </Link>
         )}

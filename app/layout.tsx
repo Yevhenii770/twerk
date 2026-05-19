@@ -57,6 +57,13 @@ export const metadata: Metadata = {
     description: "Twerk, High Heels & Stretching for women in Portland, Oregon. Beginner-friendly. Book online.",
     images: ["/studio.jpg"],
   },
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "32x32", type: "image/x-icon" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/favicon.ico",
+  },
   robots: {
     index: true,
     follow: true,
