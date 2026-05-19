@@ -46,9 +46,21 @@ export default async function DashboardPage({
   return (
     <div style={{ color: "#111" }}>
       {/* Header */}
-      <div style={{ marginBottom: 28 }}>
-        <p style={{ fontSize: 10, letterSpacing: "0.3em", textTransform: "uppercase", color: "#C9A96E", marginBottom: 4 }}>bounce lab</p>
-        <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0, color: "#111" }}>Bookings</h1>
+      <div style={{ marginBottom: 28, display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+        <div>
+          <p style={{ fontSize: 10, letterSpacing: "0.3em", textTransform: "uppercase", color: "#C9A96E", marginBottom: 4 }}>bounce lab</p>
+          <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0, color: "#111" }}>Bookings</h1>
+        </div>
+        <Link
+          href="/admin"
+          style={{
+            fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase",
+            fontWeight: 700, color: "#fff", background: "#111",
+            padding: "10px 20px", textDecoration: "none",
+          }}
+        >
+          Admin Panel →
+        </Link>
       </div>
 
       {/* Stats */}
