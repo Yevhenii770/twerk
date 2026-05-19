@@ -5,7 +5,8 @@ import { getSession } from "./auth";
 import { eq, desc } from "drizzle-orm";
 import { cache } from "react";
 import { unstable_cache } from "next/cache";
-import { bookings, users } from "@/db/schema";
+import { bookings, users, schedules } from "@/db/schema";
+import { DEFAULT_SCHEDULES } from "./classes";
 
 export const getUserByEmail = async (email: string) => {
   try {
@@ -41,3 +42,14 @@ export const getBookingsByStatus = unstable_cache(
 export async function getAllUsers() {
   return db.select().from(users).orderBy(desc(users.createdAt));
 }
+
+export const getSchedule = unstable_cache(
+  async () => {
+    const rows = await db.select().from(schedules);
+    if (rows.length > 0) return rows;
+    await db.insert(schedules).values(DEFAULT_SCHEDULES);
+    return DEFAULT_SCHEDULES.map(r => ({ ...r, updatedAt: new Date() }));
+  },
+  ["schedule"],
+  { tags: ["schedule"] }
+);

@@ -8,6 +8,16 @@ import {
 } from "drizzle-orm/pg-core";
 import { InferSelectModel } from "drizzle-orm";
 
+export const schedules = pgTable("schedules", {
+  classType:   text("class_type").primaryKey(),
+  dayOfWeek:   integer("day_of_week").notNull(),
+  timeDisplay: text("time_display").notNull(),
+  duration:    text("duration").notNull(),
+  updatedAt:   timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
+});
+
+export type Schedule = InferSelectModel<typeof schedules>;
+
 export const users = pgTable("users", {
   id: text("id").primaryKey(),
   email: text("email").notNull().unique(),

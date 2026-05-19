@@ -4,6 +4,8 @@ import ClassesWithModals from '@/components/ClassesWithModals'
 import WeekCalendarClient from '@/components/WeekCalendarClient'
 import { fetchInstagramPosts } from '@/lib/instagram'
 import HeroVideo from '@/components/HeroVideo'
+import { getSchedule } from '@/lib/dal'
+import { DAY_SHORT } from '@/lib/classes'
 
 const INSTA_SVG = (
   <svg viewBox="0 0 24 24" fill="currentColor" style={{ width: 12, height: 12, color: 'var(--pink)' }}>
@@ -31,7 +33,8 @@ const instaOverlay = (
 )
 
 export default async function HomePage() {
-  const instaPosts = await fetchInstagramPosts()
+  const [instaPosts, schedule] = await Promise.all([fetchInstagramPosts(), getSchedule()])
+  const scheduleDays = schedule.map(s => DAY_SHORT[s.dayOfWeek]).join(' · ')
   return (
     <>
       {/* ═══ HERO ═══ */}
@@ -66,7 +69,7 @@ export default async function HomePage() {
           <span className="mk-stat-label">Three Directions</span>
         </div>
         <div className="mk-stat">
-          <span className="mk-stat-val">Mon · Tue · Sat</span>
+          <span className="mk-stat-val">{scheduleDays}</span>
           <span className="mk-stat-label">Classes Every Week</span>
         </div>
         <div className="mk-stat">
@@ -84,7 +87,7 @@ export default async function HomePage() {
           </div>
           <span className="mk-schedule-note">3 directions · all levels welcome</span>
         </div>
-        <ClassesWithModals />
+        <ClassesWithModals schedule={schedule} />
       </section>
 
       {/* ═══ INSTRUCTOR / ABOUT ═══ */}
@@ -122,7 +125,7 @@ export default async function HomePage() {
           </div>
           <span className="mk-schedule-note">3 classes · every week</span>
         </div>
-        <WeekCalendarClient />
+        <WeekCalendarClient schedule={schedule} />
       </section>
 
       {/* ═══ PRICING ═══ */}

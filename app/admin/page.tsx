@@ -60,6 +60,9 @@ export default async function AdminPage({
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
           <span style={{ fontSize: 13, color: "#CCC" }}>{currentUser.email}</span>
+          <Link href="/admin/schedule" style={{ fontSize: 12, color: "#C9A96E", textDecoration: "none", border: "1px solid #C9A96E", padding: "6px 14px" }}>
+            Edit Schedule
+          </Link>
           <Link href="/admin/password" style={{ fontSize: 12, color: "#CCC", textDecoration: "none", border: "1px solid #555", padding: "6px 14px" }}>
             Change Password
           </Link>

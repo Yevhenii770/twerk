@@ -3,18 +3,7 @@
 import { useActionState, useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createBooking } from '@/app/actions/booking'
-
-type ClassType = 'twerk' | 'highheels' | 'stretching'
-
-const CLASS_INFO = {
-  twerk:      { label: 'Twerk',      day: 1, dayName: 'Mondays',   dropin: 25, monthly: 80  },
-  highheels:  { label: 'High Heels', day: 2, dayName: 'Tuesdays',  dropin: 30, monthly: 100 },
-  stretching: { label: 'Stretching', day: 6, dayName: 'Saturdays', dropin: 20, monthly: null },
-}
-
-const TIME_MAP = {
-  twerk: '4:00–5:00 PM', highheels: '7:00–8:00 PM', stretching: '11:00 AM–12:20 PM',
-}
+import { CLASS_STATIC, CLASS_IDS, DAY_NAMES, type ClassId, type ClassSchedule } from '@/lib/classes'
 
 function getNextDates(dayOfWeek: number, count = 8): string[] {
   const dates: string[] = []
@@ -22,9 +11,7 @@ function getNextDates(dayOfWeek: number, count = 8): string[] {
   d.setHours(0, 0, 0, 0)
   d.setDate(d.getDate() + 1)
   while (dates.length < count) {
-    if (d.getDay() === dayOfWeek) {
-      dates.push(d.toISOString().split('T')[0])
-    }
+    if (d.getDay() === dayOfWeek) dates.push(d.toISOString().split('T')[0])
     d.setDate(d.getDate() + 1)
   }
   return dates
@@ -46,19 +33,22 @@ function getMonthlyDates(startIso: string): string[] {
   return dates
 }
 
-export default function BookingFormNew() {
+export default function BookingFormNew({ schedule }: { schedule: ClassSchedule[] }) {
   const searchParams = useSearchParams()
-  const paramClass = searchParams.get('class') as ClassType | null
+  const paramClass = searchParams.get('class') as ClassId | null
   const [state, action, pending] = useActionState(createBooking, null)
-  const [classType, setClassType] = useState<ClassType>(
-    (paramClass && CLASS_INFO[paramClass]) ? paramClass : 'twerk'
+  const [classType, setClassType] = useState<ClassId>(
+    (paramClass && CLASS_IDS.includes(paramClass)) ? paramClass : 'twerk'
   )
   const [bookingType, setBookingType] = useState<'dropin' | 'monthly'>('dropin')
   const [selectedDate, setSelectedDate] = useState('')
 
-  const info = CLASS_INFO[classType]
-  const dates = getNextDates(info.day)
-  const price = bookingType === 'monthly' ? info.monthly : info.dropin
+  const scheduleMap = Object.fromEntries(schedule.map(s => [s.classType, s]))
+  const sched = scheduleMap[classType]
+  const staticInfo = CLASS_STATIC[classType]
+  const dayName = sched ? DAY_NAMES[sched.dayOfWeek] : ''
+  const dayNamePlural = dayName ? dayName + 's' : ''
+  const dates = sched ? getNextDates(sched.dayOfWeek) : []
 
   useEffect(() => {
     setSelectedDate('')
@@ -69,7 +59,7 @@ export default function BookingFormNew() {
 
   if (state?.success && state.data) {
     const { name, classType: ct, date, price: p, bookingType: bt } = state.data
-    const label = CLASS_INFO[ct as ClassType]?.label
+    const label = CLASS_STATIC[ct as ClassId]?.label
     return (
       <div style={{ maxWidth: 560, margin: '0 auto', padding: '48px 24px', textAlign: 'center' }}>
         <p className="mk-eyebrow" style={{ justifyContent: 'center', display: 'flex' }}>Booking confirmed</p>
@@ -101,10 +91,7 @@ export default function BookingFormNew() {
             </p>
           </div>
         </div>
-        <button
-          className="btn-join"
-          onClick={() => window.location.reload()}
-        >
+        <button className="btn-join" onClick={() => window.location.reload()}>
           Book another class
         </button>
       </div>
@@ -118,7 +105,7 @@ export default function BookingFormNew() {
       <div style={{ marginBottom: 36 }}>
         <p className="mk-eyebrow" style={{ marginBottom: 14 }}>Choose class</p>
         <div style={{ display: 'flex', gap: 1, background: 'var(--border)' }}>
-          {(Object.entries(CLASS_INFO) as [ClassType, typeof CLASS_INFO[ClassType]][]).map(([key, val]) => (
+          {CLASS_IDS.map(key => (
             <button
               key={key}
               type="button"
@@ -131,12 +118,12 @@ export default function BookingFormNew() {
                 transition: 'all 0.2s',
               }}
             >
-              {val.label}
+              {CLASS_STATIC[key].label}
             </button>
           ))}
         </div>
         <p style={{ fontSize: 11, color: 'var(--mid)', marginTop: 10 }}>
-          {info.dayName} · {TIME_MAP[classType]}
+          {dayNamePlural} · {sched?.timeDisplay ?? ''}
         </p>
       </div>
 
@@ -149,9 +136,9 @@ export default function BookingFormNew() {
         <div style={{ marginBottom: 32 }}>
           <p className="mk-eyebrow" style={{ marginBottom: 14 }}>Booking type</p>
           <div style={{ display: 'flex', gap: 1, background: 'var(--border)' }}>
-            <TypeBtn active={bookingType === 'dropin'} onClick={() => setBookingType('dropin')} label="Drop-in" price={`$${info.dropin}`} />
-            {info.monthly && (
-              <TypeBtn active={bookingType === 'monthly'} onClick={() => setBookingType('monthly')} label="Monthly pass" price={`$${info.monthly} / 4 classes`} />
+            <TypeBtn active={bookingType === 'dropin'} onClick={() => setBookingType('dropin')} label="Drop-in" price={`$${staticInfo.dropin}`} />
+            {staticInfo.monthly && (
+              <TypeBtn active={bookingType === 'monthly'} onClick={() => setBookingType('monthly')} label="Monthly pass" price={`$${staticInfo.monthly} / 4 classes`} />
             )}
           </div>
         </div>
@@ -185,7 +172,6 @@ export default function BookingFormNew() {
             ))}
           </div>
 
-          {/* Monthly: show 4 included classes */}
           {bookingType === 'monthly' && selectedDate && (
             <div style={{ marginTop: 1, background: 'var(--border)', display: 'flex', flexDirection: 'column', gap: 1 }}>
               {getMonthlyDates(selectedDate).map((d, i) => (
@@ -224,7 +210,7 @@ export default function BookingFormNew() {
           <div>
             <span style={{ fontSize: 11, color: 'var(--mid)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Total</span>
             <p style={{ fontFamily: 'var(--font-cormorant)', fontSize: 40, fontStyle: 'italic', fontWeight: 300, color: 'var(--dark)', lineHeight: 1 }}>
-              ${price}
+              ${bookingType === 'monthly' ? staticInfo.monthly : staticInfo.dropin}
             </p>
           </div>
           <button

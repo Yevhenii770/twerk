@@ -4,14 +4,8 @@ import { db } from "@/db";
 import { bookings } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { z } from "zod";
-import { getCurrentUser } from "@/lib/dal";
+import { getCurrentUser, getSchedule } from "@/lib/dal";
 import { revalidateTag } from "next/cache";
-
-const CLASS_DAYS: Record<string, number> = {
-  twerk: 1,
-  highheels: 2,
-  stretching: 6,
-};
 
 const PRICES: Record<string, Record<string, number>> = {
   twerk:      { dropin: 25, monthly: 80 },
@@ -45,8 +39,10 @@ export async function createBooking(_: unknown, formData: FormData) {
 
   const { name, phone, email, classType, bookingType, date } = parsed.data;
 
+  const schedule = await getSchedule();
+  const classSchedule = schedule.find(s => s.classType === classType);
   const dayOfWeek = new Date(date + "T12:00:00").getDay();
-  if (dayOfWeek !== CLASS_DAYS[classType]) {
+  if (!classSchedule || dayOfWeek !== classSchedule.dayOfWeek) {
     return { success: false, errors: { date: ["Wrong day for this class"] } };
   }
 

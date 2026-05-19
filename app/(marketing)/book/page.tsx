@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 import BookingFormNew from '@/components/BookingFormNew'
 import type { Metadata } from 'next'
+import { getSchedule } from '@/lib/dal'
 
 export const metadata: Metadata = {
   title: "Book a Dance Class in Portland, OR",
@@ -13,7 +14,8 @@ export const metadata: Metadata = {
   },
 }
 
-export default function BookPage() {
+export default async function BookPage() {
+  const schedule = await getSchedule()
   return (
     <section style={{ minHeight: '100vh', paddingTop: 40 }}>
       <div style={{ borderBottom: '1px solid var(--border)', padding: '52px 72px 40px' }}>
@@ -21,7 +23,7 @@ export default function BookPage() {
         <h1 className="mk-section-title">Book a Class</h1>
       </div>
       <Suspense fallback={<div style={{ padding: 48, color: 'var(--mid)', fontSize: 14 }}>Loading...</div>}>
-        <BookingFormNew />
+        <BookingFormNew schedule={schedule} />
       </Suspense>
     </section>
   )
