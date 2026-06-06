@@ -57,9 +57,12 @@ export const getSchedule = unstable_cache(
 export const getClassSettings = unstable_cache(
   async () => {
     const rows = await db.select().from(classSettings);
-    return Object.fromEntries(
-      rows.map(r => [r.classType, { photoPosition: r.photoPosition, photoUrl: r.photoUrl ?? null }])
-    ) as Record<string, { photoPosition: string; photoUrl: string | null }>;
+    return Object.fromEntries(rows.map(r => [r.classType, {
+      photoPosition: r.photoPosition,
+      photoUrl:      r.photoUrl ?? null,
+      desc:          r.desc ?? null,
+      modalTexts:    r.modalTexts ? (JSON.parse(r.modalTexts) as string[]) : null,
+    }])) as Record<string, { photoPosition: string; photoUrl: string | null; desc: string | null; modalTexts: string[] | null }>;
   },
   ["class-settings"],
   { tags: ["class-settings"] }

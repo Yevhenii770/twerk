@@ -21,6 +21,21 @@ export async function updatePhotoPosition(classType: string, photoPosition: stri
   revalidateTag("class-settings");
 }
 
+export async function updateClassText(classType: string, desc: string, modalTexts: string[]) {
+  const user = await getCurrentUser();
+  if (!user || user.role !== "admin") redirect("/");
+
+  await db
+    .insert(classSettings)
+    .values({ classType, desc, modalTexts: JSON.stringify(modalTexts), photoPosition: "50% 50%" })
+    .onConflictDoUpdate({
+      target: classSettings.classType,
+      set: { desc, modalTexts: JSON.stringify(modalTexts), updatedAt: new Date() },
+    });
+
+  revalidateTag("class-settings");
+}
+
 export async function updatePhotoUrl(classType: string, photoUrl: string) {
   const user = await getCurrentUser();
   if (!user || user.role !== "admin") redirect("/");
