@@ -20,3 +20,18 @@ export async function updatePhotoPosition(classType: string, photoPosition: stri
 
   revalidateTag("class-settings");
 }
+
+export async function updatePhotoUrl(classType: string, photoUrl: string) {
+  const user = await getCurrentUser();
+  if (!user || user.role !== "admin") redirect("/");
+
+  await db
+    .insert(classSettings)
+    .values({ classType, photoUrl, photoPosition: "50% 50%" })
+    .onConflictDoUpdate({
+      target: classSettings.classType,
+      set: { photoUrl, updatedAt: new Date() },
+    });
+
+  revalidateTag("class-settings");
+}

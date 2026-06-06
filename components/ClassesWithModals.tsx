@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { CLASS_STATIC, CLASS_IDS, DAY_NAMES, type ClassId, type ClassSchedule } from '@/lib/classes'
 
-export default function ClassesWithModals({ schedule, photoPositions }: { schedule: ClassSchedule[], photoPositions?: Record<string, string> }) {
+export default function ClassesWithModals({ schedule, photoPositions }: { schedule: ClassSchedule[], photoPositions?: Record<string, { photoPosition: string; photoUrl: string | null }> }) {
   const [openId, setOpenId] = useState<string | null>(null)
 
   const close = useCallback(() => {
@@ -35,8 +35,9 @@ export default function ClassesWithModals({ schedule, photoPositions }: { schedu
       title: cls.label,
       desc: cls.desc,
       bookUrl: cls.bookUrl,
-      photo: cls.photo,
-      photoPosition: photoPositions?.[id] ?? '50% 50%',
+      photo: photoPositions?.[id]?.photoUrl ?? cls.photo,
+      defaultPhoto: cls.photo,
+      photoPosition: photoPositions?.[id]?.photoPosition ?? '50% 50%',
       modalEyebrow: cls.modalEyebrow,
       modalTexts: cls.modalTexts,
       meta: [
@@ -54,7 +55,7 @@ export default function ClassesWithModals({ schedule, photoPositions }: { schedu
         {classes.map(cls => (
           <div key={cls.id} className="mk-class-card">
             <div className="mk-class-video">
-              <img src={cls.photo} alt={cls.title} style={{ objectPosition: cls.photoPosition }} />
+              <img src={cls.photo} alt={cls.title} style={{ objectPosition: cls.photoPosition }} onError={e => { const img = e.target as HTMLImageElement; if (img.src !== window.location.origin + cls.defaultPhoto) img.src = cls.defaultPhoto }} />
             </div>
             <div className="mk-class-body">
               <p className="mk-class-tag">{cls.tag}</p>

@@ -57,7 +57,9 @@ export const getSchedule = unstable_cache(
 export const getClassSettings = unstable_cache(
   async () => {
     const rows = await db.select().from(classSettings);
-    return Object.fromEntries(rows.map(r => [r.classType, r.photoPosition])) as Record<string, string>;
+    return Object.fromEntries(
+      rows.map(r => [r.classType, { photoPosition: r.photoPosition, photoUrl: r.photoUrl ?? null }])
+    ) as Record<string, { photoPosition: string; photoUrl: string | null }>;
   },
   ["class-settings"],
   { tags: ["class-settings"] }

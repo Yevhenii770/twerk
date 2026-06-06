@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useTransition } from 'react'
-import { updatePhotoPosition } from '@/app/actions/classSettings'
+import { useState, useTransition, useRef } from 'react'
+import { updatePhotoPosition, updatePhotoUrl } from '@/app/actions/classSettings'
 
 interface Props {
   classId: string
@@ -12,32 +12,95 @@ interface Props {
 
 export default function FocalPointPicker({ classId, label, photo, initial }: Props) {
   const [position, setPosition] = useState(initial)
-  const [saved, setSaved] = useState(false)
+  const [currentPhoto, setCurrentPhoto] = useState(photo)
+  const [savedPos, setSavedPos] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [uploadDone, setUploadDone] = useState(false)
+  const [uploadError, setUploadError] = useState('')
   const [pending, startTransition] = useTransition()
+  const fileRef = useRef<HTMLInputElement>(null)
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect()
     const x = Math.round(((e.clientX - rect.left) / rect.width) * 100)
     const y = Math.round(((e.clientY - rect.top) / rect.height) * 100)
     setPosition(`${x}% ${y}%`)
-    setSaved(false)
+    setSavedPos(false)
   }
 
-  const handleSave = () => {
+  const handleSavePosition = () => {
     startTransition(async () => {
       await updatePhotoPosition(classId, position)
-      setSaved(true)
+      setSavedPos(true)
     })
+  }
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploading(true)
+    setUploadError('')
+
+    const form = new FormData()
+    form.append('file', file)
+    form.append('classType', classId)
+
+    try {
+      const res = await fetch('/api/upload', { method: 'POST', body: form })
+      if (!res.ok) throw new Error('Upload failed')
+      const { url } = await res.json()
+      await updatePhotoUrl(classId, url)
+      setCurrentPhoto(url + '?t=' + Date.now())
+      setUploadDone(true)
+    } catch {
+      setUploadError('Upload failed. Check BLOB_READ_WRITE_TOKEN.')
+    } finally {
+      setUploading(false)
+      if (fileRef.current) fileRef.current.value = ''
+    }
   }
 
   const [px, py] = position.split(' ').map(v => parseFloat(v))
 
   return (
     <div style={{ background: '#fff', border: '1px solid #E0E0E0', padding: 20 }}>
-      <p style={{ fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#888', marginBottom: 8 }}>
-        {label}
-      </p>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <p style={{ fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#888', margin: 0 }}>
+          {label}
+        </p>
+        <button
+          onClick={() => fileRef.current?.click()}
+          disabled={uploading}
+          style={{
+            background: uploading ? '#888' : '#C9A96E',
+            color: '#fff',
+            border: 'none',
+            padding: '7px 16px',
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+            cursor: uploading ? 'wait' : 'pointer',
+            fontFamily: 'inherit',
+          }}
+        >
+          {uploading ? 'Uploading…' : uploadDone ? '✓ Uploaded' : '↑ Upload Photo'}
+        </button>
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          style={{ display: 'none' }}
+          onChange={handleUpload}
+        />
+      </div>
 
+      {uploadError && (
+        <p style={{ fontSize: 11, color: '#c00', marginBottom: 8 }}>{uploadError}</p>
+      )}
+
+      {/* Focal point picker */}
       <div
         onClick={handleClick}
         style={{
@@ -50,7 +113,7 @@ export default function FocalPointPicker({ classId, label, photo, initial }: Pro
         }}
       >
         <img
-          src={photo}
+          src={currentPhoto}
           alt={label}
           style={{
             width: '100%',
@@ -61,7 +124,6 @@ export default function FocalPointPicker({ classId, label, photo, initial }: Pro
             pointerEvents: 'none',
           }}
         />
-        {/* Focal point marker */}
         <div
           style={{
             position: 'absolute',
@@ -84,10 +146,10 @@ export default function FocalPointPicker({ classId, label, photo, initial }: Pro
           {position}
         </span>
         <button
-          onClick={handleSave}
+          onClick={handleSavePosition}
           disabled={pending}
           style={{
-            background: saved ? '#2E7D32' : '#111',
+            background: savedPos ? '#2E7D32' : '#111',
             color: '#fff',
             border: 'none',
             padding: '8px 20px',
@@ -100,7 +162,7 @@ export default function FocalPointPicker({ classId, label, photo, initial }: Pro
             transition: 'background 0.2s',
           }}
         >
-          {pending ? 'Saving…' : saved ? '✓ Saved' : 'Save'}
+          {pending ? 'Saving…' : savedPos ? '✓ Saved' : 'Save Position'}
         </button>
       </div>
       <p style={{ fontSize: 11, color: '#AAA', marginTop: 6 }}>Click on the image to set the focal point</p>

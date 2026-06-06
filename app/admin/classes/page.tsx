@@ -31,14 +31,14 @@ export default async function AdminClassesPage() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 20 }}>
           {CLASS_IDS.map(id => {
             const cls = CLASS_STATIC[id];
-            const position = settings[id] ?? cls.photoPosition ?? "50% 50%";
+            const s = settings[id];
             return (
               <FocalPointPicker
                 key={id}
                 classId={id}
                 label={cls.label}
-                photo={cls.photo}
-                initial={position}
+                photo={s?.photoUrl ?? cls.photo}
+                initial={s?.photoPosition ?? "50% 50%"}
               />
             );
           })}
