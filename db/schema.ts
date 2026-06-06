@@ -40,5 +40,12 @@ export const bookings = pgTable("bookings", {
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
 });
 
+export const classSettings = pgTable("class_settings", {
+  classType:     text("class_type").primaryKey(),
+  photoPosition: text("photo_position").default("50% 50%").notNull(),
+  updatedAt:     timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
+});
+
+export type ClassSettings = InferSelectModel<typeof classSettings>;
 export type User = InferSelectModel<typeof users>;
 export type Booking = InferSelectModel<typeof bookings>;

@@ -42,13 +42,13 @@ export default function HeroVideo() {
         loop
         playsInline
         preload="auto"
-        poster="/studio.jpg"
+        poster="/hero-poster.jpg"
         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
       />
       {!playing && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src="/studio.jpg"
+          src="/hero-poster.jpg"
           alt=""
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
         />

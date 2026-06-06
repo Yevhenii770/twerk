@@ -33,8 +33,7 @@ function Footer() {
         </div>
         <div className="mk-foot-col">
           <p className="mk-foot-title">Contact</p>
-          <a href="mailto:hello@bouncelab.com" className="mk-foot-link">hello@bouncelab.com</a>
-          <a href="tel:+16465554567" className="mk-foot-link">(646) 555-4567</a>
+          <a href="tel:+15034220858" className="mk-foot-link">(503) 422-0858</a>
           <span className="mk-foot-link" style={{ cursor: 'default' }}>Portland, Oregon</span>
         </div>
         <div className="mk-foot-col">

@@ -80,8 +80,7 @@ const jsonLd = {
   "name": "bounce lab Dance Studio",
   "description": "Twerk, High Heels & Stretching dance classes in Portland, Oregon. Beginner-friendly, judgment-free studio for women.",
   "url": "https://bounce-lab.com",
-  "telephone": "+16465554567",
-  "email": "hello@bouncelab.com",
+  "telephone": "+15034220858",
   "address": {
     "@type": "PostalAddress",
     "addressLocality": "Portland",

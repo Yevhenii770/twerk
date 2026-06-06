@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { CLASS_STATIC, CLASS_IDS, DAY_NAMES, type ClassId, type ClassSchedule } from '@/lib/classes'
 
-export default function ClassesWithModals({ schedule }: { schedule: ClassSchedule[] }) {
+export default function ClassesWithModals({ schedule, photoPositions }: { schedule: ClassSchedule[], photoPositions?: Record<string, string> }) {
   const [openId, setOpenId] = useState<string | null>(null)
 
   const close = useCallback(() => {
@@ -36,6 +36,7 @@ export default function ClassesWithModals({ schedule }: { schedule: ClassSchedul
       desc: cls.desc,
       bookUrl: cls.bookUrl,
       photo: cls.photo,
+      photoPosition: photoPositions?.[id] ?? '50% 50%',
       modalEyebrow: cls.modalEyebrow,
       modalTexts: cls.modalTexts,
       meta: [
@@ -53,7 +54,7 @@ export default function ClassesWithModals({ schedule }: { schedule: ClassSchedul
         {classes.map(cls => (
           <div key={cls.id} className="mk-class-card">
             <div className="mk-class-video">
-              <img src={cls.photo} alt={cls.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <img src={cls.photo} alt={cls.title} style={{ objectPosition: cls.photoPosition }} />
             </div>
             <div className="mk-class-body">
               <p className="mk-class-tag">{cls.tag}</p>
@@ -75,7 +76,7 @@ export default function ClassesWithModals({ schedule }: { schedule: ClassSchedul
           <div className="modal-box">
             <button className="modal-close" onClick={close}>&#215;</button>
             <div className="modal-cover">
-              <img src={cls.photo} alt={cls.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <img src={cls.photo} alt={cls.title} style={{ objectPosition: cls.photoPosition }} />
             </div>
             <div className="modal-body">
               <p className="modal-eyebrow">{cls.modalEyebrow}</p>

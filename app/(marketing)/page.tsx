@@ -4,7 +4,7 @@ import ClassesWithModals from '@/components/ClassesWithModals'
 import WeekCalendarClient from '@/components/WeekCalendarClient'
 import { fetchInstagramPosts } from '@/lib/instagram'
 import HeroVideo from '@/components/HeroVideo'
-import { getSchedule } from '@/lib/dal'
+import { getSchedule, getClassSettings } from '@/lib/dal'
 import { DAY_SHORT } from '@/lib/classes'
 
 const INSTA_SVG = (
@@ -33,7 +33,7 @@ const instaOverlay = (
 )
 
 export default async function HomePage() {
-  const [instaPosts, schedule] = await Promise.all([fetchInstagramPosts(), getSchedule()])
+  const [instaPosts, schedule, photoPositions] = await Promise.all([fetchInstagramPosts(), getSchedule(), getClassSettings()])
   const scheduleDays = schedule.map(s => DAY_SHORT[s.dayOfWeek]).join(' · ')
   return (
     <>
@@ -50,7 +50,7 @@ export default async function HomePage() {
             <em>body</em><br />
             move.
           </h1>
-          <p className="mk-hero-sub">A warm, judgment-free studio for every woman who wants to discover the joy of movement. No experience needed.</p>
+          <p className="mk-hero-sub">Portland&apos;s dance studio for women — Twerk, High Heels &amp; Stretching. Beginner-friendly, judgment-free. No experience needed.</p>
           <div className="mk-hero-btns">
             <Link href="/book" className="btn-hero-primary">Book a Class</Link>
             <Link href="#classes" className="btn-hero-outline">See Classes</Link>
@@ -87,18 +87,18 @@ export default async function HomePage() {
           </div>
           <span className="mk-schedule-note">3 directions · all levels welcome</span>
         </div>
-        <ClassesWithModals schedule={schedule} />
+        <ClassesWithModals schedule={schedule} photoPositions={photoPositions} />
       </section>
 
       {/* ═══ INSTRUCTOR / ABOUT ═══ */}
       <section className="mk-instructor fade-in" id="about">
         <div className="mk-instr-photo">
-          <Image src="/photo-1.jpg" alt="Iryna Pytska — Founder" fill style={{ objectFit: 'cover', objectPosition: 'center top' }} />
+          <Image src="/photo-1.jpg" alt="Iryna Pytska — Founder" fill style={{ objectFit: 'cover', objectPosition: 'center top' }} sizes="(max-width: 768px) 100vw, 50vw" />
         </div>
         <div className="mk-instr-content">
           <p className="mk-eyebrow">The founder</p>
           <p className="mk-instr-quote">
-            &ldquo;Find your flow, and dance your truth. This studio is for every woman who&apos;s been waiting for permission to take up space.&rdquo;
+            &ldquo;Bounce Lab &mdash; a space where women can reconnect with themselves and with each other through dance.&rdquo;
           </p>
           <div>
             <p className="mk-instr-name">Iryna Pytska</p>
@@ -110,9 +110,12 @@ export default async function HomePage() {
       {/* ═══ MANIFESTO ═══ */}
       <div className="mk-manifesto fade-in">
         <p className="mk-manifesto-text">
-          <span className="muted">Every woman deserves a space where she can</span><br />
-          <span className="accent">move freely, feel beautiful,</span><br />
-          <span className="muted">and dance like no one&apos;s watching.</span>
+          <span className="muted">I created Bounce Lab for every woman</span><br />
+          <span className="accent">who has ever felt lonely, lost,</span><br />
+          <span className="accent">too quiet, too much, or not enough.</span><br />
+          <span className="muted">Because sometimes all it takes is music, movement,</span><br />
+          <span className="accent">and the right people around you</span><br />
+          <span className="accent">to start feeling alive again.</span>
         </p>
       </div>
 
