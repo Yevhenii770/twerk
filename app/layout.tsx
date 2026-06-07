@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     siteName: "bounce lab Dance Studio",
     images: [
       {
-        url: "/og-image.jpg",
+        url: "/og-image-v2.jpg",
         width: 1200,
         height: 630,
         alt: "bounce lab Dance Studio Portland Oregon",
@@ -65,7 +65,7 @@ export const metadata: Metadata = {
     title: "bounce lab — Dance Classes in Portland, OR",
     description:
       "Twerk, High Heels & Stretching for women in Portland, Oregon. Beginner-friendly. Book online.",
-    images: ["/og-image.jpg"],
+    images: ["/og-image-v2.jpg"],
   },
   icons: {
     icon: [{ url: "/favicon.png", sizes: "87x82", type: "image/png" }],
