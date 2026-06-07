@@ -17,14 +17,15 @@ const montserrat = Montserrat({
   variable: "--font-montserrat",
 });
 
-
 export const metadata: Metadata = {
   metadataBase: new URL("https://bounce-lab.com"),
   title: {
-    default: "Bounce Lab — Twerk, High Heels & Stretching Classes in Portland, OR",
+    default:
+      "Bounce Lab — Twerk, High Heels & Stretching Classes in Portland, OR",
     template: "%s | Bounce Lab Dance Studio Portland",
   },
-  description: "Twerk, High Heels & Stretching dance classes in Portland, Oregon. Beginner-friendly, judgment-free studio for women. Drop-in $20–$30 or monthly pass. Book online.",
+  description:
+    "Twerk, High Heels & Stretching dance classes in Portland, Oregon. Beginner-friendly, judgment-free studio for women. Drop-in $20–$30 or monthly pass. Book online.",
   keywords: [
     "twerk class Portland",
     "twerk Portland Oregon",
@@ -44,25 +45,31 @@ export const metadata: Metadata = {
   creator: "bounce lab",
   openGraph: {
     title: "bounce lab — Twerk, High Heels & Stretching in Portland, OR",
-    description: "Judgment-free dance studio for women in Portland, Oregon. Twerk · High Heels · Stretching. Drop-in from $20. Book your spot online.",
+    description:
+      "Judgment-free dance studio for women in Portland, Oregon. Twerk · High Heels · Stretching. Drop-in from $20. Book your spot online.",
     url: "https://bounce-lab.com",
     siteName: "bounce lab Dance Studio",
-    images: [{ url: "/studio.jpg", width: 1200, height: 630, alt: "bounce lab Dance Studio Portland Oregon" }],
+    images: [
+      {
+        url: "/studio.jpg",
+        width: 1200,
+        height: 630,
+        alt: "bounce lab Dance Studio Portland Oregon",
+      },
+    ],
     type: "website",
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
     title: "bounce lab — Dance Classes in Portland, OR",
-    description: "Twerk, High Heels & Stretching for women in Portland, Oregon. Beginner-friendly. Book online.",
+    description:
+      "Twerk, High Heels & Stretching for women in Portland, Oregon. Beginner-friendly. Book online.",
     images: ["/studio.jpg"],
   },
   icons: {
-    icon: [
-      { url: "/favicon.ico", sizes: "32x32", type: "image/x-icon" },
-      { url: "/icon.svg", type: "image/svg+xml" },
-    ],
-    shortcut: "/favicon.ico",
+    icon: [{ url: "/favicon.png", sizes: "87x82", type: "image/png" }],
+    shortcut: "/favicon.png",
   },
   robots: {
     index: true,
@@ -77,52 +84,93 @@ export const metadata: Metadata = {
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "DanceSchool",
-  "name": "bounce lab Dance Studio",
-  "description": "Twerk, High Heels & Stretching dance classes in Portland, Oregon. Beginner-friendly, judgment-free studio for women.",
-  "url": "https://bounce-lab.com",
-  "telephone": "+15034220858",
-  "address": {
+  name: "bounce lab Dance Studio",
+  description:
+    "Twerk, High Heels & Stretching dance classes in Portland, Oregon. Beginner-friendly, judgment-free studio for women.",
+  url: "https://bounce-lab.com",
+  telephone: "+15034220858",
+  address: {
     "@type": "PostalAddress",
-    "addressLocality": "Portland",
-    "addressRegion": "OR",
-    "addressCountry": "US",
+    addressLocality: "Portland",
+    addressRegion: "OR",
+    addressCountry: "US",
   },
-  "geo": {
+  geo: {
     "@type": "GeoCoordinates",
-    "latitude": 45.5051,
-    "longitude": -122.6750,
+    latitude: 45.5051,
+    longitude: -122.675,
   },
-  "areaServed": [
-    { "@type": "City", "name": "Portland", "containedIn": { "@type": "State", "name": "Oregon" } },
-    { "@type": "City", "name": "Vancouver", "containedIn": { "@type": "State", "name": "Washington" } },
+  areaServed: [
+    {
+      "@type": "City",
+      name: "Portland",
+      containedIn: { "@type": "State", name: "Oregon" },
+    },
+    {
+      "@type": "City",
+      name: "Vancouver",
+      containedIn: { "@type": "State", name: "Washington" },
+    },
   ],
-  "openingHoursSpecification": [
-    { "@type": "OpeningHoursSpecification", "dayOfWeek": "Monday",   "opens": "16:00", "closes": "17:00" },
-    { "@type": "OpeningHoursSpecification", "dayOfWeek": "Tuesday",  "opens": "19:00", "closes": "20:00" },
-    { "@type": "OpeningHoursSpecification", "dayOfWeek": "Saturday", "opens": "11:00", "closes": "12:20" },
+  openingHoursSpecification: [
+    {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: "Monday",
+      opens: "16:00",
+      closes: "17:00",
+    },
+    {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: "Tuesday",
+      opens: "19:00",
+      closes: "20:00",
+    },
+    {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: "Saturday",
+      opens: "11:00",
+      closes: "12:20",
+    },
   ],
-  "hasOfferCatalog": {
+  hasOfferCatalog: {
     "@type": "OfferCatalog",
-    "name": "Dance Classes",
-    "itemListElement": [
+    name: "Dance Classes",
+    itemListElement: [
       {
         "@type": "Offer",
-        "itemOffered": { "@type": "Service", "name": "Twerk Class Portland", "description": "Beginner & intermediate twerk class every Monday 4–5 PM" },
-        "price": "25", "priceCurrency": "USD",
+        itemOffered: {
+          "@type": "Service",
+          name: "Twerk Class Portland",
+          description:
+            "Beginner & intermediate twerk class every Monday 4–5 PM",
+        },
+        price: "25",
+        priceCurrency: "USD",
       },
       {
         "@type": "Offer",
-        "itemOffered": { "@type": "Service", "name": "High Heels Dance Class Portland", "description": "High heels dance class every Tuesday 7–8 PM" },
-        "price": "30", "priceCurrency": "USD",
+        itemOffered: {
+          "@type": "Service",
+          name: "High Heels Dance Class Portland",
+          description: "High heels dance class every Tuesday 7–8 PM",
+        },
+        price: "30",
+        priceCurrency: "USD",
       },
       {
         "@type": "Offer",
-        "itemOffered": { "@type": "Service", "name": "Stretching Class Portland", "description": "All-levels stretching class every Saturday 11 AM–12:20 PM" },
-        "price": "20", "priceCurrency": "USD",
+        itemOffered: {
+          "@type": "Service",
+          name: "Stretching Class Portland",
+          description:
+            "All-levels stretching class every Saturday 11 AM–12:20 PM",
+        },
+        price: "20",
+        priceCurrency: "USD",
       },
     ],
   },
-  "sameAs": ["https://www.instagram.com/iryna.pytska"],
+  sameAs: ["https://www.instagram.com/iryna.pytska"],
 };
 
 export default function RootLayout({
@@ -138,7 +186,9 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className={`${cormorant.variable} ${montserrat.variable} font-sans antialiased`}>
+      <body
+        className={`${cormorant.variable} ${montserrat.variable} font-sans antialiased`}
+      >
         {children}
         <Toaster
           position="top-right"
