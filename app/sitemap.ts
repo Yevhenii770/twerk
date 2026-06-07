@@ -13,26 +13,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     {
       url: `${base}/book`,
       lastModified: new Date(),
-      changeFrequency: 'monthly',
+      changeFrequency: 'weekly',
       priority: 0.9,
-    },
-    {
-      url: `${base}/book?class=twerk`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
-    {
-      url: `${base}/book?class=highheels`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
-    {
-      url: `${base}/book?class=stretching`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
     },
   ]
 }

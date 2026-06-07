@@ -124,6 +124,15 @@ export default async function RootLayout({
       const { opens, closes } = parseTimeDisplay(s.timeDisplay);
       return { "@type": "OpeningHoursSpecification", dayOfWeek: DAY_NAMES[s.dayOfWeek], opens, closes };
     }),
+    hasOfferCatalog: {
+      "@type": "OfferCatalog",
+      name: "Dance Classes",
+      itemListElement: [
+        { "@type": "Offer", itemOffered: { "@type": "Service", name: "Twerk Class Portland", description: "Beginner & intermediate twerk class every Saturday 11 AM–12:20 PM" }, price: "25", priceCurrency: "USD" },
+        { "@type": "Offer", itemOffered: { "@type": "Service", name: "High Heels Dance Class Portland", description: "High heels dance class every Friday 7–8 PM" }, price: "30", priceCurrency: "USD" },
+        { "@type": "Offer", itemOffered: { "@type": "Service", name: "Stretching Class Portland", description: "All-levels stretching class every Thursday 7–8 PM" }, price: "20", priceCurrency: "USD" },
+      ],
+    },
     sameAs: ["https://www.instagram.com/iryna.pytska"],
   };
 
