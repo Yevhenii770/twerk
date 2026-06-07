@@ -12,6 +12,24 @@ export const CLASS_IDS: ClassId[] = ['twerk', 'highheels', 'stretching']
 export const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 export const DAY_SHORT  = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
+export function parseTimeDisplay(timeDisplay: string): { opens: string; closes: string } {
+  const parts = timeDisplay.split(/[–—]/)
+  const endPart = parts[1].trim()
+  const startPart = parts[0].trim()
+  const endMatch = endPart.match(/(\d+):(\d+)\s*(AM|PM)/i)
+  const startMatch = startPart.match(/(\d+):(\d+)(?:\s*(AM|PM))?/i)
+  if (!endMatch || !startMatch) return { opens: '00:00', closes: '00:00' }
+  const endPeriod = endMatch[3].toUpperCase() as 'AM' | 'PM'
+  const startPeriod = (startMatch[3]?.toUpperCase() ?? endPeriod) as 'AM' | 'PM'
+  const to24 = (h: string, m: string, p: 'AM' | 'PM') => {
+    let hour = parseInt(h)
+    if (p === 'PM' && hour !== 12) hour += 12
+    if (p === 'AM' && hour === 12) hour = 0
+    return `${hour.toString().padStart(2, '0')}:${m}`
+  }
+  return { opens: to24(startMatch[1], startMatch[2], startPeriod), closes: to24(endMatch[1], endMatch[2], endPeriod) }
+}
+
 export const DEFAULT_SCHEDULES: ClassSchedule[] = [
   { classType: 'twerk',      dayOfWeek: 6, timeDisplay: '11:00 AM–12:20 PM', duration: '80 min' },
   { classType: 'highheels',  dayOfWeek: 5, timeDisplay: '7:00–8:00 PM',      duration: '60 min' },

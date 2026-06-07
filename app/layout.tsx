@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Montserrat } from "next/font/google";
 import { Toaster } from "react-hot-toast";
+import { getSchedule } from "@/lib/dal";
+import { DAY_NAMES, parseTimeDisplay } from "@/lib/classes";
 
 import "./globals.css";
 
@@ -81,103 +83,50 @@ export const metadata: Metadata = {
   },
 };
 
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "DanceSchool",
-  name: "bounce lab Dance Studio",
-  description:
-    "Twerk, High Heels & Stretching dance classes in Portland, Oregon. Beginner-friendly, judgment-free studio for women.",
-  url: "https://bounce-lab.com",
-  telephone: "+15034220858",
-  address: {
-    "@type": "PostalAddress",
-    addressLocality: "Portland",
-    addressRegion: "OR",
-    addressCountry: "US",
-  },
-  geo: {
-    "@type": "GeoCoordinates",
-    latitude: 45.5051,
-    longitude: -122.675,
-  },
-  areaServed: [
-    {
-      "@type": "City",
-      name: "Portland",
-      containedIn: { "@type": "State", name: "Oregon" },
-    },
-    {
-      "@type": "City",
-      name: "Vancouver",
-      containedIn: { "@type": "State", name: "Washington" },
-    },
-  ],
-  openingHoursSpecification: [
-    {
-      "@type": "OpeningHoursSpecification",
-      dayOfWeek: "Monday",
-      opens: "16:00",
-      closes: "17:00",
-    },
-    {
-      "@type": "OpeningHoursSpecification",
-      dayOfWeek: "Tuesday",
-      opens: "19:00",
-      closes: "20:00",
-    },
-    {
-      "@type": "OpeningHoursSpecification",
-      dayOfWeek: "Saturday",
-      opens: "11:00",
-      closes: "12:20",
-    },
-  ],
-  hasOfferCatalog: {
-    "@type": "OfferCatalog",
-    name: "Dance Classes",
-    itemListElement: [
-      {
-        "@type": "Offer",
-        itemOffered: {
-          "@type": "Service",
-          name: "Twerk Class Portland",
-          description:
-            "Beginner & intermediate twerk class every Monday 4–5 PM",
-        },
-        price: "25",
-        priceCurrency: "USD",
-      },
-      {
-        "@type": "Offer",
-        itemOffered: {
-          "@type": "Service",
-          name: "High Heels Dance Class Portland",
-          description: "High heels dance class every Tuesday 7–8 PM",
-        },
-        price: "30",
-        priceCurrency: "USD",
-      },
-      {
-        "@type": "Offer",
-        itemOffered: {
-          "@type": "Service",
-          name: "Stretching Class Portland",
-          description:
-            "All-levels stretching class every Saturday 11 AM–12:20 PM",
-        },
-        price: "20",
-        priceCurrency: "USD",
-      },
-    ],
-  },
-  sameAs: ["https://www.instagram.com/iryna.pytska"],
-};
-
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const schedule = await getSchedule();
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "DanceSchool",
+    name: "bounce lab Dance Studio",
+    description:
+      "Twerk, High Heels & Stretching dance classes in Portland, Oregon. Beginner-friendly, judgment-free studio for women.",
+    url: "https://bounce-lab.com",
+    telephone: "+15034220858",
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "Portland",
+      addressRegion: "OR",
+      addressCountry: "US",
+    },
+    geo: {
+      "@type": "GeoCoordinates",
+      latitude: 45.5051,
+      longitude: -122.675,
+    },
+    areaServed: [
+      {
+        "@type": "City",
+        name: "Portland",
+        containedIn: { "@type": "State", name: "Oregon" },
+      },
+      {
+        "@type": "City",
+        name: "Vancouver",
+        containedIn: { "@type": "State", name: "Washington" },
+      },
+    ],
+    openingHoursSpecification: schedule.map(s => {
+      const { opens, closes } = parseTimeDisplay(s.timeDisplay);
+      return { "@type": "OpeningHoursSpecification", dayOfWeek: DAY_NAMES[s.dayOfWeek], opens, closes };
+    }),
+    sameAs: ["https://www.instagram.com/iryna.pytska"],
+  };
+
   return (
     <html lang="en">
       <head>

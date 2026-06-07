@@ -2,22 +2,25 @@ import Image from 'next/image'
 import Link from 'next/link'
 import HeaderScrollClient from '@/components/HeaderScrollClient'
 import ScrollFadeClient from '@/components/ScrollFadeClient'
-import { getCurrentUser } from '@/lib/dal'
+import { getCurrentUser, getSchedule } from '@/lib/dal'
+import { DAY_NAMES, type ClassSchedule } from '@/lib/classes'
 
 export default async function MarketingLayout({ children }: { children: React.ReactNode }) {
-  const user = await getCurrentUser()
+  const [user, schedule] = await Promise.all([getCurrentUser(), getSchedule()])
 
   return (
     <div className="marketing-root">
       <HeaderScrollClient user={user} />
       <main>{children}</main>
-      <Footer />
+      <Footer schedule={schedule} />
       <ScrollFadeClient />
     </div>
   )
 }
 
-function Footer() {
+function Footer({ schedule }: { schedule: ClassSchedule[] }) {
+  const sorted = [...schedule].sort((a, b) => a.dayOfWeek - b.dayOfWeek)
+
   return (
     <footer className="mk-footer">
       <div className="mk-foot-main">
@@ -38,9 +41,11 @@ function Footer() {
         </div>
         <div className="mk-foot-col">
           <p className="mk-foot-title">Schedule</p>
-          <span className="mk-foot-link" style={{ cursor: 'default' }}>Monday — 4:00–5:00 PM</span>
-          <span className="mk-foot-link" style={{ cursor: 'default' }}>Tuesday — 7:00–8:00 PM</span>
-          <span className="mk-foot-link" style={{ cursor: 'default' }}>Saturday — 11:00 AM–12:20 PM</span>
+          {sorted.map(s => (
+            <span key={s.classType} className="mk-foot-link" style={{ cursor: 'default' }}>
+              {DAY_NAMES[s.dayOfWeek]} — {s.timeDisplay}
+            </span>
+          ))}
           <div style={{ marginTop: '24px', display: 'flex', gap: '20px' }}>
             <a href="https://www.instagram.com/iryna.pytska" target="_blank" rel="noopener" className="mk-foot-link" style={{ margin: 0 }}>Instagram</a>
           </div>
