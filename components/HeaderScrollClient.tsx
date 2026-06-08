@@ -70,7 +70,14 @@ export default function HeaderScrollClient({ user }: { user?: { role: string } |
         </Link>
 
         <nav className="nav-links">
-          <Link href="/#classes" onClick={scrollTo('classes')}>Classes</Link>
+          <div className="nav-dropdown">
+            <Link href="/#classes" onClick={scrollTo('classes')}>Classes</Link>
+            <div className="nav-dropdown-menu">
+              <Link href="/classes/twerk">Twerk</Link>
+              <Link href="/classes/high-heels">High Heels</Link>
+              <Link href="/classes/stretching">Stretching</Link>
+            </div>
+          </div>
           <Link href="/#schedule" onClick={scrollTo('schedule')}>Schedule</Link>
           <Link href="/#pricing" onClick={scrollTo('pricing')}>Pricing</Link>
           <Link href="/#about" onClick={scrollTo('about')}>Studio</Link>
@@ -96,6 +103,9 @@ export default function HeaderScrollClient({ user }: { user?: { role: string } |
 
       <div className={`mk-mobile-menu${menuOpen ? ' open' : ''}`}>
         <Link href="/#classes" onClick={scrollTo('classes')}>Classes</Link>
+        <Link href="/classes/twerk" onClick={close} style={{ fontSize: 20, paddingLeft: 20, color: 'var(--mid)' }}>— Twerk</Link>
+        <Link href="/classes/high-heels" onClick={close} style={{ fontSize: 20, paddingLeft: 20, color: 'var(--mid)' }}>— High Heels</Link>
+        <Link href="/classes/stretching" onClick={close} style={{ fontSize: 20, paddingLeft: 20, color: 'var(--mid)' }}>— Stretching</Link>
         <Link href="/#schedule" onClick={scrollTo('schedule')}>Schedule</Link>
         <Link href="/#pricing" onClick={scrollTo('pricing')}>Pricing</Link>
         <Link href="/#about" onClick={scrollTo('about')}>Studio</Link>

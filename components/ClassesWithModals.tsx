@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { CLASS_STATIC, CLASS_IDS, DAY_NAMES, type ClassId, type ClassSchedule } from '@/lib/classes'
+import { CLASS_STATIC, CLASS_IDS, DAY_NAMES, ID_TO_SLUG, type ClassId, type ClassSchedule } from '@/lib/classes'
 
 export default function ClassesWithModals({ schedule, photoPositions }: { schedule: ClassSchedule[], photoPositions?: Record<string, { photoPosition: string; photoUrl: string | null; desc: string | null; modalTexts: string[] | null }> }) {
   const [openId, setOpenId] = useState<string | null>(null)
@@ -31,6 +31,7 @@ export default function ClassesWithModals({ schedule, photoPositions }: { schedu
     const dayName = sched ? DAY_NAMES[sched.dayOfWeek] : ''
     return {
       id,
+      slug: ID_TO_SLUG[id],
       tag: sched ? `${dayName} · ${sched.timeDisplay}` : '',
       title: cls.label,
       desc: photoPositions?.[id]?.desc ?? cls.desc,
@@ -63,6 +64,7 @@ export default function ClassesWithModals({ schedule, photoPositions }: { schedu
               <p className="mk-class-desc">{cls.desc}</p>
               <Link href={cls.bookUrl} className="btn-join">Join Class</Link>
               <button className="btn-learn" onClick={() => open(cls.id)}>Learn more?</button>
+              <Link href={`/classes/${cls.slug}`} className="btn-learn" style={{ marginTop: 4 }}>Full details →</Link>
             </div>
           </div>
         ))}

@@ -3,7 +3,7 @@ import Link from 'next/link'
 import HeaderScrollClient from '@/components/HeaderScrollClient'
 import ScrollFadeClient from '@/components/ScrollFadeClient'
 import { getCurrentUser, getSchedule } from '@/lib/dal'
-import { DAY_NAMES, type ClassSchedule } from '@/lib/classes'
+import { DAY_NAMES, ID_TO_SLUG, CLASS_STATIC, CLASS_IDS, type ClassSchedule } from '@/lib/classes'
 
 export default async function MarketingLayout({ children }: { children: React.ReactNode }) {
   const [user, schedule] = await Promise.all([getCurrentUser(), getSchedule()])
@@ -33,6 +33,15 @@ function Footer({ schedule }: { schedule: ClassSchedule[] }) {
             Twerk · High Heels · Stretching<br />
             Portland, OR
           </p>
+        </div>
+        <div className="mk-foot-col">
+          <p className="mk-foot-title">Classes</p>
+          {CLASS_IDS.map(id => (
+            <Link key={id} href={`/classes/${ID_TO_SLUG[id]}`} className="mk-foot-link">
+              {CLASS_STATIC[id].label}
+            </Link>
+          ))}
+          <Link href="/book" className="mk-foot-link" style={{ marginTop: 8, color: 'var(--pink)' }}>Book a Class →</Link>
         </div>
         <div className="mk-foot-col">
           <p className="mk-foot-title">Contact</p>

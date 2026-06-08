@@ -9,6 +9,18 @@ export type ClassSchedule = {
 
 export const CLASS_IDS: ClassId[] = ['twerk', 'highheels', 'stretching']
 
+export const SLUG_TO_ID: Record<string, ClassId> = {
+  'twerk': 'twerk',
+  'high-heels': 'highheels',
+  'stretching': 'stretching',
+}
+
+export const ID_TO_SLUG: Record<ClassId, string> = {
+  'twerk': 'twerk',
+  'highheels': 'high-heels',
+  'stretching': 'stretching',
+}
+
 export const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 export const DAY_SHORT  = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 

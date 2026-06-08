@@ -46,6 +46,7 @@ export default async function HomePage() {
         <div className="mk-hero-content">
           <p className="mk-hero-tag">Portland, OR · Est. 2024</p>
           <h1 className="mk-hero-title">
+            <span className="sr-only">Dance Classes in Portland, OR — Twerk, High Heels &amp; Stretching — </span>
             Feel your<br />
             <em>body</em><br />
             move.
@@ -205,6 +206,47 @@ export default async function HomePage() {
             <p className="pricing-private-sub">One-on-one sessions tailored to your pace — any direction, flexible scheduling.</p>
           </div>
           <Link href="/book" className="btn-private">Inquire</Link>
+        </div>
+      </section>
+
+      {/* ═══ FAQ ═══ */}
+      <section className="mk-faq fade-in" id="faq">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: [
+              { "@type": "Question", name: "Do I need dance experience to join?", acceptedAnswer: { "@type": "Answer", text: "No experience needed. All classes at bounce lab are beginner-friendly — the most important thing is showing up and enjoying the movement. Many students come with zero dance background." } },
+              { "@type": "Question", name: "What should I wear to a twerk or high heels class?", acceptedAnswer: { "@type": "Answer", text: "Wear comfortable clothes you can move in. For High Heels class, bring a pair of heels (5–8 cm recommended) or train in socks while you build confidence. For Twerk and Stretching, athletic or dance wear works great." } },
+              { "@type": "Question", name: "How much does a drop-in class cost in Portland?", acceptedAnswer: { "@type": "Answer", text: "Drop-in prices: Stretching $20, Twerk $25, High Heels $30. Monthly passes available: Twerk ($80/month for 4 classes) and High Heels ($100/month for 4 classes)." } },
+              { "@type": "Question", name: "Where do bounce lab classes take place in Portland?", acceptedAnswer: { "@type": "Answer", text: "Classes are held in Portland, Oregon. The exact studio address is confirmed when you book your spot online at bounce-lab.com/book." } },
+              { "@type": "Question", name: "Do I need to book in advance?", acceptedAnswer: { "@type": "Answer", text: "We recommend booking online to reserve your spot — classes can fill up quickly. Walk-ins are welcome based on availability." } },
+              { "@type": "Question", name: "What dance styles does bounce lab offer?", acceptedAnswer: { "@type": "Answer", text: "bounce lab offers three weekly classes in Portland: Twerk (every Saturday 11 AM–12:20 PM), High Heels (every Friday 7–8 PM), and Stretching (every Thursday 7–8 PM). All styles are beginner-friendly." } },
+            ],
+          }) }}
+        />
+        <div className="mk-faq-head">
+          <div>
+            <p className="mk-eyebrow">Common questions</p>
+            <h2 className="mk-section-title">FAQ</h2>
+          </div>
+          <span className="mk-schedule-note">Beginner-friendly · Portland, OR</span>
+        </div>
+        <div className="faq-list">
+          {[
+            { q: "Do I need dance experience to join?", a: "No experience needed. All classes at bounce lab are beginner-friendly — the most important thing is showing up and enjoying the movement. Many students come with zero dance background." },
+            { q: "What should I wear to a twerk or high heels class?", a: "Wear comfortable clothes you can move in. For High Heels, bring a pair of heels (5–8 cm recommended) or train in socks while you build confidence. For Twerk and Stretching, athletic or dance wear works great." },
+            { q: "How much does a drop-in class cost in Portland?", a: "Drop-in prices: Stretching $20, Twerk $25, High Heels $30. Monthly passes available: Twerk ($80/month for 4 classes) and High Heels ($100/month for 4 classes)." },
+            { q: "Where do bounce lab classes take place in Portland?", a: "Classes are held in Portland, Oregon. The exact studio address is confirmed when you book your spot online." },
+            { q: "Do I need to book in advance?", a: "We recommend booking online to reserve your spot — classes can fill up quickly. Walk-ins are welcome based on availability." },
+            { q: "What dance styles does bounce lab offer?", a: "Three weekly classes: Twerk (every Saturday 11 AM–12:20 PM), High Heels (every Friday 7–8 PM), and Stretching (every Thursday 7–8 PM). All styles are beginner-friendly." },
+          ].map(({ q, a }) => (
+            <details key={q} className="faq-item">
+              <summary>{q}</summary>
+              <p className="faq-answer">{a}</p>
+            </details>
+          ))}
         </div>
       </section>
 

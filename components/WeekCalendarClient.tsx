@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 import Link from 'next/link'
-import { CLASS_STATIC, DAY_SHORT, DAY_NAMES, type ClassId, type ClassSchedule } from '@/lib/classes'
+import { CLASS_STATIC, DAY_SHORT, DAY_NAMES, ID_TO_SLUG, type ClassId, type ClassSchedule } from '@/lib/classes'
 
 export default function WeekCalendarClient({ schedule }: { schedule: ClassSchedule[] }) {
   useEffect(() => {
@@ -41,7 +41,10 @@ export default function WeekCalendarClient({ schedule }: { schedule: ClassSchedu
                 <p className="wday-time">{sched.timeDisplay.replace('–', ' – ')}</p>
                 <p className="wday-dur">{sched.duration}</p>
               </div>
-              <Link href={cls.bookUrl} className="btn-wday">Book</Link>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
+                <Link href={cls.bookUrl} className="btn-wday">Book</Link>
+                <Link href={`/classes/${ID_TO_SLUG[sched.classType as ClassId]}`} className="btn-wday" style={{ fontSize: '9px', opacity: 0.7 }}>Details</Link>
+              </div>
             </div>
           </div>
         )
