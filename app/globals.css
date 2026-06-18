@@ -158,6 +158,15 @@ body:has(.light-page) {
 }
 .mk-header .btn-book:hover { background: #c00f60; }
 
+/* Mobile header right */
+.header-mobile-right { display: none; align-items: center; gap: 12px; }
+.btn-book-mobile {
+  display: none; padding: 8px 16px; background: var(--pink); color: white;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  text-decoration: none; border: none; transition: background 0.2s;
+}
+.btn-book-mobile:hover { background: #c00f60; }
+
 /* Hamburger */
 .mk-hamburger {
   display: none; flex-direction: column; gap: 5px;
@@ -460,6 +469,37 @@ section[id] { scroll-margin-top: 80px; }
   text-decoration: none !important; display: inline-flex; align-items: center;
 }
 .btn-cta:hover { background: #c00f60; }
+.mk-cta-proof {
+  margin-top: 24px; font-size: 12px; color: rgba(255,255,255,0.5);
+  letter-spacing: 0.05em;
+}
+
+/* ─── MANIFESTO CTA ─── */
+.btn-manifesto-cta {
+  display: inline-block; margin-top: 48px;
+  font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--pink); text-decoration: none; border-bottom: 1px solid var(--pink);
+  padding-bottom: 4px; transition: opacity 0.2s;
+}
+.btn-manifesto-cta:hover { opacity: 0.7; }
+
+/* ─── LEGAL PAGES ─── */
+.legal-page { min-height: 100vh; }
+.legal-header { border-bottom: 1px solid var(--border); padding: 52px 72px 40px; }
+.legal-updated { font-size: 13px; color: var(--mid); margin-top: 12px; }
+.legal-content {
+  padding: 48px 72px 88px; max-width: 720px;
+  font-family: var(--font-montserrat), sans-serif; font-size: 14px; line-height: 1.9; color: var(--mid);
+}
+.legal-content h2 {
+  font-family: var(--font-cormorant), serif; font-style: italic; font-weight: 400;
+  font-size: 24px; color: var(--dark); margin: 40px 0 16px;
+}
+.legal-content ul { padding-left: 20px; margin: 12px 0; }
+.legal-content li { margin-bottom: 6px; }
+.legal-content a { color: var(--pink); text-decoration: none; }
+.legal-content a:hover { text-decoration: underline; }
+.legal-content strong { font-weight: 600; color: var(--dark); }
 
 /* ─── FOOTER ─── */
 .mk-footer { background: #0E0A08; color: rgba(255,255,255,0.6); }
@@ -568,6 +608,25 @@ section[id] { scroll-margin-top: 80px; }
 }
 .btn-outline-dark:hover { background: var(--dark); color: white !important; }
 
+/* ─── REVIEWS ─── */
+.mk-reviews { padding: 88px 72px; border-bottom: 1px solid var(--border); }
+.mk-reviews-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 52px; }
+.mk-reviews-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.mk-review-card {
+  background: white; border: 1px solid var(--border); padding: 32px; display: flex; flex-direction: column; gap: 16px;
+  text-decoration: none; color: inherit; transition: box-shadow 0.3s ease;
+}
+.mk-review-card:hover { box-shadow: 0 8px 32px rgba(0,0,0,0.08); }
+.mk-review-stars { display: flex; gap: 2px; }
+.mk-review-text {
+  font-size: 14px; line-height: 1.7; color: var(--mid); flex: 1;
+  font-family: var(--font-montserrat), sans-serif;
+}
+.mk-review-author { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
+.mk-review-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
+.mk-review-name { font-size: 13px; font-weight: 600; color: var(--dark); }
+.mk-review-time { font-size: 11px; color: var(--mid); margin-top: 2px; }
+
 /* ─── FAQ ─── */
 .mk-faq { padding: 88px 72px; border-bottom: 1px solid var(--border); }
 .mk-faq-head { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 52px; }
@@ -591,6 +650,8 @@ section[id] { scroll-margin-top: 80px; }
 @media (max-width: 900px) {
   .mk-header { padding: 0 24px; }
   .mk-header .nav-links, .mk-header .btn-signin, .mk-header .btn-book { display: none; }
+  .header-mobile-right { display: flex; }
+  .btn-book-mobile { display: block; }
   .mk-hamburger { display: flex; }
   .mk-hero-content { padding: 0 24px 56px; }
   .mk-hero-title { font-size: clamp(44px,12vw,72px); }
@@ -621,6 +682,11 @@ section[id] { scroll-margin-top: 80px; }
   .cls-content { grid-template-columns: 1fr; }
   .cls-text { padding: 52px 28px; }
   .cls-meta-card, .cls-price-card { padding: 36px 28px; }
+  .mk-reviews { padding: 64px 28px; }
+  .mk-reviews-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .mk-reviews-grid { grid-template-columns: 1fr; }
+  .legal-header { padding: 52px 28px 40px; }
+  .legal-content { padding: 36px 28px 64px; }
   .mk-faq { padding: 64px 28px; }
   .mk-faq-head { flex-direction: column; align-items: flex-start; gap: 8px; }
   .faq-item summary { padding: 22px 24px; font-size: 14px; }

@@ -92,13 +92,16 @@ export default function HeaderScrollClient({ user }: { user?: { role: string } |
           <Link href="/book" className="btn-book">Book a Class</Link>
         </div>
 
-        <button
-          className={`mk-hamburger${menuOpen ? ' open' : ''}`}
-          onClick={() => setMenuOpen(v => !v)}
-          aria-label="Menu"
-        >
-          <span /><span /><span />
-        </button>
+        <div className="header-mobile-right">
+          <Link href="/book" className="btn-book-mobile">Book</Link>
+          <button
+            className={`mk-hamburger${menuOpen ? ' open' : ''}`}
+            onClick={() => setMenuOpen(v => !v)}
+            aria-label="Menu"
+          >
+            <span /><span /><span />
+          </button>
+        </div>
       </header>
 
       <div className={`mk-mobile-menu${menuOpen ? ' open' : ''}`}>

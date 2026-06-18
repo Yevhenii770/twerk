@@ -23,11 +23,11 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://bounce-lab.com"),
   title: {
     default:
-      "Bounce Lab — Twerk, High Heels & Stretching Classes in Portland, OR",
-    template: "%s | Bounce Lab Dance Studio Portland",
+      "bounce lab — Twerk, High Heels & Stretching in Portland, OR",
+    template: "%s | bounce lab Portland",
   },
   description:
-    "Twerk, High Heels & Stretching dance classes in Portland, Oregon. Beginner-friendly, judgment-free studio for women. Drop-in $20–$30 or monthly pass. Book online.",
+    "Twerk, High Heels & Stretching dance classes in Portland, Oregon. Beginner-friendly studio for women. Drop-in from $20. Book online.",
   keywords: [
     "twerk class Portland",
     "twerk Portland Oregon",
@@ -72,6 +72,7 @@ export const metadata: Metadata = {
   icons: {
     icon: [{ url: "/favicon.png", sizes: "87x82", type: "image/png" }],
     shortcut: "/favicon.png",
+    apple: "/favicon.png",
   },
   robots: {
     index: true,
@@ -97,10 +98,20 @@ export default async function RootLayout({
       "Twerk, High Heels & Stretching dance classes in Portland, Oregon. Beginner-friendly, judgment-free studio for women.",
     url: "https://bounce-lab.com",
     telephone: "+15034220858",
+    image: "https://bounce-lab.com/og-image-v2.jpg",
+    priceRange: "$$",
+    contactPoint: {
+      "@type": "ContactPoint",
+      telephone: "+15034220858",
+      contactType: "reservations",
+      availableLanguage: ["English"],
+    },
     address: {
       "@type": "PostalAddress",
+      streetAddress: "1107 NE 9th Ave",
       addressLocality: "Portland",
       addressRegion: "OR",
+      postalCode: "97232",
       addressCountry: "US",
     },
     geo: {

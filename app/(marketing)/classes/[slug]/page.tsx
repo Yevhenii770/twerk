@@ -6,18 +6,21 @@ import { getSchedule, getClassSettings } from '@/lib/dal'
 
 type Props = { params: Promise<{ slug: string }> }
 
-const META: Record<string, { title: string; description: string }> = {
+const META: Record<string, { title: string; description: string; keywords: string }> = {
   twerk: {
     title: 'Twerk Classes in Portland, OR — bounce lab',
-    description: 'Beginner-friendly twerk classes in Portland, Oregon. Learn hip movement, body confidence, and choreography. Drop-in $25 or monthly pass. Every Saturday at bounce lab.',
+    description: 'Beginner-friendly twerk classes in Portland, OR. Body confidence & choreography. Drop-in $25 or monthly $80. Book online.',
+    keywords: 'twerk class Portland, twerk Portland Oregon, twerk dance class near me, beginner twerk class, twerk lessons Portland, twerk workshop Portland OR',
   },
   'high-heels': {
     title: 'High Heels Dance Classes in Portland, OR — bounce lab',
-    description: 'High heels dance classes in Portland, Oregon. Build confidence, posture, and floor presence. Beginner-friendly. Drop-in $30. Every Friday at bounce lab.',
+    description: 'High heels dance classes in Portland, OR. Posture & floor presence. Beginner-friendly. Drop-in $30 or monthly $100. Book online.',
+    keywords: 'high heels dance class Portland, high heels class Portland Oregon, heels dance near me, high heels dance lessons, heels choreography class Portland',
   },
   stretching: {
     title: 'Stretching Classes in Portland, OR — bounce lab',
-    description: 'Stretching and flexibility classes in Portland, Oregon. All levels welcome. Improve mobility and reduce tension. Drop-in $20. Every Thursday at bounce lab.',
+    description: 'Stretching & flexibility classes in Portland, OR. All levels welcome. Improve mobility. Drop-in $20. Every Thursday. Book online.',
+    keywords: 'stretching class Portland, flexibility class Portland Oregon, stretching near me, adult stretching class, stretching for dancers Portland',
   },
 }
 
@@ -28,11 +31,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: m.title,
     description: m.description,
+    keywords: m.keywords,
     alternates: { canonical: `https://bounce-lab.com/classes/${slug}` },
     openGraph: {
       title: m.title,
       description: m.description,
       url: `https://bounce-lab.com/classes/${slug}`,
+      images: [{ url: '/og-image-v2.jpg', width: 1200, height: 630, alt: m.title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: m.title,
+      description: m.description,
+      images: ['/og-image-v2.jpg'],
     },
   }
 }
@@ -54,8 +65,47 @@ export default async function ClassPage({ params }: Props) {
     .filter(([id]) => id !== classId)
     .map(([id, s]) => ({ id, slug: s, label: CLASS_STATIC[id as keyof typeof CLASS_STATIC].label }))
 
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://bounce-lab.com' },
+      { '@type': 'ListItem', position: 2, name: 'Classes', item: 'https://bounce-lab.com/#classes' },
+      { '@type': 'ListItem', position: 3, name: `${cls.label} Classes Portland`, item: `https://bounce-lab.com/classes/${slug}` },
+    ],
+  }
+
+  const serviceSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: `${cls.label} Dance Class in Portland, OR`,
+    description: META[slug]?.description ?? cls.desc,
+    provider: {
+      '@type': 'DanceSchool',
+      name: 'bounce lab Dance Studio',
+      url: 'https://bounce-lab.com',
+      telephone: '+15034220858',
+      address: { '@type': 'PostalAddress', addressLocality: 'Portland', addressRegion: 'OR', addressCountry: 'US' },
+    },
+    areaServed: [
+      { '@type': 'City', name: 'Portland', containedIn: { '@type': 'State', name: 'Oregon' } },
+      { '@type': 'City', name: 'Vancouver', containedIn: { '@type': 'State', name: 'Washington' } },
+    ],
+    offers: {
+      '@type': 'Offer',
+      price: cls.dropin.toString(),
+      priceCurrency: 'USD',
+      availability: 'https://schema.org/InStock',
+      url: `https://bounce-lab.com${cls.bookUrl}`,
+    },
+    url: `https://bounce-lab.com/classes/${slug}`,
+  }
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }} />
+
       {/* HERO */}
       <section className="cls-hero">
         <div className="cls-hero-img">

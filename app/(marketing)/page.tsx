@@ -6,6 +6,7 @@ import { fetchInstagramPosts } from '@/lib/instagram'
 import HeroVideo from '@/components/HeroVideo'
 import { getSchedule, getClassSettings } from '@/lib/dal'
 import { DAY_SHORT } from '@/lib/classes'
+import { getGoogleReviews } from '@/lib/reviews'
 
 const INSTA_SVG = (
   <svg viewBox="0 0 24 24" fill="currentColor" style={{ width: 12, height: 12, color: 'var(--pink)' }}>
@@ -33,10 +34,50 @@ const instaOverlay = (
 )
 
 export default async function HomePage() {
-  const [instaPosts, schedule, photoPositions] = await Promise.all([fetchInstagramPosts(), getSchedule(), getClassSettings()])
+  const [instaPosts, schedule, photoPositions, reviewsData] = await Promise.all([fetchInstagramPosts(), getSchedule(), getClassSettings(), getGoogleReviews()])
+  const { reviews, rating: googleRating, totalCount: googleReviewCount } = reviewsData
   const scheduleDays = schedule.map(s => DAY_SHORT[s.dayOfWeek]).join(' · ')
+
+  const websiteSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'bounce lab Dance Studio',
+    url: 'https://bounce-lab.com',
+    description: 'Twerk, High Heels & Stretching dance classes in Portland, Oregon. Beginner-friendly, judgment-free studio for women.',
+    publisher: { '@type': 'Organization', name: 'bounce lab Dance Studio', url: 'https://bounce-lab.com' },
+    inLanguage: 'en-US',
+  }
+
+  const reviewSchema = reviews.length > 0 ? {
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    '@id': 'https://bounce-lab.com/#business',
+    name: 'bounce lab Dance Studio',
+    url: 'https://bounce-lab.com',
+    image: 'https://bounce-lab.com/og-image-v2.jpg',
+    telephone: '+15034220858',
+    priceRange: '$$',
+    address: { '@type': 'PostalAddress', addressLocality: 'Portland', addressRegion: 'OR', postalCode: '97232', addressCountry: 'US' },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: googleRating.toFixed(1),
+      reviewCount: googleReviewCount,
+      bestRating: 5,
+    },
+    review: reviews.map(r => ({
+      '@type': 'Review',
+      author: { '@type': 'Person', name: r.authorName },
+      reviewRating: { '@type': 'Rating', ratingValue: r.rating, bestRating: 5 },
+      reviewBody: r.text,
+      datePublished: r.datePublished,
+    })),
+  } : null
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }} />
+      {reviewSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(reviewSchema) }} />}
+
       {/* ═══ HERO ═══ */}
       <section className="mk-hero">
         <div className="mk-hero-video">
@@ -91,10 +132,60 @@ export default async function HomePage() {
         <ClassesWithModals schedule={schedule} photoPositions={photoPositions} />
       </section>
 
+      {/* ═══ REVIEWS (moved up for trust) ═══ */}
+      {reviews.length > 0 && (
+        <section className="mk-reviews fade-in" id="reviews">
+          <div className="mk-reviews-header">
+            <div>
+              <p className="mk-eyebrow">What our students say</p>
+              <h2 className="mk-section-title">Real Reviews</h2>
+            </div>
+            <a
+              href="https://www.google.com/maps/place/Bounce+Lab/@45.5308718,-122.6595633,17z"
+              target="_blank"
+              rel="noopener"
+              className="mk-schedule-note"
+              style={{ display: 'flex', alignItems: 'center', gap: 6, textDecoration: 'none' }}
+            >
+              <svg viewBox="0 0 24 24" style={{ width: 16, height: 16 }}>
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+              </svg>
+              {googleRating} · {googleReviewCount} reviews on Google
+            </a>
+          </div>
+          <div className="mk-reviews-grid">
+            {reviews.map((review, i) => (
+              <a key={i} href={review.googleMapsUri} target="_blank" rel="noopener" className="mk-review-card">
+                <div className="mk-review-stars">
+                  {Array.from({ length: review.rating }).map((_, j) => (
+                    <svg key={j} viewBox="0 0 20 20" fill="var(--pink)" style={{ width: 14, height: 14 }}>
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  ))}
+                </div>
+                <p className="mk-review-text">{review.text.length > 200 ? review.text.slice(0, 200) + '…' : review.text}</p>
+                <div className="mk-review-author">
+                  {review.authorPhoto && (
+                    <img src={review.authorPhoto} alt={review.authorName} className="mk-review-avatar" referrerPolicy="no-referrer" />
+                  )}
+                  <div>
+                    <p className="mk-review-name">{review.authorName}</p>
+                    <p className="mk-review-time">{review.relativeTime}</p>
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* ═══ INSTRUCTOR / ABOUT ═══ */}
       <section className="mk-instructor fade-in" id="about">
         <div className="mk-instr-photo">
-          <Image src="/photo-1.jpg" alt="Iryna Pytska — Founder" fill style={{ objectFit: 'cover', objectPosition: 'center top' }} sizes="(max-width: 768px) 100vw, 50vw" />
+          <Image src="/photo-1.jpg" alt="Iryna Pytska — Founder of bounce lab dance studio Portland" fill style={{ objectFit: 'cover', objectPosition: 'center top' }} sizes="(max-width: 768px) 100vw, 50vw" />
         </div>
         <div className="mk-instr-content">
           <p className="mk-eyebrow">The founder</p>
@@ -108,7 +199,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ═══ MANIFESTO ═══ */}
+      {/* ═══ MANIFESTO + CTA ═══ */}
       <div className="mk-manifesto fade-in">
         <p className="mk-manifesto-text">
           <span className="muted">I created Bounce Lab for every woman</span><br />
@@ -118,6 +209,7 @@ export default async function HomePage() {
           <span className="accent">and the right people around you</span><br />
           <span className="accent">to start feeling alive again.</span>
         </p>
+        <Link href="/book" className="btn-manifesto-cta">Feel Alive Again — Book Your First Class</Link>
       </div>
 
       {/* ═══ SCHEDULE ═══ */}
@@ -218,9 +310,11 @@ export default async function HomePage() {
             "@type": "FAQPage",
             mainEntity: [
               { "@type": "Question", name: "Do I need dance experience to join?", acceptedAnswer: { "@type": "Answer", text: "No experience needed. All classes at bounce lab are beginner-friendly — the most important thing is showing up and enjoying the movement. Many students come with zero dance background." } },
+              { "@type": "Question", name: "What if I feel self-conscious or nervous?", acceptedAnswer: { "@type": "Answer", text: "That's completely normal — most of our students felt the same way before their first class. bounce lab is a judgment-free space where everyone supports each other. You'll feel comfortable from the very first minute." } },
               { "@type": "Question", name: "What should I wear to a twerk or high heels class?", acceptedAnswer: { "@type": "Answer", text: "Wear comfortable clothes you can move in. For High Heels class, bring a pair of heels (5–8 cm recommended) or train in socks while you build confidence. For Twerk and Stretching, athletic or dance wear works great." } },
               { "@type": "Question", name: "How much does a drop-in class cost in Portland?", acceptedAnswer: { "@type": "Answer", text: "Drop-in prices: Stretching $20, Twerk $25, High Heels $30. Monthly passes available: Twerk ($80/month for 4 classes) and High Heels ($100/month for 4 classes)." } },
-              { "@type": "Question", name: "Where do bounce lab classes take place in Portland?", acceptedAnswer: { "@type": "Answer", text: "Classes are held in Portland, Oregon. The exact studio address is confirmed when you book your spot online at bounce-lab.com/book." } },
+              { "@type": "Question", name: "Can I cancel or reschedule my booking?", acceptedAnswer: { "@type": "Answer", text: "Yes! You can reschedule or cancel your booking up to 24 hours before the class at no charge. Just reach out to us by phone or email." } },
+              { "@type": "Question", name: "Where do bounce lab classes take place in Portland?", acceptedAnswer: { "@type": "Answer", text: "Classes are held at 1107 NE 9th Ave, Portland, OR 97232. Street parking is available nearby." } },
               { "@type": "Question", name: "Do I need to book in advance?", acceptedAnswer: { "@type": "Answer", text: "We recommend booking online to reserve your spot — classes can fill up quickly. Walk-ins are welcome based on availability." } },
               { "@type": "Question", name: "What dance styles does bounce lab offer?", acceptedAnswer: { "@type": "Answer", text: "bounce lab offers three weekly classes in Portland: Twerk (every Saturday 11 AM–12:20 PM), High Heels (every Friday 7–8 PM), and Stretching (every Thursday 7–8 PM). All styles are beginner-friendly." } },
             ],
@@ -236,9 +330,11 @@ export default async function HomePage() {
         <div className="faq-list">
           {[
             { q: "Do I need dance experience to join?", a: "No experience needed. All classes at bounce lab are beginner-friendly — the most important thing is showing up and enjoying the movement. Many students come with zero dance background." },
+            { q: "What if I feel self-conscious or nervous?", a: "That's completely normal — most of our students felt the same way before their first class. bounce lab is a judgment-free space where everyone supports each other. You'll feel comfortable from the very first minute." },
             { q: "What should I wear to a twerk or high heels class?", a: "Wear comfortable clothes you can move in. For High Heels, bring a pair of heels (5–8 cm recommended) or train in socks while you build confidence. For Twerk and Stretching, athletic or dance wear works great." },
             { q: "How much does a drop-in class cost in Portland?", a: "Drop-in prices: Stretching $20, Twerk $25, High Heels $30. Monthly passes available: Twerk ($80/month for 4 classes) and High Heels ($100/month for 4 classes)." },
-            { q: "Where do bounce lab classes take place in Portland?", a: "Classes are held in Portland, Oregon. The exact studio address is confirmed when you book your spot online." },
+            { q: "Can I cancel or reschedule my booking?", a: "Yes! You can reschedule or cancel your booking up to 24 hours before the class at no charge. Just reach out to us by phone or email." },
+            { q: "Where do bounce lab classes take place in Portland?", a: "Classes are held at 1107 NE 9th Ave, Portland, OR 97232. Street parking is available nearby." },
             { q: "Do I need to book in advance?", a: "We recommend booking online to reserve your spot — classes can fill up quickly. Walk-ins are welcome based on availability." },
             { q: "What dance styles does bounce lab offer?", a: "Three weekly classes: Twerk (every Saturday 11 AM–12:20 PM), High Heels (every Friday 7–8 PM), and Stretching (every Thursday 7–8 PM). All styles are beginner-friendly." },
           ].map(({ q, a }) => (
@@ -278,9 +374,9 @@ export default async function HomePage() {
                     <source src={post.media_url} type="video/mp4" />
                   </video>
                 ) : isExternal ? (
-                  <img src={imgSrc} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: pos, transition: 'transform 0.55s ease' }} />
+                  <img src={imgSrc} alt="bounce lab dance studio Portland" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: pos, transition: 'transform 0.55s ease' }} />
                 ) : (
-                  <Image src={imgSrc} alt="" fill style={{ objectFit: 'cover', objectPosition: pos }} />
+                  <Image src={imgSrc} alt="bounce lab dance studio Portland" fill style={{ objectFit: 'cover', objectPosition: pos }} />
                 )}
                 {instaBadge}
                 {instaOverlay}
@@ -305,6 +401,7 @@ export default async function HomePage() {
         <h2 className="mk-cta-title">Your first step onto<br />the dance floor starts here</h2>
         <p className="mk-cta-sub">No experience needed. Just show up, feel the music, and let your body do the rest.</p>
         <Link href="/book" className="btn-cta">Book Your First Class</Link>
+        {googleRating > 0 && <p className="mk-cta-proof">{googleRating} ★ on Google · {googleReviewCount} reviews · Free cancellation</p>}
       </section>
     </>
   )

@@ -13,7 +13,7 @@ const securityHeaders = [
       "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
-      "img-src 'self' data: blob: https://*.cdninstagram.com https://*.fbcdn.net https://*.public.blob.vercel-storage.com",
+      "img-src 'self' data: blob: https://*.cdninstagram.com https://*.fbcdn.net https://*.public.blob.vercel-storage.com https://lh3.googleusercontent.com",
       "media-src 'self'",
       "connect-src 'self' https://*.public.blob.vercel-storage.com",
       "frame-ancestors 'none'",
@@ -22,6 +22,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  poweredByHeader: false,
   experimental: {},
   images: {
     remotePatterns: [

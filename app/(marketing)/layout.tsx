@@ -61,7 +61,7 @@ function Footer({ schedule }: { schedule: ClassSchedule[] }) {
         </div>
       </div>
       <div className="mk-foot-bar">
-        <span className="mk-foot-copy">© 2025 bounce lab Dance Studio. All Rights Reserved.</span>
+        <span className="mk-foot-copy">© 2026 bounce lab Dance Studio. All Rights Reserved. · <Link href="/privacy" style={{ color: 'inherit', textDecoration: 'underline' }}>Privacy</Link> · <Link href="/terms" style={{ color: 'inherit', textDecoration: 'underline' }}>Terms</Link></span>
         <Link href="/book" className="mk-foot-top">Book a Class →</Link>
       </div>
     </footer>

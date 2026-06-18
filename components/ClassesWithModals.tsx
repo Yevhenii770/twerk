@@ -34,6 +34,7 @@ export default function ClassesWithModals({ schedule, photoPositions }: { schedu
       slug: ID_TO_SLUG[id],
       tag: sched ? `${dayName} · ${sched.timeDisplay}` : '',
       title: cls.label,
+      altText: `${cls.label} dance class at bounce lab Portland Oregon`,
       desc: photoPositions?.[id]?.desc ?? cls.desc,
       bookUrl: cls.bookUrl,
       photo: photoPositions?.[id]?.photoUrl ?? cls.photo,
@@ -56,11 +57,11 @@ export default function ClassesWithModals({ schedule, photoPositions }: { schedu
         {classes.map(cls => (
           <div key={cls.id} className="mk-class-card">
             <div className="mk-class-video">
-              <img src={cls.photo} alt={cls.title} style={{ objectPosition: cls.photoPosition }} onError={e => { const img = e.target as HTMLImageElement; if (img.src !== window.location.origin + cls.defaultPhoto) img.src = cls.defaultPhoto }} />
+              <img src={cls.photo} alt={cls.altText} style={{ objectPosition: cls.photoPosition }} onError={e => { const img = e.target as HTMLImageElement; if (img.src !== window.location.origin + cls.defaultPhoto) img.src = cls.defaultPhoto }} />
             </div>
             <div className="mk-class-body">
               <p className="mk-class-tag">{cls.tag}</p>
-              <h2 className="mk-class-title">{cls.title}</h2>
+              <h3 className="mk-class-title">{cls.title}</h3>
               <p className="mk-class-desc">{cls.desc}</p>
               <Link href={cls.bookUrl} className="btn-join">Join Class</Link>
               <button className="btn-learn" onClick={() => open(cls.id)}>Learn more?</button>
@@ -79,11 +80,11 @@ export default function ClassesWithModals({ schedule, photoPositions }: { schedu
           <div className="modal-box">
             <button className="modal-close" onClick={close}>&#215;</button>
             <div className="modal-cover">
-              <img src={cls.photo} alt={cls.title} style={{ objectPosition: cls.photoPosition }} />
+              <img src={cls.photo} alt={cls.altText} style={{ objectPosition: cls.photoPosition }} />
             </div>
             <div className="modal-body">
               <p className="modal-eyebrow">{cls.modalEyebrow}</p>
-              <h2 className="modal-title">{cls.title}</h2>
+              <h3 className="modal-title">{cls.title}</h3>
               {cls.modalTexts.map((t, i) => <p key={i} className="modal-text">{t}</p>)}
               <div className="modal-meta">
                 {cls.meta.map(m => (
