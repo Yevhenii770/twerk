@@ -184,8 +184,8 @@ export default function BookingFormNew({ schedule }: { schedule: ClassSchedule[]
                   }}
                 >
                   <div>
-                    <p style={{ fontSize: 15, fontWeight: 600, marginBottom: 3 }}>{info.label}</p>
-                    <p style={{ fontSize: 12, opacity: 0.65 }}>
+                    <p style={{ fontSize: 15, fontWeight: 600, marginBottom: 3, color: active ? '#fff' : 'var(--dark)' }}>{info.label}</p>
+                    <p style={{ fontSize: 12, color: active ? 'rgba(255,255,255,0.65)' : 'var(--mid)' }}>
                       {s ? `${DAY_NAMES[s.dayOfWeek]}s · ${s.timeDisplay}` : ''}
                     </p>
                   </div>
@@ -201,17 +201,17 @@ export default function BookingFormNew({ schedule }: { schedule: ClassSchedule[]
           </div>
         </Section>
 
-        {/* Step 2 — Booking type */}
-        <Section step={2} title="How would you like to book?">
-          <div style={{ display: 'flex', gap: 8 }}>
-            <TypeBtn
-              active={bookingType === 'dropin'}
-              onClick={() => setBookingType('dropin')}
-              label="Drop-in"
-              desc="Single class"
-              price={`$${staticInfo.dropin}`}
-            />
-            {staticInfo.monthly && (
+        {/* Step 2 — Booking type (skip if no monthly option) */}
+        {staticInfo.monthly && (
+          <Section step={2} title="How would you like to book?">
+            <div style={{ display: 'flex', gap: 8 }}>
+              <TypeBtn
+                active={bookingType === 'dropin'}
+                onClick={() => setBookingType('dropin')}
+                label="Drop-in"
+                desc="Single class"
+                price={`$${staticInfo.dropin}`}
+              />
               <TypeBtn
                 active={bookingType === 'monthly'}
                 onClick={() => setBookingType('monthly')}
@@ -219,19 +219,19 @@ export default function BookingFormNew({ schedule }: { schedule: ClassSchedule[]
                 desc="4 classes"
                 price={`$${staticInfo.monthly}`}
               />
-            )}
-          </div>
-        </Section>
+            </div>
+          </Section>
+        )}
 
         {/* Step 3 — Date */}
         <div ref={dateRef}>
-        <Section step={3} title={bookingType === 'monthly' ? 'Pick your start date' : `Pick a ${dayName}`}>
+        <Section step={staticInfo.monthly ? 3 : 2} title={bookingType === 'monthly' ? 'Pick your start date' : `Pick a ${dayName}`}>
           {bookingType === 'monthly' && (
             <p style={{ fontSize: 12, color: 'var(--mid)', marginBottom: 12, lineHeight: 1.5 }}>
               Choose your first class — the next 3 sessions will be added automatically.
             </p>
           )}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+          <div className="grid grid-cols-2 md:grid-cols-4" style={{ gap: 8 }}>
             {dates.map(d => {
               const active = selectedDate === d
               return (
@@ -278,8 +278,8 @@ export default function BookingFormNew({ schedule }: { schedule: ClassSchedule[]
         </Section>
         </div>
 
-        {/* Step 4 — Contact info */}
-        <Section step={4} title="Your details">
+        {/* Step — Contact info */}
+        <Section step={staticInfo.monthly ? 4 : 3} title="Your details">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div ref={nameRef}>
               <InputField label="Full name" name="name" placeholder="Jane Doe" error={clientErrors.name || fieldErrors?.name?.[0]} value={name} onChange={setName} />
@@ -387,8 +387,8 @@ function TypeBtn({ active, onClick, label, desc, price }: {
         transition: 'all 0.2s',
       }}
     >
-      <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 2 }}>{label}</p>
-      <p style={{ fontSize: 11, opacity: 0.6, marginBottom: 6 }}>{desc}</p>
+      <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 2, color: active ? '#fff' : 'var(--dark)' }}>{label}</p>
+      <p style={{ fontSize: 11, marginBottom: 6, color: active ? 'rgba(255,255,255,0.6)' : 'var(--mid)' }}>{desc}</p>
       <p style={{ fontSize: 20, fontFamily: 'var(--font-cormorant)', fontStyle: 'italic', fontWeight: 300, color: active ? '#fff' : 'var(--pink)' }}>{price}</p>
     </button>
   )

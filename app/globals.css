@@ -161,7 +161,7 @@ body:has(.light-page) {
 /* Mobile header right */
 .header-mobile-right { display: none; align-items: center; gap: 12px; }
 .btn-book-mobile {
-  display: none; padding: 8px 16px; background: var(--pink); color: white;
+  display: none; padding: 8px 16px; background: var(--pink); color: white !important;
   font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
   text-decoration: none; border: none; transition: background 0.2s;
 }
