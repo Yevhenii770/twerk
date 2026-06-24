@@ -31,6 +31,7 @@ export const bookings = pgTable("bookings", {
   name: text("name").notNull(),
   phone: text("phone").notNull(),
   email: text("email"),
+  instagram: text("instagram"),
   classType: text("class_type").notNull(), // twerk | highheels | stretching
   bookingType: text("booking_type").default("dropin").notNull(), // dropin | monthly
   date: date("date").notNull(),

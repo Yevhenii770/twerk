@@ -16,7 +16,7 @@ const PRICES: Record<string, Record<string, number>> = {
 const BookingSchema = z.object({
   name:        z.string().min(2, "Minimum 2 characters"),
   phone:       z.string().min(10, "Enter a valid phone number").regex(/^[\d\s\-\+\(\)]{10,}$/, "Enter a valid phone number"),
-  email:       z.string().email().optional().or(z.literal("")),
+  instagram:   z.string().min(1, "Enter your Instagram handle").regex(/^@?[a-zA-Z0-9._]{1,30}$/, "Enter a valid Instagram handle (letters, numbers, dots, underscores)"),
   classType:   z.enum(["twerk", "highheels", "stretching"]),
   bookingType: z.enum(["dropin", "monthly"]).default("dropin"),
   date:        z.string().min(1, "Select a date"),
@@ -26,7 +26,7 @@ export async function createBooking(_: unknown, formData: FormData) {
   const raw = {
     name:        formData.get("name"),
     phone:       formData.get("phone"),
-    email:       formData.get("email") || "",
+    instagram:   formData.get("instagram"),
     classType:   formData.get("classType"),
     bookingType: formData.get("bookingType") || "dropin",
     date:        formData.get("date"),
@@ -37,7 +37,7 @@ export async function createBooking(_: unknown, formData: FormData) {
     return { success: false, errors: parsed.error.flatten().fieldErrors };
   }
 
-  const { name, phone, email, classType, bookingType, date } = parsed.data;
+  const { name, phone, instagram, classType, bookingType, date } = parsed.data;
 
   const schedule = await getSchedule();
   const classSchedule = schedule.find(s => s.classType === classType);
@@ -64,10 +64,11 @@ export async function createBooking(_: unknown, formData: FormData) {
   }
 
   try {
+    const instagramHandle = instagram.startsWith("@") ? instagram : `@${instagram}`;
     await db.insert(bookings).values({
       name,
       phone,
-      email: email || null,
+      instagram: instagramHandle,
       classType,
       bookingType,
       date,
@@ -76,7 +77,7 @@ export async function createBooking(_: unknown, formData: FormData) {
     });
 
     revalidateTag("bookings");
-    await sendTelegramNotification({ name, phone, email: email || null, classType, bookingType, date, price });
+    await sendTelegramNotification({ name, phone, instagram: instagramHandle, classType, bookingType, date, price });
     return { success: true, data: { name, classType, date, price, bookingType } };
   } catch {
     return { success: false, errors: { _: ["Something went wrong, please try again"] } };
@@ -108,7 +109,7 @@ const CLASS_LABELS: Record<string, string> = {
 async function sendTelegramNotification(data: {
   name: string;
   phone: string;
-  email: string | null;
+  instagram: string;
   classType: string;
   bookingType: string;
   date: string;
@@ -133,7 +134,9 @@ async function sendTelegramNotification(data: {
     ``,
     `📱  <b>Phone</b>`,
     `     ${data.phone}`,
-    data.email ? `\n📧  <b>Email</b>\n     ${data.email}` : null,
+    ``,
+    `📸  <b>Instagram</b>`,
+    `     ${data.instagram}`,
     ``,
     `💃  <b>Class</b>`,
     `     ${classLabel}`,

@@ -201,7 +201,7 @@ export default function BookingFormNew({ schedule }: { schedule: ClassSchedule[]
           <div style={{ display: 'flex', flexDirection: 'column', gap: 1, background: 'var(--border)' }}>
             <Field name="name" placeholder="Full name" error={fieldErrors?.name?.[0]} />
             <PhoneField error={fieldErrors?.phone?.[0]} />
-            <Field name="email" placeholder="Email (optional)" type="email" error={fieldErrors?.email?.[0]} />
+            <Field name="instagram" placeholder="Instagram @username" error={fieldErrors?.instagram?.[0]} hint="Don't know your @username? Open Instagram → tap your profile → it's at the top." />
           </div>
         </div>
 
@@ -232,8 +232,8 @@ export default function BookingFormNew({ schedule }: { schedule: ClassSchedule[]
   )
 }
 
-function Field({ name, placeholder, type = 'text', error }: {
-  name: string; placeholder: string; type?: string; error?: string
+function Field({ name, placeholder, type = 'text', error, hint }: {
+  name: string; placeholder: string; type?: string; error?: string; hint?: string
 }) {
   return (
     <div>
@@ -249,6 +249,7 @@ function Field({ name, placeholder, type = 'text', error }: {
         onFocus={e => e.target.style.boxShadow = 'inset 0 -2px 0 var(--pink)'}
         onBlur={e => e.target.style.boxShadow = 'none'}
       />
+      {hint && <p style={{ fontSize: 11, color: 'var(--mid)', padding: '4px 20px 8px', background: 'var(--cream)', lineHeight: 1.5 }}>{hint}</p>}
       {error && <p style={{ fontSize: 11, color: 'var(--pink)', padding: '4px 20px 8px', background: 'var(--cream)' }}>{error}</p>}
     </div>
   )

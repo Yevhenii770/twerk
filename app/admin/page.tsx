@@ -142,7 +142,7 @@ export default async function AdminPage({
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
               <thead>
                 <tr style={{ borderBottom: "2px solid #111", background: "#F5F5F5" }}>
-                  {["Date", "Class", "Name", "Phone", "Email", "Type", "Price", "Status", "Actions"].map(h => (
+                  {["Date", "Class", "Name", "Phone", "Instagram", "Type", "Price", "Status", "Actions"].map(h => (
                     <th key={h} style={{ padding: "12px 16px", textAlign: "left", fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "#111", fontWeight: 800 }}>
                       {h}
                     </th>
@@ -160,7 +160,7 @@ export default async function AdminPage({
                     </td>
                     <td style={{ padding: "14px 16px", color: "#111", fontWeight: 700 }}>{b.name}</td>
                     <td style={{ padding: "14px 16px", color: "#333" }}>{b.phone}</td>
-                    <td style={{ padding: "14px 16px", color: b.email ? "#333" : "#AAA" }}>{b.email ?? "—"}</td>
+                    <td style={{ padding: "14px 16px", color: b.instagram ? "#333" : "#AAA" }}>{b.instagram ?? "—"}</td>
                     <td style={{ padding: "14px 16px", color: "#333" }}>{b.bookingType === "monthly" ? "Monthly" : "Drop-in"}</td>
                     <td style={{ padding: "14px 16px", color: "#111", fontWeight: 800, fontSize: 16 }}>${b.price}</td>
                     <td style={{ padding: "14px 16px" }}>
@@ -209,9 +209,9 @@ export default async function AdminPage({
                 </div>
                 <div style={{ padding: "10px 14px", display: "flex", gap: 12, fontSize: 12, color: "#555", flexWrap: "wrap", borderBottom: "1px solid #F0F0F0" }}>
                   <span>{b.phone}</span>
+                  {b.instagram && <span style={{ color: "#999" }}>{b.instagram}</span>}
                   <span style={{ fontWeight: 800, color: "#111", fontSize: 13 }}>${b.price}</span>
                   <span style={{ color: "#888" }}>{b.bookingType === "monthly" ? "Monthly" : "Drop-in"}</span>
-                  {b.email && <span style={{ color: "#999" }}>{b.email}</span>}
                 </div>
                 <div style={{ padding: "10px 14px", display: "flex", gap: 6, flexWrap: "wrap" }}>
                   {b.status === "pending" && <StatusButton id={b.id} status="confirmed" label="✓ Confirm" bg="#1565C0" />}
