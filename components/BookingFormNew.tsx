@@ -201,7 +201,7 @@ export default function BookingFormNew({ schedule }: { schedule: ClassSchedule[]
           <div style={{ display: 'flex', flexDirection: 'column', gap: 1, background: 'var(--border)' }}>
             <Field name="name" placeholder="Full name" error={fieldErrors?.name?.[0]} />
             <PhoneField error={fieldErrors?.phone?.[0]} />
-            <Field name="instagram" placeholder="Instagram @username" error={fieldErrors?.instagram?.[0]} hint="Don't know your @username? Open Instagram → tap your profile → it's at the top." />
+            <Field name="instagram" placeholder="Instagram @username" error={fieldErrors?.instagram?.[0]} hint={<>Don&apos;t know your @username? <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--pink)', textDecoration: 'underline' }}>Open Instagram</a> → tap your profile → it&apos;s at the top.</>} />
           </div>
         </div>
 
@@ -233,7 +233,7 @@ export default function BookingFormNew({ schedule }: { schedule: ClassSchedule[]
 }
 
 function Field({ name, placeholder, type = 'text', error, hint }: {
-  name: string; placeholder: string; type?: string; error?: string; hint?: string
+  name: string; placeholder: string; type?: string; error?: string; hint?: React.ReactNode
 }) {
   return (
     <div>
