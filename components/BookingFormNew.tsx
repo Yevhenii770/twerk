@@ -3,7 +3,8 @@
 import { useActionState, useState, useEffect, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createBooking } from '@/app/actions/booking'
-import { CLASS_STATIC, CLASS_IDS, DAY_NAMES, type ClassId, type ClassSchedule } from '@/lib/classes'
+import { CLASS_STATIC, CLASS_IDS, DAY_NAMES, ID_TO_SLUG, type ClassId, type ClassSchedule } from '@/lib/classes'
+import { track } from '@/lib/analytics'
 
 function getNextDates(dayOfWeek: number, count = 8): string[] {
   const dates: string[] = []
@@ -36,30 +37,58 @@ function getMonthlyDates(startIso: string): string[] {
 export default function BookingFormNew({ schedule }: { schedule: ClassSchedule[] }) {
   const searchParams = useSearchParams()
   const paramClass = searchParams.get('class') as ClassId | null
+  const hasPresetClass = Boolean(paramClass && CLASS_IDS.includes(paramClass))
   const [state, action, pending] = useActionState(createBooking, null)
   const [classType, setClassType] = useState<ClassId>(
-    (paramClass && CLASS_IDS.includes(paramClass)) ? paramClass : 'twerk'
+    hasPresetClass ? (paramClass as ClassId) : 'twerk'
   )
+  const [pickerOpen, setPickerOpen] = useState(!hasPresetClass)
   const [bookingType, setBookingType] = useState<'dropin' | 'monthly'>('dropin')
   const [selectedDate, setSelectedDate] = useState('')
   const [name, setName] = useState('')
-  const [instagram, setInstagram] = useState('')
   const [clientErrors, setClientErrors] = useState<Record<string, string>>({})
   const dateRef = useRef<HTMLDivElement>(null)
   const nameRef = useRef<HTMLDivElement>(null)
   const phoneRef = useRef<HTMLDivElement>(null)
-  const instagramRef = useRef<HTMLDivElement>(null)
+  const formStartedRef = useRef(false)
+  const completedFiredRef = useRef(false)
+  const classFiredRef = useRef<string | null>(null)
 
   const scheduleMap = Object.fromEntries(schedule.map(s => [s.classType, s]))
   const sched = scheduleMap[classType]
   const staticInfo = CLASS_STATIC[classType]
   const dayName = sched ? DAY_NAMES[sched.dayOfWeek] : ''
   const dates = sched ? getNextDates(sched.dayOfWeek) : []
+  const price = bookingType === 'monthly' ? staticInfo.monthly : staticInfo.dropin
+
+  useEffect(() => {
+    track('booking_page_view', { class_slug: hasPresetClass ? ID_TO_SLUG[paramClass as ClassId] : undefined })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     setSelectedDate('')
     setBookingType('dropin')
+    if (classFiredRef.current !== classType) {
+      classFiredRef.current = classType
+      track('booking_class_selected', { class_slug: ID_TO_SLUG[classType], class_name: CLASS_STATIC[classType].label })
+    }
   }, [classType])
+
+  useEffect(() => {
+    if (selectedDate) track('booking_date_selected', { class_slug: ID_TO_SLUG[classType], date: selectedDate })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDate])
+
+  useEffect(() => {
+    if (state?.success && state.data && !completedFiredRef.current) {
+      completedFiredRef.current = true
+      track('booking_completed', {
+        class_slug: ID_TO_SLUG[state.data.classType as ClassId] ?? state.data.classType,
+        booking_type: state.data.bookingType,
+      })
+    }
+  }, [state])
 
   useEffect(() => {
     if (clientErrors.date && selectedDate) setClientErrors(e => { const { date, ...rest } = e; return rest })
@@ -69,12 +98,11 @@ export default function BookingFormNew({ schedule }: { schedule: ClassSchedule[]
     if (clientErrors.name && name.trim().length >= 2) setClientErrors(e => { const { name: _, ...rest } = e; return rest })
   }, [name, clientErrors.name])
 
-  useEffect(() => {
-    if (clientErrors.instagram) {
-      const clean = instagram.replace(/^@+/, '')
-      if (clean && /^[a-zA-Z0-9._]{1,30}$/.test(clean)) setClientErrors(e => { const { instagram: _, ...rest } = e; return rest })
-    }
-  }, [instagram, clientErrors.instagram])
+  const markFormStarted = () => {
+    if (formStartedRef.current) return
+    formStartedRef.current = true
+    track('booking_form_started', { class_slug: ID_TO_SLUG[classType] })
+  }
 
   const fieldErrors = (state && !state.success && state.errors && !('_' in state.errors)) ? state.errors : null
 
@@ -108,7 +136,7 @@ export default function BookingFormNew({ schedule }: { schedule: ClassSchedule[]
               We&apos;ll contact you soon
             </p>
             <p style={{ fontSize: 12, color: 'var(--mid)', lineHeight: 1.7 }}>
-              Your request has been received. We&apos;ll reach out via phone or Instagram to confirm your spot.
+              Your request has been received. We&apos;ll reach out by phone to confirm your spot.
             </p>
           </div>
         </div>
@@ -118,8 +146,6 @@ export default function BookingFormNew({ schedule }: { schedule: ClassSchedule[]
       </div>
     )
   }
-
-  const price = bookingType === 'monthly' ? staticInfo.monthly : staticInfo.dropin
 
   const validate = (): boolean => {
     const errors: Record<string, string> = {}
@@ -139,11 +165,6 @@ export default function BookingFormNew({ schedule }: { schedule: ClassSchedule[]
       errors.phone = 'Please enter a valid phone number'
       firstBad.push(phoneRef)
     }
-    const igClean = instagram.replace(/^@+/, '')
-    if (!igClean || !/^[a-zA-Z0-9._]{1,30}$/.test(igClean)) {
-      errors.instagram = 'Please enter your Instagram username'
-      firstBad.push(instagramRef)
-    }
 
     setClientErrors(errors)
 
@@ -157,75 +178,119 @@ export default function BookingFormNew({ schedule }: { schedule: ClassSchedule[]
   return (
     <div style={{ maxWidth: 560, margin: '0 auto', padding: '48px 24px 80px' }}>
 
-      <form action={action} onSubmit={e => { if (!validate()) e.preventDefault() }}>
+      <form
+        action={action}
+        onSubmit={e => {
+          if (!validate()) { e.preventDefault(); return }
+          track('booking_submitted', { class_slug: ID_TO_SLUG[classType], booking_type: bookingType })
+        }}
+      >
         <input type="hidden" name="classType" value={classType} />
         <input type="hidden" name="bookingType" value={bookingType} />
         <input type="hidden" name="date" value={selectedDate} />
 
         {/* Step 1 — Class */}
-        <Section step={1} title="Choose your class">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {CLASS_IDS.map(key => {
-              const s = scheduleMap[key]
-              const info = CLASS_STATIC[key]
-              const active = classType === key
-              return (
+        <Section step={1} title="Your class">
+          {pickerOpen ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {CLASS_IDS.map(key => {
+                const s = scheduleMap[key]
+                const info = CLASS_STATIC[key]
+                const active = classType === key
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => { setClassType(key); setPickerOpen(false) }}
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      padding: '16px 20px', border: active ? '2px solid var(--dark)' : '1px solid var(--border)',
+                      cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
+                      background: active ? 'var(--dark)' : '#fff',
+                      color: active ? '#fff' : 'var(--dark)',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    <div>
+                      <p style={{ fontSize: 15, fontWeight: 600, marginBottom: 3, color: active ? '#fff' : 'var(--dark)' }}>{info.label}</p>
+                      <p style={{ fontSize: 12, color: active ? 'rgba(255,255,255,0.65)' : 'var(--mid)' }}>
+                        {s ? `${DAY_NAMES[s.dayOfWeek]}s · ${s.timeDisplay}` : ''}
+                      </p>
+                    </div>
+                    <span style={{
+                      fontSize: 18, fontFamily: 'var(--font-cormorant)', fontStyle: 'italic', fontWeight: 300,
+                      color: active ? '#fff' : 'var(--pink)',
+                    }}>
+                      from ${info.dropin}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          ) : (
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '18px 20px', border: '2px solid var(--dark)', background: 'var(--dark)',
+            }}>
+              <div>
+                <p style={{ fontSize: 16, fontWeight: 600, marginBottom: 3, color: '#fff' }}>{staticInfo.label}</p>
+                <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.65)' }}>
+                  {sched ? `${dayName} · ${sched.timeDisplay}` : ''}
+                </p>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <p style={{
+                  fontSize: 20, fontFamily: 'var(--font-cormorant)', fontStyle: 'italic', fontWeight: 300,
+                  color: '#fff', marginBottom: 4,
+                }}>
+                  ${staticInfo.dropin}
+                </p>
                 <button
-                  key={key}
                   type="button"
-                  onClick={() => setClassType(key)}
+                  onClick={() => setPickerOpen(true)}
                   style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '16px 20px', border: active ? '2px solid var(--dark)' : '1px solid var(--border)',
-                    cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
-                    background: active ? 'var(--dark)' : '#fff',
-                    color: active ? '#fff' : 'var(--dark)',
-                    transition: 'all 0.2s',
+                    fontSize: 11, color: 'var(--pink)', background: 'none', border: 'none',
+                    cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'underline', padding: 0,
                   }}
                 >
-                  <div>
-                    <p style={{ fontSize: 15, fontWeight: 600, marginBottom: 3, color: active ? '#fff' : 'var(--dark)' }}>{info.label}</p>
-                    <p style={{ fontSize: 12, color: active ? 'rgba(255,255,255,0.65)' : 'var(--mid)' }}>
-                      {s ? `${DAY_NAMES[s.dayOfWeek]}s · ${s.timeDisplay}` : ''}
-                    </p>
-                  </div>
-                  <span style={{
-                    fontSize: 18, fontFamily: 'var(--font-cormorant)', fontStyle: 'italic', fontWeight: 300,
-                    color: active ? '#fff' : 'var(--pink)',
-                  }}>
-                    from ${info.dropin}
-                  </span>
+                  Change class
                 </button>
-              )
-            })}
-          </div>
+              </div>
+            </div>
+          )}
+
+          {staticInfo.monthly && (
+            <div style={{ marginTop: 10, fontSize: 12 }}>
+              {bookingType === 'dropin' ? (
+                <button
+                  type="button"
+                  onClick={() => setBookingType('monthly')}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', color: 'var(--mid)', textDecoration: 'underline', padding: 0 }}
+                >
+                  Coming regularly? View Monthly Pass — ${staticInfo.monthly}/mo
+                </button>
+              ) : (
+                <div style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  padding: '10px 14px', background: 'var(--card)', border: '1px solid var(--border)',
+                }}>
+                  <span style={{ color: 'var(--dark)' }}>Monthly Pass · 4 classes · ${staticInfo.monthly}</span>
+                  <button
+                    type="button"
+                    onClick={() => setBookingType('dropin')}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', color: 'var(--pink)', textDecoration: 'underline', padding: 0 }}
+                  >
+                    Switch to Drop-in
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </Section>
 
-        {/* Step 2 — Booking type (skip if no monthly option) */}
-        {staticInfo.monthly && (
-          <Section step={2} title="How would you like to book?">
-            <div style={{ display: 'flex', gap: 8 }}>
-              <TypeBtn
-                active={bookingType === 'dropin'}
-                onClick={() => setBookingType('dropin')}
-                label="Drop-in"
-                desc="Single class"
-                price={`$${staticInfo.dropin}`}
-              />
-              <TypeBtn
-                active={bookingType === 'monthly'}
-                onClick={() => setBookingType('monthly')}
-                label="Monthly"
-                desc="4 classes"
-                price={`$${staticInfo.monthly}`}
-              />
-            </div>
-          </Section>
-        )}
-
-        {/* Step 3 — Date */}
+        {/* Step 2 — Date */}
         <div ref={dateRef}>
-        <Section step={staticInfo.monthly ? 3 : 2} title={bookingType === 'monthly' ? 'Pick your start date' : `Pick a ${dayName}`}>
+        <Section step={2} title={bookingType === 'monthly' ? 'Pick your start date' : `Pick a ${dayName}`}>
           {bookingType === 'monthly' && (
             <p style={{ fontSize: 12, color: 'var(--mid)', marginBottom: 12, lineHeight: 1.5 }}>
               Choose your first class — the next 3 sessions will be added automatically.
@@ -278,17 +343,18 @@ export default function BookingFormNew({ schedule }: { schedule: ClassSchedule[]
         </Section>
         </div>
 
-        {/* Step — Contact info */}
-        <Section step={staticInfo.monthly ? 4 : 3} title="Your details">
+        {/* Step 3 — Contact info */}
+        <Section step={3} title="Your details">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div ref={nameRef}>
-              <InputField label="Full name" name="name" placeholder="Jane Doe" error={clientErrors.name || fieldErrors?.name?.[0]} value={name} onChange={setName} />
+              <InputField
+                label="Full name" name="name" placeholder="Jane Doe"
+                error={clientErrors.name || fieldErrors?.name?.[0]} value={name}
+                onChange={v => { markFormStarted(); setName(v) }}
+              />
             </div>
             <div ref={phoneRef}>
-              <PhoneField error={clientErrors.phone || fieldErrors?.phone?.[0]} />
-            </div>
-            <div ref={instagramRef}>
-              <InstagramField error={clientErrors.instagram || fieldErrors?.instagram?.[0]} value={instagram} onChange={setInstagram} />
+              <PhoneField error={clientErrors.phone || fieldErrors?.phone?.[0]} onStart={markFormStarted} />
             </div>
           </div>
         </Section>
@@ -372,99 +438,7 @@ function InputField({ label, name, placeholder, error, type = 'text', value, onC
   )
 }
 
-function TypeBtn({ active, onClick, label, desc, price }: {
-  active: boolean; onClick: () => void; label: string; desc: string; price: string
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      style={{
-        flex: 1, padding: '18px 16px', border: active ? '2px solid var(--dark)' : '1px solid var(--border)',
-        cursor: 'pointer', fontFamily: 'inherit', textAlign: 'center',
-        background: active ? 'var(--dark)' : '#fff',
-        color: active ? '#fff' : 'var(--dark)',
-        transition: 'all 0.2s',
-      }}
-    >
-      <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 2, color: active ? '#fff' : 'var(--dark)' }}>{label}</p>
-      <p style={{ fontSize: 11, marginBottom: 6, color: active ? 'rgba(255,255,255,0.6)' : 'var(--mid)' }}>{desc}</p>
-      <p style={{ fontSize: 20, fontFamily: 'var(--font-cormorant)', fontStyle: 'italic', fontWeight: 300, color: active ? '#fff' : 'var(--pink)' }}>{price}</p>
-    </button>
-  )
-}
-
-function InstagramField({ error, value, onChange }: { error?: string; value: string; onChange: (v: string) => void }) {
-  const [touched, setTouched] = useState(false)
-
-  const clean = value.replace(/^@+/, '')
-  const isValid = /^[a-zA-Z0-9._]{1,30}$/.test(clean) && clean.length >= 1
-  const isEmpty = clean.length === 0
-  const showError = touched && !isEmpty && !isValid
-  const showOk = touched && isValid
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const input = e.target.value.replace(/^@+/, '').replace(/[^a-zA-Z0-9._]/g, '').slice(0, 30)
-    onChange(input)
-  }
-
-  const getBorderColor = () => {
-    if (showError) return 'var(--pink)'
-    if (showOk) return '#22c55e'
-    return 'var(--border)'
-  }
-
-  return (
-    <div>
-      <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--mid)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>
-        Instagram
-      </label>
-      <div style={{ position: 'relative' }}>
-        <span style={{
-          position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)',
-          fontSize: 14, color: 'var(--mid)', pointerEvents: 'none',
-        }}>@</span>
-        <input
-          type="text"
-          placeholder="username"
-          value={clean}
-          onChange={handleChange}
-          onBlur={() => setTouched(true)}
-          style={{
-            width: '100%', padding: '14px 44px 14px 32px', border: `1px solid ${getBorderColor()}`,
-            outline: 'none', fontFamily: 'inherit', fontSize: 14, color: 'var(--dark)',
-            background: '#fff', transition: 'border-color 0.2s', boxSizing: 'border-box',
-          }}
-          onFocus={e => { e.target.style.borderColor = showError ? 'var(--pink)' : showOk ? '#22c55e' : 'var(--pink)' }}
-        />
-        {showOk && (
-          <span style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', color: '#22c55e', fontSize: 18, lineHeight: 1 }}>✓</span>
-        )}
-        {showError && (
-          <span style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--pink)', fontSize: 18, lineHeight: 1 }}>✕</span>
-        )}
-      </div>
-      <input type="hidden" name="instagram" value={clean} />
-      {showError && (
-        <p style={{ fontSize: 11, color: 'var(--pink)', marginTop: 4 }}>
-          Only letters, numbers, dots and underscores
-        </p>
-      )}
-      {error && !showError && (
-        <p style={{ fontSize: 11, color: 'var(--pink)', marginTop: 4 }}>{error}</p>
-      )}
-      <p style={{ fontSize: 11, color: 'var(--mid)', marginTop: 6, lineHeight: 1.5 }}>
-        Don&apos;t know your @username?{' '}
-        <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--pink)', textDecoration: 'underline' }}>
-          Open Instagram
-        </a>
-        {' '}→ tap your profile → it&apos;s at the top.
-      </p>
-    </div>
-  )
-}
-
-function PhoneField({ error }: { error?: string }) {
+function PhoneField({ error, onStart }: { error?: string; onStart?: () => void }) {
   const [display, setDisplay] = useState('')
   const [raw, setRaw] = useState('')
   const [touched, setTouched] = useState(false)
@@ -475,6 +449,7 @@ function PhoneField({ error }: { error?: string }) {
   const showOk = touched && isValid
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onStart?.()
     const digits = e.target.value.replace(/\D/g, '').slice(0, 10)
     setRaw(digits)
     let formatted = ''

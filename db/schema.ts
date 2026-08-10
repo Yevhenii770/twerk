@@ -31,13 +31,22 @@ export const bookings = pgTable("bookings", {
   name: text("name").notNull(),
   phone: text("phone").notNull(),
   email: text("email"),
-  instagram: text("instagram"),
   classType: text("class_type").notNull(), // twerk | highheels | stretching
   bookingType: text("booking_type").default("dropin").notNull(), // dropin | monthly
   date: date("date").notNull(),
   price: integer("price").notNull(),
   status: text("status").default("pending").notNull(), // pending | confirmed | paid | cancelled
   adminNotes: text("admin_notes"),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+});
+
+// Leads from visitors who like a class but can't make its current scheduled time.
+export const classScheduleInterest = pgTable("class_schedule_interest", {
+  id: serial("id").primaryKey(),
+  classType: text("class_type").notNull(), // twerk | highheels | stretching
+  name: text("name"),
+  email: text("email"),
+  phone: text("phone"),
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
 });
 
@@ -53,3 +62,4 @@ export const classSettings = pgTable("class_settings", {
 export type ClassSettings = InferSelectModel<typeof classSettings>;
 export type User = InferSelectModel<typeof users>;
 export type Booking = InferSelectModel<typeof bookings>;
+export type ClassScheduleInterest = InferSelectModel<typeof classScheduleInterest>;

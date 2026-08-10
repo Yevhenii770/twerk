@@ -1,8 +1,25 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
-import { CLASS_STATIC, DAY_NAMES, SLUG_TO_ID, ID_TO_SLUG } from '@/lib/classes'
+import { CLASS_STATIC, DAY_NAMES, SLUG_TO_ID, ID_TO_SLUG, type ClassId } from '@/lib/classes'
 import { getSchedule, getClassSettings } from '@/lib/dal'
+import { getGoogleReviews } from '@/lib/reviews'
+import TrackedLink from '@/components/TrackedLink'
+import TrackPageView from '@/components/TrackPageView'
+import ScheduleInterestForm from '@/components/ScheduleInterestForm'
+
+// Contextual CTA verb per class — copy only, price/day/time always pulled from live data.
+const CTA_VERB: Record<ClassId, string> = {
+  twerk: 'Reserve',
+  highheels: 'Try',
+  stretching: 'Book',
+}
+
+const CLASS_KEYWORDS: Record<ClassId, string[]> = {
+  twerk: ['twerk'],
+  highheels: ['heel'],
+  stretching: ['stretch'],
+}
 
 type Props = { params: Promise<{ slug: string }> }
 
@@ -53,13 +70,21 @@ export default async function ClassPage({ params }: Props) {
   const classId = SLUG_TO_ID[slug]
   if (!classId) notFound()
 
-  const [schedule, photoPositions] = await Promise.all([getSchedule(), getClassSettings()])
+  const [schedule, photoPositions, reviewsData] = await Promise.all([getSchedule(), getClassSettings(), getGoogleReviews()])
   const cls = CLASS_STATIC[classId]
   const sched = schedule.find(s => s.classType === classId)
   const dayName = sched ? DAY_NAMES[sched.dayOfWeek] : ''
   const photo = photoPositions[classId]?.photoUrl ?? cls.photo
   const photoPos = photoPositions[classId]?.photoPosition ?? '50% 50%'
   const texts = photoPositions[classId]?.modalTexts ?? cls.modalTexts
+
+  const isBeginnerFriendly = cls.modalEyebrow.includes('Beginner Friendly')
+  const ctaLabel = `${CTA_VERB[classId]} Your First ${cls.label} Class — $${cls.dropin}`
+
+  const { reviews } = reviewsData
+  const matchedReview = reviews.find(r => CLASS_KEYWORDS[classId].some(k => r.text.toLowerCase().includes(k)))
+  const featuredReview = matchedReview ?? reviews[0] ?? null
+  const isReviewClassSpecific = Boolean(matchedReview)
 
   const otherClasses = Object.entries(ID_TO_SLUG)
     .filter(([id]) => id !== classId)
@@ -105,6 +130,7 @@ export default async function ClassPage({ params }: Props) {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }} />
+      <TrackPageView event="class_page_view" params={{ class_slug: slug, class_name: cls.label }} />
 
       {/* HERO */}
       <section className="cls-hero">
@@ -123,9 +149,14 @@ export default async function ClassPage({ params }: Props) {
             </p>
           )}
           <div className="cls-hero-btns">
-            <Link href={cls.bookUrl} className="btn-hero-primary">Book a Class</Link>
+            <TrackedLink href={cls.bookUrl} className="btn-hero-primary" event="book_cta_clicked" params={{ class_slug: slug, class_name: cls.label, placement: 'hero' }}>
+              {ctaLabel}
+            </TrackedLink>
             <Link href="/#classes" className="btn-hero-outline">All Classes</Link>
           </div>
+          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.75)', marginTop: 14 }}>
+            {dayName} · {sched?.timeDisplay} · {isBeginnerFriendly ? 'Beginner Friendly' : cls.level}
+          </p>
         </div>
       </section>
 
@@ -137,9 +168,9 @@ export default async function ClassPage({ params }: Props) {
           {texts.map((t, i) => (
             <p key={i} className="mk-section-body" style={{ marginBottom: 20 }}>{t}</p>
           ))}
-          <Link href={cls.bookUrl} className="btn-outline-dark" style={{ marginTop: 12 }}>
+          <TrackedLink href={cls.bookUrl} className="btn-outline-dark" style={{ marginTop: 12 }} event="book_cta_clicked" params={{ class_slug: slug, class_name: cls.label, placement: 'content' }}>
             Book {cls.label} →
-          </Link>
+          </TrackedLink>
         </div>
 
         <div className="cls-sidebar">
@@ -181,9 +212,11 @@ export default async function ClassPage({ params }: Props) {
                 <span className="cls-price-val">${cls.monthly} <span style={{ fontSize: 14, fontStyle: 'normal', color: '#6B6059' }}>/ mo</span></span>
               </div>
             )}
-            <Link href={cls.bookUrl} className="btn-price" style={{ marginTop: 32 }}>
+            <TrackedLink href={cls.bookUrl} className="btn-price" style={{ marginTop: 32 }} event="book_cta_clicked" params={{ class_slug: slug, class_name: cls.label, placement: 'sidebar' }}>
               Reserve Your Spot
-            </Link>
+            </TrackedLink>
+
+            <ScheduleInterestForm classId={classId} className={cls.label} />
           </div>
         </div>
       </section>
@@ -214,12 +247,42 @@ export default async function ClassPage({ params }: Props) {
         </div>
       </section>
 
+      {/* SOCIAL PROOF */}
+      {featuredReview && (
+        <section className="cls-proof">
+          <div className="cls-proof-inner">
+            <p className="mk-eyebrow">{isReviewClassSpecific ? `What students say about ${cls.label}` : 'What our students say'}</p>
+            <div className="mk-review-card">
+              <div className="mk-review-stars">
+                {Array.from({ length: featuredReview.rating }).map((_, j) => (
+                  <svg key={j} viewBox="0 0 20 20" fill="var(--pink)" style={{ width: 14, height: 14 }}>
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                ))}
+              </div>
+              <p className="mk-review-text">{featuredReview.text.length > 260 ? featuredReview.text.slice(0, 260) + '…' : featuredReview.text}</p>
+              <div className="mk-review-author">
+                {featuredReview.authorPhoto && (
+                  <img src={featuredReview.authorPhoto} alt={featuredReview.authorName} className="mk-review-avatar" referrerPolicy="no-referrer" />
+                )}
+                <div>
+                  <p className="mk-review-name">{featuredReview.authorName}</p>
+                  <p className="mk-review-time">Google review · {featuredReview.relativeTime}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* CTA */}
       <section className="mk-cta">
         <p className="mk-cta-pre">Ready to start?</p>
         <h2 className="mk-cta-title">Join {cls.label} in Portland</h2>
         <p className="mk-cta-sub">No experience needed. Just show up, feel the music, and let your body do the rest.</p>
-        <Link href={cls.bookUrl} className="btn-cta">Book Your First Class</Link>
+        <TrackedLink href={cls.bookUrl} className="btn-cta" event="book_cta_clicked" params={{ class_slug: slug, class_name: cls.label, placement: 'final_cta' }}>
+          {ctaLabel}
+        </TrackedLink>
       </section>
     </>
   )
