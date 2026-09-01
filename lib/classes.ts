@@ -1,4 +1,4 @@
-export type ClassId = 'twerk' | 'highheels' | 'stretching'
+export type ClassId = 'twerk' | 'highheels'
 
 export type ClassSchedule = {
   classType: string
@@ -7,18 +7,16 @@ export type ClassSchedule = {
   duration: string
 }
 
-export const CLASS_IDS: ClassId[] = ['twerk', 'highheels', 'stretching']
+export const CLASS_IDS: ClassId[] = ['twerk', 'highheels']
 
 export const SLUG_TO_ID: Record<string, ClassId> = {
   'twerk': 'twerk',
   'high-heels': 'highheels',
-  'stretching': 'stretching',
 }
 
 export const ID_TO_SLUG: Record<ClassId, string> = {
   'twerk': 'twerk',
   'highheels': 'high-heels',
-  'stretching': 'stretching',
 }
 
 export const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
@@ -45,7 +43,6 @@ export function parseTimeDisplay(timeDisplay: string): { opens: string; closes: 
 export const DEFAULT_SCHEDULES: ClassSchedule[] = [
   { classType: 'twerk',      dayOfWeek: 6, timeDisplay: '11:00 AM–12:20 PM', duration: '80 min' },
   { classType: 'highheels',  dayOfWeek: 5, timeDisplay: '7:00–8:00 PM',      duration: '60 min' },
-  { classType: 'stretching', dayOfWeek: 4, timeDisplay: '7:00–8:00 PM',      duration: '60 min' },
 ]
 
 export const CLASS_STATIC: Record<ClassId, {
@@ -73,8 +70,8 @@ export const CLASS_STATIC: Record<ClassId, {
       "This style may be perfect for you if you want to: feel more confident and free in your body · improve hip mobility and body coordination · release stress and emotional tension through movement · reconnect with your femininity and sensuality · try something empowering and outside of your comfort zone.",
       "No dance experience is needed — the most important thing is being open to movement and enjoying the process.",
     ],
-    dropin: 25,
-    monthly: 80,
+    dropin: 30,
+    monthly: 100,
   },
   highheels: {
     label: 'High Heels',
@@ -90,21 +87,5 @@ export const CLASS_STATIC: Record<ClassId, {
     ],
     dropin: 30,
     monthly: 100,
-  },
-  stretching: {
-    label: 'Stretching',
-    photo: '/class-stretching.jpg',
-    bookUrl: '/book?class=stretching',
-    level: 'All Levels',
-    modalEyebrow: 'Class 03 — All Levels',
-    desc: "A movement-based class focused on flexibility, mobility, and posture — helping release tension, reduce stress, and deepen your connection with your body.",
-    modalTexts: [
-      "Stretching classes focus on improving flexibility, mobility, posture, and overall body awareness through mindful movement and controlled exercises. These sessions help release muscle tension, improve recovery, increase range of motion, and create a stronger connection with your body.",
-      "Stretching is not only beneficial for physical health, but also helps reduce stress, improve relaxation, and make the body feel lighter and more free in everyday life. Classes are beginner-friendly and designed to help you move safely, comfortably, and at your own pace.",
-      "Stretching may be perfect for you if you want to: improve flexibility and mobility · release tension and stiffness in the body · improve posture and body awareness · support recovery from workouts or dancing · feel more relaxed, balanced, and connected to your body.",
-      "No flexibility level is required — the goal is progress, consistency, and feeling better in your body over time.",
-    ],
-    dropin: 20,
-    monthly: null,
   },
 }

@@ -12,13 +12,11 @@ import ScheduleInterestForm from '@/components/ScheduleInterestForm'
 const CTA_VERB: Record<ClassId, string> = {
   twerk: 'Reserve',
   highheels: 'Try',
-  stretching: 'Book',
 }
 
 const CLASS_KEYWORDS: Record<ClassId, string[]> = {
   twerk: ['twerk'],
   highheels: ['heel'],
-  stretching: ['stretch'],
 }
 
 type Props = { params: Promise<{ slug: string }> }
@@ -26,18 +24,13 @@ type Props = { params: Promise<{ slug: string }> }
 const META: Record<string, { title: string; description: string; keywords: string }> = {
   twerk: {
     title: 'Twerk Classes in Portland, OR — bounce lab',
-    description: 'Beginner-friendly twerk classes in Portland, OR. Body confidence & choreography. Drop-in $25 or monthly $80. Book online.',
+    description: 'Beginner-friendly twerk classes in Portland, OR. Body confidence & choreography. Drop-in $30 or monthly $100. Book online.',
     keywords: 'twerk class Portland, twerk Portland Oregon, twerk dance class near me, beginner twerk class, twerk lessons Portland, twerk workshop Portland OR',
   },
   'high-heels': {
     title: 'High Heels Dance Classes in Portland, OR — bounce lab',
     description: 'High heels dance classes in Portland, OR. Posture & floor presence. Beginner-friendly. Drop-in $30 or monthly $100. Book online.',
     keywords: 'high heels dance class Portland, high heels class Portland Oregon, heels dance near me, high heels dance lessons, heels choreography class Portland',
-  },
-  stretching: {
-    title: 'Stretching Classes in Portland, OR — bounce lab',
-    description: 'Stretching & flexibility classes in Portland, OR. All levels welcome. Improve mobility. Drop-in $20. Every Thursday. Book online.',
-    keywords: 'stretching class Portland, flexibility class Portland Oregon, stretching near me, adult stretching class, stretching for dancers Portland',
   },
 }
 
@@ -225,7 +218,7 @@ export default async function ClassPage({ params }: Props) {
       <section style={{ padding: '72px 72px', borderBottom: '1px solid var(--border)', background: 'var(--card)' }}>
         <p className="mk-eyebrow">Also at bounce lab</p>
         <h2 className="mk-section-title" style={{ marginBottom: 40 }}>Other Classes</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '1px', background: 'var(--border)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${otherClasses.length},1fr)`, gap: '1px', background: 'var(--border)' }}>
           {otherClasses.map(({ id, slug: s, label }) => {
             const other = CLASS_STATIC[id as keyof typeof CLASS_STATIC]
             const otherSched = schedule.find(sc => sc.classType === id)

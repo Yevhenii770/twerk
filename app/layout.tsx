@@ -23,17 +23,16 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://bounce-lab.com"),
   title: {
     default:
-      "bounce lab — Twerk, High Heels & Stretching in Portland, OR",
+      "bounce lab — Twerk & High Heels in Portland, OR",
     template: "%s | bounce lab Portland",
   },
   description:
-    "Twerk, High Heels & Stretching dance classes in Portland, Oregon. Beginner-friendly studio for women. Drop-in from $20. Book online.",
+    "Twerk & High Heels dance classes in Portland, Oregon. Beginner-friendly studio for women. Drop-in $30 or Monthly Pass $100. Book online.",
   keywords: [
     "twerk class Portland",
     "twerk Portland Oregon",
     "high heels dance class Portland",
     "high heels Portland OR",
-    "stretching class Portland",
     "dance studio Portland Oregon",
     "twerk Vancouver WA",
     "high heels dance Vancouver",
@@ -46,9 +45,9 @@ export const metadata: Metadata = {
   authors: [{ name: "bounce lab Dance Studio" }],
   creator: "bounce lab",
   openGraph: {
-    title: "bounce lab — Twerk, High Heels & Stretching in Portland, OR",
+    title: "bounce lab — Twerk & High Heels in Portland, OR",
     description:
-      "Judgment-free dance studio for women in Portland, Oregon. Twerk · High Heels · Stretching. Drop-in from $20. Book your spot online.",
+      "Judgment-free dance studio for women in Portland, Oregon. Twerk · High Heels. Drop-in $30 or Monthly Pass $100. Book your spot online.",
     url: "https://bounce-lab.com",
     siteName: "bounce lab Dance Studio",
     images: [
@@ -66,7 +65,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "bounce lab — Dance Classes in Portland, OR",
     description:
-      "Twerk, High Heels & Stretching for women in Portland, Oregon. Beginner-friendly. Book online.",
+      "Twerk & High Heels for women in Portland, Oregon. Beginner-friendly. Book online.",
     images: ["/og-image-v2.jpg"],
   },
   icons: {
@@ -95,7 +94,7 @@ export default async function RootLayout({
     "@type": "DanceSchool",
     name: "bounce lab Dance Studio",
     description:
-      "Twerk, High Heels & Stretching dance classes in Portland, Oregon. Beginner-friendly, judgment-free studio for women.",
+      "Twerk & High Heels dance classes in Portland, Oregon. Beginner-friendly, judgment-free studio for women.",
     url: "https://bounce-lab.com",
     telephone: "+15034220858",
     image: "https://bounce-lab.com/og-image-v2.jpg",
@@ -108,16 +107,16 @@ export default async function RootLayout({
     },
     address: {
       "@type": "PostalAddress",
-      streetAddress: "1107 NE 9th Ave",
+      streetAddress: "2648 E Burnside St",
       addressLocality: "Portland",
       addressRegion: "OR",
-      postalCode: "97232",
+      postalCode: "97214",
       addressCountry: "US",
     },
     geo: {
       "@type": "GeoCoordinates",
-      latitude: 45.5051,
-      longitude: -122.675,
+      latitude: 45.5226344,
+      longitude: -122.6383752,
     },
     areaServed: [
       {
@@ -139,9 +138,8 @@ export default async function RootLayout({
       "@type": "OfferCatalog",
       name: "Dance Classes",
       itemListElement: [
-        { "@type": "Offer", itemOffered: { "@type": "Service", name: "Twerk Class Portland", description: "Beginner & intermediate twerk class every Saturday 11 AM–12:20 PM" }, price: "25", priceCurrency: "USD" },
+        { "@type": "Offer", itemOffered: { "@type": "Service", name: "Twerk Class Portland", description: "Beginner & intermediate twerk class every Saturday 11 AM–12:20 PM" }, price: "30", priceCurrency: "USD" },
         { "@type": "Offer", itemOffered: { "@type": "Service", name: "High Heels Dance Class Portland", description: "High heels dance class every Friday 7–8 PM" }, price: "30", priceCurrency: "USD" },
-        { "@type": "Offer", itemOffered: { "@type": "Service", name: "Stretching Class Portland", description: "All-levels stretching class every Thursday 7–8 PM" }, price: "20", priceCurrency: "USD" },
       ],
     },
     sameAs: ["https://www.instagram.com/iryna.pytska"],

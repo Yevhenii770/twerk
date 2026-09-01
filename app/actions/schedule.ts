@@ -9,7 +9,7 @@ import { getCurrentUser } from "@/lib/dal";
 import { z } from "zod";
 
 const ScheduleRowSchema = z.object({
-  classType:   z.enum(["twerk", "highheels", "stretching"]),
+  classType:   z.enum(["twerk", "highheels"]),
   dayOfWeek:   z.coerce.number().int().min(0).max(6),
   timeDisplay: z.string().min(1),
   duration:    z.string().min(1),

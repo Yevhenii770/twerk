@@ -9,7 +9,7 @@ const ScheduleInterestSchema = z.object({
   name:      z.string().trim().max(80).optional().or(z.literal("")),
   email:     z.string().trim().email("Enter a valid email").max(120).optional().or(z.literal("")),
   phone:     z.string().trim().min(7, "Enter a valid phone number").max(30).optional().or(z.literal("")),
-  classType: z.enum(["twerk", "highheels", "stretching"]),
+  classType: z.enum(["twerk", "highheels"]),
 }).refine(d => Boolean(d.email) || Boolean(d.phone), {
   message: "Enter an email or phone number",
   path: ["email"],
@@ -18,7 +18,6 @@ const ScheduleInterestSchema = z.object({
 const CLASS_LABELS: Record<string, string> = {
   twerk: "Twerk",
   highheels: "High Heels",
-  stretching: "Stretching",
 };
 
 export async function submitScheduleInterest(_: unknown, formData: FormData) {

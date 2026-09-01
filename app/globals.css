@@ -284,7 +284,7 @@ section[id] { scroll-margin-top: 80px; }
 /* ─── CLASSES ─── */
 .mk-classes-section { padding: 72px 72px; border-bottom: 1px solid var(--border); }
 .mk-classes-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 52px; }
-.mk-classes-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--border); }
+.mk-classes-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 1px; background: var(--border); }
 .mk-class-card { background: var(--cream); display: flex; flex-direction: column; }
 .mk-class-video { position: relative; width: 100%; aspect-ratio: 16/9; overflow: hidden; background: #1a1210; }
 .mk-class-video video,

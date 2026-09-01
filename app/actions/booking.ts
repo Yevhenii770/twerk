@@ -8,15 +8,14 @@ import { getCurrentUser, getSchedule } from "@/lib/dal";
 import { revalidateTag } from "next/cache";
 
 const PRICES: Record<string, Record<string, number>> = {
-  twerk:      { dropin: 25, monthly: 80 },
+  twerk:      { dropin: 30, monthly: 100 },
   highheels:  { dropin: 30, monthly: 100 },
-  stretching: { dropin: 20 },
 };
 
 const BookingSchema = z.object({
   name:        z.string().min(2, "Minimum 2 characters"),
   phone:       z.string().min(10, "Enter a valid phone number").regex(/^[\d\s\-\+\(\)]{10,}$/, "Enter a valid phone number"),
-  classType:   z.enum(["twerk", "highheels", "stretching"]),
+  classType:   z.enum(["twerk", "highheels"]),
   bookingType: z.enum(["dropin", "monthly"]).default("dropin"),
   date:        z.string().min(1, "Select a date"),
 });
@@ -99,7 +98,6 @@ export async function deleteBooking(id: number) {
 const CLASS_LABELS: Record<string, string> = {
   twerk:     "Twerk",
   highheels: "High Heels",
-  stretching: "Stretching",
 };
 
 async function sendTelegramNotification(data: {

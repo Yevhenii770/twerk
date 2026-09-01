@@ -31,7 +31,7 @@ export const bookings = pgTable("bookings", {
   name: text("name").notNull(),
   phone: text("phone").notNull(),
   email: text("email"),
-  classType: text("class_type").notNull(), // twerk | highheels | stretching
+  classType: text("class_type").notNull(), // twerk | highheels
   bookingType: text("booking_type").default("dropin").notNull(), // dropin | monthly
   date: date("date").notNull(),
   price: integer("price").notNull(),
@@ -43,7 +43,7 @@ export const bookings = pgTable("bookings", {
 // Leads from visitors who like a class but can't make its current scheduled time.
 export const classScheduleInterest = pgTable("class_schedule_interest", {
   id: serial("id").primaryKey(),
-  classType: text("class_type").notNull(), // twerk | highheels | stretching
+  classType: text("class_type").notNull(), // twerk | highheels
   name: text("name"),
   email: text("email"),
   phone: text("phone"),

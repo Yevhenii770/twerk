@@ -43,7 +43,7 @@ export default async function HomePage() {
     '@type': 'WebSite',
     name: 'bounce lab Dance Studio',
     url: 'https://bounce-lab.com',
-    description: 'Twerk, High Heels & Stretching dance classes in Portland, Oregon. Beginner-friendly, judgment-free studio for women.',
+    description: 'Twerk & High Heels dance classes in Portland, Oregon. Beginner-friendly, judgment-free studio for women.',
     publisher: { '@type': 'Organization', name: 'bounce lab Dance Studio', url: 'https://bounce-lab.com' },
     inLanguage: 'en-US',
   }
@@ -57,7 +57,7 @@ export default async function HomePage() {
     image: 'https://bounce-lab.com/og-image-v2.jpg',
     telephone: '+15034220858',
     priceRange: '$$',
-    address: { '@type': 'PostalAddress', addressLocality: 'Portland', addressRegion: 'OR', postalCode: '97232', addressCountry: 'US' },
+    address: { '@type': 'PostalAddress', streetAddress: '2648 E Burnside St', addressLocality: 'Portland', addressRegion: 'OR', postalCode: '97214', addressCountry: 'US' },
     aggregateRating: {
       '@type': 'AggregateRating',
       ratingValue: googleRating.toFixed(1),
@@ -87,12 +87,12 @@ export default async function HomePage() {
         <div className="mk-hero-content">
           <p className="mk-hero-tag">Portland, OR · Est. 2024</p>
           <h1 className="mk-hero-title">
-            <span className="sr-only">Dance Classes in Portland, OR — Twerk, High Heels &amp; Stretching — </span>
+            <span className="sr-only">Dance Classes in Portland, OR — Twerk &amp; High Heels — </span>
             Feel your<br />
             <em>body</em><br />
             move.
           </h1>
-          <p className="mk-hero-sub">Portland&apos;s dance studio for women — Twerk, High Heels &amp; Stretching. Beginner-friendly, judgment-free. No experience needed.</p>
+          <p className="mk-hero-sub">Portland&apos;s dance studio for women — Twerk &amp; High Heels. Beginner-friendly, judgment-free. No experience needed.</p>
           <div className="mk-hero-btns">
             <Link href="/book" className="btn-hero-primary">Book a Class</Link>
             <Link href="#classes" className="btn-hero-outline">See Classes</Link>
@@ -107,8 +107,8 @@ export default async function HomePage() {
       {/* ═══ STATS ═══ */}
       <div className="mk-stats fade-in">
         <div className="mk-stat">
-          <span className="mk-stat-val">Twerk · High Heels · Stretching</span>
-          <span className="mk-stat-label">Three Directions</span>
+          <span className="mk-stat-val">Twerk · High Heels</span>
+          <span className="mk-stat-label">Two Directions</span>
         </div>
         <div className="mk-stat">
           <span className="mk-stat-val">{scheduleDays}</span>
@@ -127,7 +127,7 @@ export default async function HomePage() {
             <p className="mk-eyebrow">What we offer</p>
             <h2 className="mk-section-title">Our Classes</h2>
           </div>
-          <span className="mk-schedule-note">3 directions · all levels welcome</span>
+          <span className="mk-schedule-note">2 directions · all levels welcome</span>
         </div>
         <ClassesWithModals schedule={schedule} photoPositions={photoPositions} />
       </section>
@@ -219,7 +219,7 @@ export default async function HomePage() {
             <p className="mk-eyebrow">When we meet</p>
             <h2 className="mk-section-title">Weekly Schedule</h2>
           </div>
-          <span className="mk-schedule-note">3 classes · every week</span>
+          <span className="mk-schedule-note">2 classes · every week</span>
         </div>
         <WeekCalendarClient schedule={schedule} />
       </section>
@@ -230,32 +230,12 @@ export default async function HomePage() {
           <p className="mk-eyebrow">Transparent pricing</p>
           <h2 className="mk-section-title">Simple &amp; Clear</h2>
         </div>
-        <div className="pricing-cols">
+        <div className="pricing-cols" style={{ gridTemplateColumns: '1fr', maxWidth: 460, margin: '0 auto' }}>
           <div className="pcol">
-            <p className="pcol-name">Twerk</p>
-            <div className="pcol-options">
-              <div className="popt">
-                <span className="popt-label">Drop-in</span>
-                <div className="popt-price">
-                  <span className="popt-curr">$</span>
-                  <span className="popt-num">25</span>
-                  <span className="popt-per">/ class</span>
-                </div>
-              </div>
-              <div className="popt">
-                <span className="popt-label">Monthly Pass</span>
-                <div className="popt-price">
-                  <span className="popt-curr">$</span>
-                  <span className="popt-num">80</span>
-                  <span className="popt-per">/ month</span>
-                </div>
-                <span className="popt-note">4 classes included</span>
-              </div>
-            </div>
-            <Link href="/book" className="btn-price">Book a Class</Link>
-          </div>
-          <div className="pcol">
-            <p className="pcol-name">High Heels</p>
+            <p className="pcol-name">All Classes</p>
+            <p style={{ fontSize: 12, color: 'var(--mid)', lineHeight: 1.6, marginTop: -20, marginBottom: 28 }}>
+              One price for every class — Twerk and High Heels.
+            </p>
             <div className="pcol-options">
               <div className="popt">
                 <span className="popt-label">Drop-in</span>
@@ -272,21 +252,7 @@ export default async function HomePage() {
                   <span className="popt-num">100</span>
                   <span className="popt-per">/ month</span>
                 </div>
-                <span className="popt-note">4 classes included</span>
-              </div>
-            </div>
-            <Link href="/book" className="btn-price">Book a Class</Link>
-          </div>
-          <div className="pcol">
-            <p className="pcol-name">Stretching</p>
-            <div className="pcol-options">
-              <div className="popt">
-                <span className="popt-label">Drop-in</span>
-                <div className="popt-price">
-                  <span className="popt-curr">$</span>
-                  <span className="popt-num">20</span>
-                  <span className="popt-per">/ class</span>
-                </div>
+                <span className="popt-note">Valid for 5 weeks from the purchase date. Use your pass for any classes on the schedule.</span>
               </div>
             </div>
             <Link href="/book" className="btn-price">Book a Class</Link>
@@ -311,12 +277,12 @@ export default async function HomePage() {
             mainEntity: [
               { "@type": "Question", name: "Do I need dance experience to join?", acceptedAnswer: { "@type": "Answer", text: "No experience needed. All classes at bounce lab are beginner-friendly — the most important thing is showing up and enjoying the movement. Many students come with zero dance background." } },
               { "@type": "Question", name: "What if I feel self-conscious or nervous?", acceptedAnswer: { "@type": "Answer", text: "That's completely normal — most of our students felt the same way before their first class. bounce lab is a judgment-free space where everyone supports each other. You'll feel comfortable from the very first minute." } },
-              { "@type": "Question", name: "What should I wear to a twerk or high heels class?", acceptedAnswer: { "@type": "Answer", text: "Wear comfortable clothes you can move in. For High Heels class, bring a pair of heels (5–8 cm recommended) or train in socks while you build confidence. For Twerk and Stretching, athletic or dance wear works great." } },
-              { "@type": "Question", name: "How much does a drop-in class cost in Portland?", acceptedAnswer: { "@type": "Answer", text: "Drop-in prices: Stretching $20, Twerk $25, High Heels $30. Monthly passes available: Twerk ($80/month for 4 classes) and High Heels ($100/month for 4 classes)." } },
+              { "@type": "Question", name: "What should I wear to a twerk or high heels class?", acceptedAnswer: { "@type": "Answer", text: "Wear comfortable clothes you can move in. For Twerk classes, wear shorts or pants that allow your glutes to move freely — avoid tight compression or shaping clothing that restricts movement. For High Heels class, bring a pair of heels (5–8 cm recommended) or train in socks while you build confidence." } },
+              { "@type": "Question", name: "How much does a drop-in class cost in Portland?", acceptedAnswer: { "@type": "Answer", text: "Every class is priced the same: Drop-in is $30, and a Monthly Pass is $100. The Monthly Pass is valid for 5 weeks from your purchase date and can be used for any classes on the schedule — Twerk or High Heels." } },
               { "@type": "Question", name: "Can I cancel or reschedule my booking?", acceptedAnswer: { "@type": "Answer", text: "Yes! You can reschedule or cancel your booking up to 24 hours before the class at no charge. Just reach out to us by phone or email." } },
-              { "@type": "Question", name: "Where do bounce lab classes take place in Portland?", acceptedAnswer: { "@type": "Answer", text: "Classes are held at 1107 NE 9th Ave, Portland, OR 97232. Street parking is available nearby." } },
+              { "@type": "Question", name: "Where do bounce lab classes take place in Portland?", acceptedAnswer: { "@type": "Answer", text: "Classes are held at 2648 E Burnside St, Portland, OR 97214, United States. Whole Foods is located nearby and may be a convenient nearby option for parking." } },
               { "@type": "Question", name: "Do I need to book in advance?", acceptedAnswer: { "@type": "Answer", text: "We recommend booking online to reserve your spot — classes can fill up quickly. Walk-ins are welcome based on availability." } },
-              { "@type": "Question", name: "What dance styles does bounce lab offer?", acceptedAnswer: { "@type": "Answer", text: "bounce lab offers three weekly classes in Portland: Twerk (every Saturday 11 AM–12:20 PM), High Heels (every Friday 7–8 PM), and Stretching (every Thursday 7–8 PM). All styles are beginner-friendly." } },
+              { "@type": "Question", name: "What dance styles does bounce lab offer?", acceptedAnswer: { "@type": "Answer", text: "bounce lab offers two weekly classes in Portland: Twerk (every Saturday 11 AM–12:20 PM) and High Heels (every Friday 7–8 PM). Both styles are beginner-friendly." } },
             ],
           }) }}
         />
@@ -331,12 +297,12 @@ export default async function HomePage() {
           {[
             { q: "Do I need dance experience to join?", a: "No experience needed. All classes at bounce lab are beginner-friendly — the most important thing is showing up and enjoying the movement. Many students come with zero dance background." },
             { q: "What if I feel self-conscious or nervous?", a: "That's completely normal — most of our students felt the same way before their first class. bounce lab is a judgment-free space where everyone supports each other. You'll feel comfortable from the very first minute." },
-            { q: "What should I wear to a twerk or high heels class?", a: "Wear comfortable clothes you can move in. For High Heels, bring a pair of heels (5–8 cm recommended) or train in socks while you build confidence. For Twerk and Stretching, athletic or dance wear works great." },
-            { q: "How much does a drop-in class cost in Portland?", a: "Drop-in prices: Stretching $20, Twerk $25, High Heels $30. Monthly passes available: Twerk ($80/month for 4 classes) and High Heels ($100/month for 4 classes)." },
+            { q: "What should I wear to a twerk or high heels class?", a: "Wear comfortable clothes you can move in. For Twerk classes, wear shorts or pants that allow your glutes to move freely — avoid tight compression or shaping clothing that restricts movement. For High Heels, bring a pair of heels (5–8 cm recommended) or train in socks while you build confidence." },
+            { q: "How much does a drop-in class cost in Portland?", a: "Every class is priced the same: Drop-in is $30, and a Monthly Pass is $100. The Monthly Pass is valid for 5 weeks from your purchase date and can be used for any classes on the schedule — Twerk or High Heels." },
             { q: "Can I cancel or reschedule my booking?", a: "Yes! You can reschedule or cancel your booking up to 24 hours before the class at no charge. Just reach out to us by phone or email." },
-            { q: "Where do bounce lab classes take place in Portland?", a: "Classes are held at 1107 NE 9th Ave, Portland, OR 97232. Street parking is available nearby." },
+            { q: "Where do bounce lab classes take place in Portland?", a: "Classes are held at 2648 E Burnside St, Portland, OR 97214, United States. Whole Foods is located nearby and may be a convenient nearby option for parking." },
             { q: "Do I need to book in advance?", a: "We recommend booking online to reserve your spot — classes can fill up quickly. Walk-ins are welcome based on availability." },
-            { q: "What dance styles does bounce lab offer?", a: "Three weekly classes: Twerk (every Saturday 11 AM–12:20 PM), High Heels (every Friday 7–8 PM), and Stretching (every Thursday 7–8 PM). All styles are beginner-friendly." },
+            { q: "What dance styles does bounce lab offer?", a: "Two weekly classes: Twerk (every Saturday 11 AM–12:20 PM) and High Heels (every Friday 7–8 PM). Both styles are beginner-friendly." },
           ].map(({ q, a }) => (
             <details key={q} className="faq-item">
               <summary>{q}</summary>

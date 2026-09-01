@@ -7,7 +7,6 @@ import Link from "next/link";
 const CLASS_LABELS: Record<string, string> = {
   twerk: "Twerk",
   highheels: "High Heels",
-  stretching: "Stretching",
 };
 
 const STATUS_STYLE: Record<string, { bg: string; color: string }> = {

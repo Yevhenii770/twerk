@@ -30,7 +30,7 @@ function Footer({ schedule }: { schedule: ClassSchedule[] }) {
           </div>
           <p className="mk-foot-desc">
             A space to move, feel, and express.<br />
-            Twerk · High Heels · Stretching<br />
+            Twerk · High Heels<br />
             Portland, OR
           </p>
         </div>
