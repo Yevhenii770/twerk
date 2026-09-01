@@ -46,7 +46,7 @@ function Footer({ schedule }: { schedule: ClassSchedule[] }) {
         <div className="mk-foot-col">
           <p className="mk-foot-title">Contact</p>
           <a href="tel:+15034220858" className="mk-foot-link">(503) 422-0858</a>
-          <span className="mk-foot-link" style={{ cursor: 'default' }}>Portland, Oregon</span>
+          <span className="mk-foot-link" style={{ cursor: 'default' }}>2648 E Burnside St, Portland, OR 97214</span>
         </div>
         <div className="mk-foot-col">
           <p className="mk-foot-title">Schedule</p>
