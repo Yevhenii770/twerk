@@ -47,7 +47,10 @@ export default async function SchedulePage() {
 
       <div className="p-4 md:p-8" style={{ maxWidth: 760 }}>
         <p style={{ fontSize: 13, color: "#666", marginBottom: 28, lineHeight: 1.6 }}>
-          Edit the day and time for each class. Changes apply immediately across the whole site.
+          Edit the day and time for each class. New bookable sessions are generated automatically
+          for the next 8 weeks based on this — changes here apply to newly generated sessions going forward.
+          To adjust the capacity, price, or open/closed state of a specific already-scheduled date,
+          use the roster on the <Link href="/admin" style={{ color: "#C9A96E" }}>main admin page</Link> instead.
         </p>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
