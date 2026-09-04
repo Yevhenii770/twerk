@@ -136,7 +136,18 @@ export function verifySquareWebhookSignature(params: {
   notificationUrl: string;
 }): boolean {
   const signatureKey = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY;
-  if (!signatureKey || !params.signatureHeader) return false;
+
+  // TEMPORARY diagnostic logging for the 401 investigation — never logs the signing key or
+  // full body, only shapes/lengths and the non-reversible HMAC digests, which is safe to log
+  // (HMAC output doesn't expose the key even when the input is known). Remove once resolved.
+  if (!signatureKey) {
+    console.error("[square-webhook] SQUARE_WEBHOOK_SIGNATURE_KEY is not set in this environment");
+    return false;
+  }
+  if (!params.signatureHeader) {
+    console.error("[square-webhook] request had no x-square-hmacsha256-signature header");
+    return false;
+  }
 
   const hmac = crypto.createHmac("sha256", signatureKey);
   hmac.update(params.notificationUrl + params.requestBody);
@@ -144,6 +155,27 @@ export function verifySquareWebhookSignature(params: {
 
   const a = Buffer.from(expected);
   const b = Buffer.from(params.signatureHeader);
-  if (a.length !== b.length) return false;
-  return crypto.timingSafeEqual(a, b);
+
+  if (a.length !== b.length) {
+    console.error("[square-webhook] signature length mismatch", {
+      notificationUrl: params.notificationUrl,
+      bodyLength: params.requestBody.length,
+      expectedLength: a.length,
+      receivedLength: b.length,
+      expectedSignature: expected,
+      receivedSignature: params.signatureHeader,
+    });
+    return false;
+  }
+
+  const matches = crypto.timingSafeEqual(a, b);
+  if (!matches) {
+    console.error("[square-webhook] signature did not match", {
+      notificationUrl: params.notificationUrl,
+      bodyLength: params.requestBody.length,
+      expectedSignature: expected,
+      receivedSignature: params.signatureHeader,
+    });
+  }
+  return matches;
 }
