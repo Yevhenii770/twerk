@@ -77,7 +77,7 @@ export const getAdminSessionRoster = unstable_cache(
     }));
   },
   ["admin-session-roster"],
-  { tags: ["class-sessions", "bookings"] }
+  { tags: ["class-sessions", "bookings"], revalidate: 30 }
 );
 
 export const getContactMessages = unstable_cache(
