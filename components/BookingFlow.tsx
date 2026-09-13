@@ -208,14 +208,12 @@ export default function BookingFlow({ sessionsByClass, monthlyPrices, dropinPric
       <Stepper step={step} />
 
       {(step === 'class' || step === 'session') && (
-        <div style={{ display: 'flex', gap: 8, marginBottom: 28 }}>
-          <KindButton active={!isMonthly} onClick={() => setBookingKind('dropin')}>
-            Drop-in
-          </KindButton>
-          <KindButton active={isMonthly} onClick={() => setBookingKind('monthly')}>
-            Monthly Pass
-          </KindButton>
-        </div>
+        <TicketSwitch
+          bookingKind={bookingKind}
+          onChange={setBookingKind}
+          dropinPrice={dropinPrices[classType]}
+          monthlyPrice={monthlyPrices[classType]}
+        />
       )}
 
       {step === 'class' && (
@@ -422,21 +420,112 @@ export default function BookingFlow({ sessionsByClass, monthlyPrices, dropinPric
   )
 }
 
-function KindButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+/**
+ * Two boarding-pass-style tickets side by side — always fully sized and fully tappable (an
+ * earlier overlapping "fanned" version looked nicer but hid most of the inactive ticket behind
+ * the active one, so it couldn't reliably be tapped — a real usability bug, not just cosmetic).
+ * Selection uses the same flat dark-fill flip as every other choice on this page (see
+ * cardBtnStyle below) rather than a shadow/lift, so the ticket motif — the dashed tear-line,
+ * punch-hole notches, and the dot-count stub — reads as native to the site instead of a
+ * separate visual system. The stub carries real content: how many classes this option is worth
+ * and what each costs — the 1-vs-MONTHLY_PASS_SESSION_COUNT dot count is data, not decoration.
+ */
+function TicketSwitch({ bookingKind, onChange, dropinPrice, monthlyPrice }: {
+  bookingKind: BookingKind
+  onChange: (kind: BookingKind) => void
+  dropinPrice: number
+  monthlyPrice: number | null
+}) {
+  const isMonthly = bookingKind === 'monthly'
+  const perClass = monthlyPrice != null ? Math.round(monthlyPrice / MONTHLY_PASS_SESSION_COUNT) : null
+  const savings = monthlyPrice != null ? dropinPrice * MONTHLY_PASS_SESSION_COUNT - monthlyPrice : 0
+
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      style={{
-        flex: 1, padding: '12px 16px', fontSize: 12, fontWeight: 600, letterSpacing: '0.04em',
-        fontFamily: 'inherit', cursor: 'pointer',
-        border: active ? '1px solid var(--dark)' : '1px solid var(--border)',
-        background: active ? 'var(--dark)' : '#fff',
-        color: active ? '#fff' : 'var(--dark)',
-      }}
-    >
-      {children}
-    </button>
+    <div className="bkf-switch" role="radiogroup" aria-label="Choose booking type">
+      <button
+        type="button"
+        className={`bkf-ticket${!isMonthly ? ' is-active' : ''}`}
+        role="radio"
+        aria-checked={!isMonthly}
+        onClick={() => onChange('dropin')}
+      >
+        <span className="bkf-ticket-main">
+          <span className="bkf-ticket-eyebrow">Admit One</span>
+          <span className="bkf-ticket-name">Drop-in</span>
+          <span className="bkf-ticket-price">${dropinPrice}</span>
+        </span>
+        <span className="bkf-ticket-stub">
+          <span className="bkf-ticket-dots"><span className="bkf-dot bkf-dot--filled" /></span>
+          <span className="bkf-ticket-stub-label">1 class</span>
+        </span>
+      </button>
+
+      <button
+        type="button"
+        className={`bkf-ticket${isMonthly ? ' is-active' : ''}`}
+        role="radio"
+        aria-checked={isMonthly}
+        onClick={() => onChange('monthly')}
+      >
+        {savings > 0 && <span className="bkf-ticket-badge">Save ${savings}</span>}
+        <span className="bkf-ticket-main">
+          <span className="bkf-ticket-eyebrow">Season Pass</span>
+          <span className="bkf-ticket-name">Monthly</span>
+          <span className="bkf-ticket-price">{monthlyPrice != null ? `$${monthlyPrice}` : '—'}</span>
+        </span>
+        <span className="bkf-ticket-stub">
+          <span className="bkf-ticket-dots">
+            {Array.from({ length: MONTHLY_PASS_SESSION_COUNT }).map((_, i) => (
+              <span key={i} className="bkf-dot bkf-dot--filled" />
+            ))}
+          </span>
+          <span className="bkf-ticket-stub-label">
+            {MONTHLY_PASS_SESSION_COUNT} classes{perClass != null ? ` · $${perClass} ea` : ''}
+          </span>
+        </span>
+      </button>
+
+      <style>{`
+        .bkf-switch{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:28px;}
+        .bkf-ticket{
+          position:relative;padding:16px 15px 14px;text-align:left;
+          background:#fff;border:1.5px solid var(--border);cursor:pointer;font-family:inherit;
+          display:flex;flex-direction:column;gap:10px;
+          transition:background .25s ease, border-color .25s ease;
+        }
+        .bkf-ticket.is-active{background:var(--card);border-color:var(--pink);}
+        .bkf-ticket-main{display:flex;flex-direction:column;gap:4px;}
+        .bkf-ticket-eyebrow{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--pink);}
+        .bkf-ticket-name{font-family:var(--font-cormorant);font-style:italic;font-weight:600;font-size:19px;color:var(--dark);}
+        .bkf-ticket-price{font-family:var(--font-cormorant);font-style:italic;font-weight:600;font-size:24px;color:var(--dark);}
+        .bkf-ticket-stub{
+          position:relative;border-top:2px dashed var(--border);padding-top:9px;margin-top:1px;
+          display:flex;align-items:center;justify-content:space-between;gap:8px;
+        }
+        .bkf-ticket-stub::before,.bkf-ticket-stub::after{
+          content:"";position:absolute;top:-8px;width:13px;height:13px;border-radius:50%;background:var(--cream);
+        }
+        .bkf-ticket-stub::before{left:-9px;}
+        .bkf-ticket-stub::after{right:-9px;}
+        .bkf-ticket-dots{display:flex;flex-wrap:nowrap;gap:3px;}
+        .bkf-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+        .bkf-dot--filled{background:var(--pink);}
+        .bkf-ticket-stub-label{font-size:10px;color:var(--mid);text-align:right;line-height:1.3;}
+        .bkf-ticket-badge{
+          position:absolute;top:-9px;right:10px;background:var(--pink);color:#fff;font-size:10px;
+          font-weight:700;letter-spacing:.03em;text-transform:uppercase;padding:3px 8px;
+        }
+        .bkf-ticket:focus-visible{outline:2px solid var(--pink);outline-offset:3px;}
+        @media (max-width: 380px){
+          .bkf-ticket-name{font-size:17px;}
+          .bkf-ticket-price{font-size:21px;}
+          .bkf-ticket-stub-label{font-size:8.5px;}
+        }
+        @media (prefers-reduced-motion: reduce){
+          .bkf-ticket, .bkf-ticket-name, .bkf-ticket-price, .bkf-ticket-stub, .bkf-ticket-stub-label{transition-duration:.01ms !important;}
+        }
+      `}</style>
+    </div>
   )
 }
 
