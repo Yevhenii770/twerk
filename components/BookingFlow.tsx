@@ -57,7 +57,6 @@ export default function BookingFlow({ sessionsByClass }: { sessionsByClass: Reco
   const [paymentError, setPaymentError] = useState<string | null>(null)
   const [paying, setPaying] = useState(false)
 
-  const idempotencyKeyRef = useRef<string>(crypto.randomUUID())
   const cardRef = useRef<SquareCard | null>(null)
   const [cardReady, setCardReady] = useState(false)
   const [sdkError, setSdkError] = useState<string | null>(null)
@@ -155,7 +154,11 @@ export default function BookingFlow({ sessionsByClass }: { sessionsByClass: Reco
         phone: `+1 ${phoneDisplay}`,
         notes: notes.trim() || undefined,
         sourceId: tokenResult.token,
-        idempotencyKey: idempotencyKeyRef.current,
+        // Square ties the idempotency key to the exact request, including the source token —
+        // reusing it for a retry (a new tokenize() call always produces a new token) gets
+        // rejected with IDEMPOTENCY_KEY_REUSED instead of actually processing the retry. Each
+        // distinct payment attempt needs its own key.
+        idempotencyKey: crypto.randomUUID(),
       })
 
       if (!result.success) {
