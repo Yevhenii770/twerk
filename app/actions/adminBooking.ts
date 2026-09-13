@@ -73,16 +73,6 @@ export async function updateSessionCapacity(sessionId: number, capacity: number)
   return { success: true };
 }
 
-export async function updateSessionPrice(sessionId: number, price: number) {
-  await requireAdmin();
-  if (!Number.isInteger(price) || price < 0 || price > 10000) {
-    return { success: false, error: "Invalid price" };
-  }
-  await db.update(classSessions).set({ price, updatedAt: new Date() }).where(eq(classSessions.id, sessionId));
-  revalidateTag("class-sessions");
-  return { success: true };
-}
-
 export async function setSessionBookingOpen(sessionId: number, open: boolean) {
   await requireAdmin();
   await db.update(classSessions).set({ bookingOpen: open, updatedAt: new Date() }).where(eq(classSessions.id, sessionId));

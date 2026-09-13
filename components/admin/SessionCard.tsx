@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { updateSessionCapacity, updateSessionPrice, setSessionBookingOpen, cancelSession } from '@/app/actions/adminBooking'
+import { updateSessionCapacity, setSessionBookingOpen, cancelSession } from '@/app/actions/adminBooking'
 import AttendeeRow from './AttendeeRow'
 import type { Booking, ClassSession } from '@/db/schema'
 
@@ -24,9 +24,6 @@ export default function SessionCard({ session, attendees }: { session: ClassSess
   const [editingCapacity, setEditingCapacity] = useState(false)
   const [capacity, setCapacity] = useState(String(session.capacity))
   const [capacityError, setCapacityError] = useState<string | null>(null)
-  const [editingPrice, setEditingPrice] = useState(false)
-  const [price, setPrice] = useState(String(session.price))
-  const [priceError, setPriceError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
 
   const activeAttendees = attendees.filter(a => a.status === 'paid')
@@ -41,18 +38,6 @@ export default function SessionCard({ session, attendees }: { session: ClassSess
       if (!result?.success) { setCapacityError(result?.error || 'Could not save'); return }
       router.refresh()
       setEditingCapacity(false)
-    })
-  }
-
-  const savePrice = () => {
-    const value = parseInt(price, 10)
-    if (Number.isNaN(value)) { setPriceError('Enter a valid number'); return }
-    setPriceError(null)
-    startTransition(async () => {
-      const result = await updateSessionPrice(session.id, value)
-      if (!result?.success) { setPriceError(result?.error || 'Could not save'); return }
-      router.refresh()
-      setEditingPrice(false)
     })
   }
 
@@ -90,16 +75,7 @@ export default function SessionCard({ session, attendees }: { session: ClassSess
             ) : (
               <button onClick={() => setEditingCapacity(true)} style={miniBtn('#455A64')}>Edit Capacity ({session.capacity})</button>
             )}
-            {editingPrice ? (
-              <>
-                <input type="number" value={price} onChange={e => setPrice(e.target.value)} style={{ width: 70, padding: '6px 8px', border: '1px solid #CCC', fontFamily: 'inherit', fontSize: 12 }} />
-                <button disabled={pending} onClick={savePrice} style={miniBtn('#1565C0')}>Save</button>
-                <button onClick={() => { setPrice(String(session.price)); setPriceError(null); setEditingPrice(false) }} style={miniBtn('#888')}>Cancel</button>
-                {priceError && <span style={{ fontSize: 11, color: '#C62828' }}>{priceError}</span>}
-              </>
-            ) : (
-              <button onClick={() => setEditingPrice(true)} style={miniBtn('#455A64')}>Edit Price (${session.price})</button>
-            )}
+            <span style={{ fontSize: 11, color: '#888' }}>${session.price} · edit price above under Pricing</span>
             <button
               disabled={pending}
               onClick={() => startTransition(async () => { await setSessionBookingOpen(session.id, !session.bookingOpen); router.refresh() })}

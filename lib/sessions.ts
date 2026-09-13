@@ -3,6 +3,7 @@ import { classSessions, schedules } from "@/db/schema";
 import { and, asc, eq, gte } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 import { CLASS_STATIC, type ClassId } from "@/lib/classes";
+import { getClassSettings } from "@/lib/dal";
 
 const WEEKS_AHEAD = 8;
 
@@ -34,13 +35,14 @@ function nextOccurrences(dayOfWeek: number, count: number): string[] {
  * generated sessions become visible without needing a render-time tag invalidation.
  */
 export async function ensureUpcomingSessions(): Promise<void> {
-  const sched = await db.select().from(schedules);
+  const [sched, classSettings] = await Promise.all([db.select().from(schedules), getClassSettings()]);
 
   for (const s of sched) {
     const info = CLASS_STATIC[s.classType as ClassId];
     if (!info) continue;
     const { opens, closes } = parseTimeDisplay(s.timeDisplay);
     const dates = nextOccurrences(s.dayOfWeek, WEEKS_AHEAD);
+    const dropinPrice = classSettings[s.classType]?.dropinPrice ?? info.dropin;
 
     for (const date of dates) {
       await db
@@ -50,7 +52,7 @@ export async function ensureUpcomingSessions(): Promise<void> {
           date,
           startTime: opens,
           endTime: closes,
-          price: info.dropin,
+          price: dropinPrice,
           capacity: DEFAULT_CAPACITY[s.classType] ?? 15,
         })
         .onConflictDoNothing({ target: [classSessions.classType, classSessions.date, classSessions.startTime] });

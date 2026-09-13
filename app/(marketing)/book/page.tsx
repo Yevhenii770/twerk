@@ -39,6 +39,13 @@ export default async function BookPage() {
     CLASS_IDS.map((id: ClassId) => [id, classSettings[id]?.monthlyPrice ?? CLASS_STATIC[id].monthly])
   ) as Record<ClassId, number | null>
 
+  // The next upcoming session's own price is the true drop-in price a customer would actually
+  // be charged — it's kept in sync with the admin's configured price (see updateDropinPrice),
+  // so reading it here avoids the class picker showing a stale hardcoded default.
+  const dropinPrices = Object.fromEntries(
+    CLASS_IDS.map((id: ClassId) => [id, sessionsByClass[id]?.[0]?.price ?? CLASS_STATIC[id].dropin])
+  ) as Record<ClassId, number>
+
   return (
     <section style={{ minHeight: '100vh', paddingTop: 40 }}>
       <div style={{ borderBottom: '1px solid var(--border)', padding: '52px 72px 40px' }}>
@@ -46,7 +53,7 @@ export default async function BookPage() {
         <h1 className="mk-section-title">Book a Class</h1>
       </div>
       <Suspense fallback={<div style={{ padding: 48, color: 'var(--mid)', fontSize: 14 }}>Loading...</div>}>
-        <BookingFlow sessionsByClass={sessionsByClass} monthlyPrices={monthlyPrices} />
+        <BookingFlow sessionsByClass={sessionsByClass} monthlyPrices={monthlyPrices} dropinPrices={dropinPrices} />
       </Suspense>
     </section>
   )

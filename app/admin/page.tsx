@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { updateBookingStatus } from "@/app/actions/booking";
 import DeleteConfirmBtn from "@/components/DeleteConfirmBtn";
 import SessionCard from "@/components/admin/SessionCard";
-import MonthlyPriceEditor from "@/components/admin/MonthlyPriceEditor";
+import ClassPricingCard from "@/components/admin/ClassPricingCard";
 import { CLASS_STATIC, CLASS_IDS } from "@/lib/classes";
 import Link from "next/link";
 
@@ -93,14 +93,15 @@ export default async function AdminPage() {
 
       <div className="p-4 md:p-8">
         <h2 style={{ fontSize: 14, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 16 }}>
-          Monthly Pass Pricing
+          Pricing
         </h2>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 32 }}>
           {CLASS_IDS.map(id => (
-            <MonthlyPriceEditor
+            <ClassPricingCard
               key={id}
               classType={id}
-              price={classSettings[id]?.monthlyPrice ?? CLASS_STATIC[id].monthly ?? 0}
+              dropinPrice={classSettings[id]?.dropinPrice ?? CLASS_STATIC[id].dropin}
+              monthlyPrice={classSettings[id]?.monthlyPrice ?? CLASS_STATIC[id].monthly ?? 0}
             />
           ))}
         </div>

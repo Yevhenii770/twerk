@@ -39,7 +39,11 @@ interface SquareCard {
   destroy: () => Promise<void>
 }
 
-export default function BookingFlow({ sessionsByClass, monthlyPrices }: { sessionsByClass: Record<string, ClassSession[]>; monthlyPrices: Record<ClassId, number | null> }) {
+export default function BookingFlow({ sessionsByClass, monthlyPrices, dropinPrices }: {
+  sessionsByClass: Record<string, ClassSession[]>
+  monthlyPrices: Record<ClassId, number | null>
+  dropinPrices: Record<ClassId, number>
+}) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const paramClass = searchParams.get('class') as ClassId | null
@@ -243,7 +247,7 @@ export default function BookingFlow({ sessionsByClass, monthlyPrices }: { sessio
                     </p>
                   </div>
                   <span style={{ fontSize: 18, fontFamily: 'var(--font-cormorant)', fontStyle: 'italic', fontWeight: 300, color: 'var(--pink)', whiteSpace: 'nowrap', marginLeft: 12 }}>
-                    ${isMonthly ? keyMonthlyPrice : info.dropin}
+                    ${isMonthly ? keyMonthlyPrice : dropinPrices[key]}
                   </span>
                 </button>
               )
@@ -260,7 +264,7 @@ export default function BookingFlow({ sessionsByClass, monthlyPrices }: { sessio
               <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.65)' }}>{staticInfo.level}</p>
             </div>
             <div style={{ textAlign: 'right' }}>
-              <p style={{ fontSize: 20, fontFamily: 'var(--font-cormorant)', fontStyle: 'italic', fontWeight: 300, color: '#fff', marginBottom: 4 }}>${isMonthly ? monthlyPrice : staticInfo.dropin}</p>
+              <p style={{ fontSize: 20, fontFamily: 'var(--font-cormorant)', fontStyle: 'italic', fontWeight: 300, color: '#fff', marginBottom: 4 }}>${isMonthly ? monthlyPrice : dropinPrices[classType]}</p>
               {(step === 'session' || (step === 'details' && isMonthly)) && (
                 <button type="button" onClick={() => setStep('class')} style={linkBtnStyle}>Change class</button>
               )}
