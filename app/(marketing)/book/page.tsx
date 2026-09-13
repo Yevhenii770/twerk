@@ -2,7 +2,8 @@ import { Suspense } from 'react'
 import BookingFlow from '@/components/BookingFlow'
 import type { Metadata } from 'next'
 import { ensureUpcomingSessions, getUpcomingSessions } from '@/lib/sessions'
-import { CLASS_IDS } from '@/lib/classes'
+import { CLASS_STATIC, CLASS_IDS, type ClassId } from '@/lib/classes'
+import { getClassSettings } from '@/lib/dal'
 import type { ClassSession } from '@/db/schema'
 
 export const metadata: Metadata = {
@@ -26,13 +27,17 @@ export const metadata: Metadata = {
 
 export default async function BookPage() {
   await ensureUpcomingSessions()
-  const sessions = await getUpcomingSessions()
+  const [sessions, classSettings] = await Promise.all([getUpcomingSessions(), getClassSettings()])
 
   const sessionsByClass: Record<string, ClassSession[]> = Object.fromEntries(CLASS_IDS.map(id => [id, []]))
   for (const s of sessions) {
     if (!sessionsByClass[s.classType]) sessionsByClass[s.classType] = []
     sessionsByClass[s.classType].push(s)
   }
+
+  const monthlyPrices = Object.fromEntries(
+    CLASS_IDS.map((id: ClassId) => [id, classSettings[id]?.monthlyPrice ?? CLASS_STATIC[id].monthly])
+  ) as Record<ClassId, number | null>
 
   return (
     <section style={{ minHeight: '100vh', paddingTop: 40 }}>
@@ -41,7 +46,7 @@ export default async function BookPage() {
         <h1 className="mk-section-title">Book a Class</h1>
       </div>
       <Suspense fallback={<div style={{ padding: 48, color: 'var(--mid)', fontSize: 14 }}>Loading...</div>}>
-        <BookingFlow sessionsByClass={sessionsByClass} />
+        <BookingFlow sessionsByClass={sessionsByClass} monthlyPrices={monthlyPrices} />
       </Suspense>
     </section>
   )

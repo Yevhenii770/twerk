@@ -39,7 +39,7 @@ interface SquareCard {
   destroy: () => Promise<void>
 }
 
-export default function BookingFlow({ sessionsByClass }: { sessionsByClass: Record<string, ClassSession[]> }) {
+export default function BookingFlow({ sessionsByClass, monthlyPrices }: { sessionsByClass: Record<string, ClassSession[]>; monthlyPrices: Record<ClassId, number | null> }) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const paramClass = searchParams.get('class') as ClassId | null
@@ -68,7 +68,8 @@ export default function BookingFlow({ sessionsByClass }: { sessionsByClass: Reco
   const staticInfo = CLASS_STATIC[classType]
   const isMonthly = bookingKind === 'monthly'
   const monthlySessions = useMemo(() => nextBookableSessions(sessions, MONTHLY_PASS_SESSION_COUNT), [sessions])
-  const monthlyAvailable = staticInfo.monthly != null && monthlySessions.length === MONTHLY_PASS_SESSION_COUNT
+  const monthlyPrice = monthlyPrices[classType]
+  const monthlyAvailable = monthlyPrice != null && monthlySessions.length === MONTHLY_PASS_SESSION_COUNT
 
   useEffect(() => {
     track('view_booking', { class_slug: hasPresetClass ? ID_TO_SLUG[paramClass as ClassId] : undefined })
@@ -221,7 +222,8 @@ export default function BookingFlow({ sessionsByClass }: { sessionsByClass: Reco
               const upcoming = sessionsByClass[key]?.filter(s => !s.cancelled) ?? []
               const next = upcoming[0]
               const keyMonthlyPicks = nextBookableSessions(sessionsByClass[key] ?? [], MONTHLY_PASS_SESSION_COUNT)
-              const keyMonthlyAvailable = info.monthly != null && keyMonthlyPicks.length === MONTHLY_PASS_SESSION_COUNT
+              const keyMonthlyPrice = monthlyPrices[key]
+              const keyMonthlyAvailable = keyMonthlyPrice != null && keyMonthlyPicks.length === MONTHLY_PASS_SESSION_COUNT
               const disabled = isMonthly && !keyMonthlyAvailable
               return (
                 <button
@@ -241,7 +243,7 @@ export default function BookingFlow({ sessionsByClass }: { sessionsByClass: Reco
                     </p>
                   </div>
                   <span style={{ fontSize: 18, fontFamily: 'var(--font-cormorant)', fontStyle: 'italic', fontWeight: 300, color: 'var(--pink)', whiteSpace: 'nowrap', marginLeft: 12 }}>
-                    ${isMonthly ? info.monthly : info.dropin}
+                    ${isMonthly ? keyMonthlyPrice : info.dropin}
                   </span>
                 </button>
               )
@@ -258,7 +260,7 @@ export default function BookingFlow({ sessionsByClass }: { sessionsByClass: Reco
               <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.65)' }}>{staticInfo.level}</p>
             </div>
             <div style={{ textAlign: 'right' }}>
-              <p style={{ fontSize: 20, fontFamily: 'var(--font-cormorant)', fontStyle: 'italic', fontWeight: 300, color: '#fff', marginBottom: 4 }}>${isMonthly ? staticInfo.monthly : staticInfo.dropin}</p>
+              <p style={{ fontSize: 20, fontFamily: 'var(--font-cormorant)', fontStyle: 'italic', fontWeight: 300, color: '#fff', marginBottom: 4 }}>${isMonthly ? monthlyPrice : staticInfo.dropin}</p>
               {(step === 'session' || (step === 'details' && isMonthly)) && (
                 <button type="button" onClick={() => setStep('class')} style={linkBtnStyle}>Change class</button>
               )}
@@ -383,7 +385,7 @@ export default function BookingFlow({ sessionsByClass }: { sessionsByClass: Reco
               <SummaryRow label="Name" value={`${firstName} ${lastName}`} />
               <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 12, marginTop: 4 }}>
                 <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--dark)' }}>Total</span>
-                <span style={{ fontSize: 22, fontFamily: 'var(--font-cormorant)', fontStyle: 'italic', fontWeight: 300, color: 'var(--dark)' }}>${isMonthly ? staticInfo.monthly : session!.price}</span>
+                <span style={{ fontSize: 22, fontFamily: 'var(--font-cormorant)', fontStyle: 'italic', fontWeight: 300, color: 'var(--dark)' }}>${isMonthly ? monthlyPrice : session!.price}</span>
               </div>
             </div>
           </Section>
@@ -402,7 +404,7 @@ export default function BookingFlow({ sessionsByClass }: { sessionsByClass: Reco
                   Your spot is only confirmed once payment succeeds.
                 </p>
                 <button type="button" onClick={handlePay} disabled={!cardReady || paying} style={primaryBtnStyle}>
-                  {paying ? 'Processing…' : `Pay $${isMonthly ? staticInfo.monthly : session!.price}`}
+                  {paying ? 'Processing…' : `Pay $${isMonthly ? monthlyPrice : session!.price}`}
                 </button>
               </>
             )}

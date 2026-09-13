@@ -18,6 +18,7 @@ import {
 } from "@/lib/email";
 import { rateLimit } from "@/lib/rateLimit";
 import { CLASS_STATIC, MONTHLY_PASS_SESSION_COUNT, nextBookableSessions, type ClassId } from "@/lib/classes";
+import { getClassSettings } from "@/lib/dal";
 import crypto from "crypto";
 
 const CheckoutSchema = z.object({
@@ -198,7 +199,9 @@ export async function createPaidMonthlyBooking(input: MonthlyCheckoutInput): Pro
   const data = parsed.data;
   const classType = data.classType as ClassId;
   const classInfo = CLASS_STATIC[classType];
-  if (!classInfo.monthly) return { success: false, error: "Monthly Pass isn't available for this class." };
+  const classSettings = await getClassSettings();
+  const monthlyPrice = classSettings[classType]?.monthlyPrice ?? classInfo.monthly;
+  if (!monthlyPrice) return { success: false, error: "Monthly Pass isn't available for this class." };
 
   const existingPayment = await db.select().from(payments).where(eq(payments.idempotencyKey, data.idempotencyKey)).limit(1);
   if (existingPayment[0]?.status === "completed") {
@@ -227,7 +230,7 @@ export async function createPaidMonthlyBooking(input: MonthlyCheckoutInput): Pro
     claimedIds.push(s.id);
   }
 
-  const amountCents = classInfo.monthly * 100;
+  const amountCents = monthlyPrice * 100;
 
   const [paymentRow] = existingPayment[0]
     ? await db.update(payments)

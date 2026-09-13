@@ -94,7 +94,8 @@ export const getClassSettings = unstable_cache(
       photoUrl:      r.photoUrl ?? null,
       desc:          r.desc ?? null,
       modalTexts:    r.modalTexts ? (JSON.parse(r.modalTexts) as string[]) : null,
-    }])) as Record<string, { photoPosition: string; photoUrl: string | null; desc: string | null; modalTexts: string[] | null }>;
+      monthlyPrice:  r.monthlyPrice ?? null,
+    }])) as Record<string, { photoPosition: string; photoUrl: string | null; desc: string | null; modalTexts: string[] | null; monthlyPrice: number | null }>;
   },
   ["class-settings"],
   { tags: ["class-settings"] }

@@ -36,6 +36,22 @@ export async function updateClassText(classType: string, desc: string, modalText
   revalidateTag("class-settings");
 }
 
+export async function updateMonthlyPrice(classType: string, monthlyPrice: number) {
+  const user = await getCurrentUser();
+  if (!user || user.role !== "admin") redirect("/");
+  if (!Number.isInteger(monthlyPrice) || monthlyPrice < 0 || monthlyPrice > 10000) return;
+
+  await db
+    .insert(classSettings)
+    .values({ classType, monthlyPrice, photoPosition: "50% 50%" })
+    .onConflictDoUpdate({
+      target: classSettings.classType,
+      set: { monthlyPrice, updatedAt: new Date() },
+    });
+
+  revalidateTag("class-settings");
+}
+
 export async function updatePhotoUrl(classType: string, photoUrl: string) {
   const user = await getCurrentUser();
   if (!user || user.role !== "admin") redirect("/");

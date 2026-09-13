@@ -1,8 +1,10 @@
-import { getAdminSessionRoster, getLegacyBookings, getCurrentUser } from "@/lib/dal";
+import { getAdminSessionRoster, getLegacyBookings, getCurrentUser, getClassSettings } from "@/lib/dal";
 import { redirect } from "next/navigation";
 import { updateBookingStatus } from "@/app/actions/booking";
 import DeleteConfirmBtn from "@/components/DeleteConfirmBtn";
 import SessionCard from "@/components/admin/SessionCard";
+import MonthlyPriceEditor from "@/components/admin/MonthlyPriceEditor";
+import { CLASS_STATIC, CLASS_IDS } from "@/lib/classes";
 import Link from "next/link";
 
 const CLASS_LABELS: Record<string, string> = {
@@ -21,7 +23,7 @@ export default async function AdminPage() {
   const currentUser = await getCurrentUser();
   if (!currentUser || currentUser.role !== "admin") redirect("/");
 
-  const [roster, legacyBookings] = await Promise.all([getAdminSessionRoster(), getLegacyBookings()]);
+  const [roster, legacyBookings, classSettings] = await Promise.all([getAdminSessionRoster(), getLegacyBookings(), getClassSettings()]);
 
   const totalUpcomingPaid = roster.reduce((sum, r) => sum + r.attendees.filter(a => a.status === "paid").length, 0);
   const totalUpcomingSpots = roster.reduce((sum, r) => sum + r.session.capacity, 0);
@@ -90,6 +92,19 @@ export default async function AdminPage() {
       </div>
 
       <div className="p-4 md:p-8">
+        <h2 style={{ fontSize: 14, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 16 }}>
+          Monthly Pass Pricing
+        </h2>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 32 }}>
+          {CLASS_IDS.map(id => (
+            <MonthlyPriceEditor
+              key={id}
+              classType={id}
+              price={classSettings[id]?.monthlyPrice ?? CLASS_STATIC[id].monthly ?? 0}
+            />
+          ))}
+        </div>
+
         <h2 style={{ fontSize: 14, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 16 }}>
           Upcoming Schedule &amp; Roster
         </h2>

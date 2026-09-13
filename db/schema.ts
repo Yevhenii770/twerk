@@ -114,6 +114,7 @@ export const classSettings = pgTable("class_settings", {
   photoUrl:      text("photo_url"),
   desc:          text("desc"),
   modalTexts:    text("modal_texts"), // JSON array
+  monthlyPrice:  integer("monthly_price"), // USD dollars; null = fall back to CLASS_STATIC default
   updatedAt:     timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
 });
 
