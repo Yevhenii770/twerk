@@ -4,6 +4,7 @@ import { eq, and } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
 import { releaseSeat } from "@/lib/reserve";
 import { refundSquarePayment } from "@/lib/square";
+import { alertAdminError } from "@/lib/alerts";
 import crypto from "crypto";
 
 export type RefundResult = { success: true } | { success: false; error: string };
@@ -42,36 +43,47 @@ export async function refundBookingPayment(bookingId: number, reason: string): P
   }
 
   const payment = claimed[0];
-  if (!payment.squarePaymentId) {
-    await db.update(payments).set({ status: "completed", updatedAt: new Date() }).where(eq(payments.id, payment.id));
-    return { success: false, error: "No Square payment on file. Please contact us directly." };
+
+  try {
+    if (!payment.squarePaymentId) {
+      await db.update(payments).set({ status: "completed", updatedAt: new Date() }).where(eq(payments.id, payment.id));
+      return { success: false, error: "No Square payment on file. Please contact us directly." };
+    }
+
+    // Resolve every booking this payment covers before touching anything else, so a partial
+    // Monthly Pass state (e.g. one date already cancelled by an admin without refund) is handled
+    // correctly below rather than only ever seeing the one booking the caller passed in.
+    const linkedBookings = await db.select().from(bookings).where(eq(bookings.paymentId, payment.id));
+
+    const result = await refundSquarePayment({
+      paymentId: payment.squarePaymentId,
+      amountCents: payment.amountCents,
+      idempotencyKey: crypto.randomUUID(),
+      reason,
+    });
+
+    if (!result.ok) {
+      // Release the claim so a retry (or a different admin/customer action) can try again.
+      await db.update(payments).set({ status: "completed", updatedAt: new Date() }).where(eq(payments.id, payment.id));
+      return { success: false, error: result.error || "Refund failed. Please contact us directly." };
+    }
+
+    await db.update(payments).set({ status: "refunded", updatedAt: new Date() }).where(eq(payments.id, payment.id));
+    for (const linked of linkedBookings) {
+      if (linked.status !== "paid") continue; // already cancelled/refunded independently — leave as-is
+      await db.update(bookings).set({ status: "refunded" }).where(eq(bookings.id, linked.id));
+      if (linked.sessionId) await releaseSeat(linked.sessionId);
+    }
+
+    revalidateTag("bookings");
+    return { success: true };
+  } catch (error) {
+    // Deliberately left as "refunding" rather than guessed back to "completed": if Square's
+    // refund actually succeeded just before this threw, reverting the status would let a later
+    // attempt try to refund it a second time. Leaving it locked blocks any further automatic
+    // refund attempt on this payment — a human needs to check the Square dashboard and resolve
+    // it manually, which is what this alert is for.
+    await alertAdminError("refundBookingPayment (payment left in 'refunding' — check Square dashboard)", error);
+    return { success: false, error: "Refund failed unexpectedly. Please contact us directly." };
   }
-
-  // Resolve every booking this payment covers before touching anything else, so a partial
-  // Monthly Pass state (e.g. one date already cancelled by an admin without refund) is handled
-  // correctly below rather than only ever seeing the one booking the caller passed in.
-  const linkedBookings = await db.select().from(bookings).where(eq(bookings.paymentId, payment.id));
-
-  const result = await refundSquarePayment({
-    paymentId: payment.squarePaymentId,
-    amountCents: payment.amountCents,
-    idempotencyKey: crypto.randomUUID(),
-    reason,
-  });
-
-  if (!result.ok) {
-    // Release the claim so a retry (or a different admin/customer action) can try again.
-    await db.update(payments).set({ status: "completed", updatedAt: new Date() }).where(eq(payments.id, payment.id));
-    return { success: false, error: result.error || "Refund failed. Please contact us directly." };
-  }
-
-  await db.update(payments).set({ status: "refunded", updatedAt: new Date() }).where(eq(payments.id, payment.id));
-  for (const linked of linkedBookings) {
-    if (linked.status !== "paid") continue; // already cancelled/refunded independently — leave as-is
-    await db.update(bookings).set({ status: "refunded" }).where(eq(bookings.id, linked.id));
-    if (linked.sessionId) await releaseSeat(linked.sessionId);
-  }
-
-  revalidateTag("bookings");
-  return { success: true };
 }

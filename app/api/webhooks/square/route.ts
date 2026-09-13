@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm";
 import { verifySquareWebhookSignature } from "@/lib/square";
 import { releaseSeat } from "@/lib/reserve";
 import { revalidateTag } from "next/cache";
+import { alertAdminError } from "@/lib/alerts";
 
 // Reconciliation safety net: our checkout action already confirms payment synchronously with
 // Square before marking a booking "paid", so this webhook is defense-in-depth for cases where
@@ -36,7 +37,13 @@ export async function POST(req: NextRequest) {
   if (event.type === "payment.updated") {
     const payment = event.data?.object?.payment;
     if (payment?.id && payment.status) {
-      await reconcilePayment(payment.id, payment.status);
+      try {
+        await reconcilePayment(payment.id, payment.status);
+      } catch (error) {
+        // Ack the webhook anyway (see below) instead of letting Square retry indefinitely on a
+        // payload that will keep failing the same way — the alert is the visibility instead.
+        await alertAdminError("square webhook reconcilePayment", error);
+      }
     }
   }
 
