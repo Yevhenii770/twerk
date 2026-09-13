@@ -1,10 +1,12 @@
 "use server";
 
 import { db } from "@/db";
-import { bookings, classSessions } from "@/db/schema";
+import { bookings, classSessions, payments } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
 import { releaseSeat } from "@/lib/reserve";
+import { refundSquarePayment } from "@/lib/square";
+import crypto from "crypto";
 
 // Public, token-gated self-service booking management. The management token (a 32-byte
 // random value, see lib/token.ts) is the sole credential — knowing it proves ownership of
@@ -24,7 +26,12 @@ export async function getBookingByToken(token: string) {
   return { booking, session };
 }
 
-const CANCEL_CUTOFF_HOURS = 24;
+// Self-service cancel-and-refund window: a customer gets their money back automatically if
+// EITHER condition holds — they're still within the "oops, changed my mind" grace period right
+// after paying, OR the class is far enough out that losing the seat isn't a last-minute problem.
+// Outside both, we don't auto-refund — they need to contact us directly.
+const REFUND_GRACE_MINUTES = 30;
+const REFUND_CUTOFF_HOURS = 24;
 
 export async function cancelOwnBooking(token: string) {
   const data = await getBookingByToken(token);
@@ -33,15 +40,49 @@ export async function cancelOwnBooking(token: string) {
 
   if (booking.status !== "paid") return { success: false, error: "This booking can't be cancelled." };
 
+  const minutesSincePayment = (Date.now() - booking.createdAt.getTime()) / (1000 * 60);
+  const withinGracePeriod = minutesSincePayment < REFUND_GRACE_MINUTES;
+
+  let enoughNotice = true;
   if (session) {
     const classStart = new Date(`${session.date}T${session.startTime}:00`);
     const hoursUntil = (classStart.getTime() - Date.now()) / (1000 * 60 * 60);
-    if (hoursUntil < CANCEL_CUTOFF_HOURS) {
-      return { success: false, error: `Cancellations must be made at least ${CANCEL_CUTOFF_HOURS} hours before class. Please contact us directly.` };
-    }
+    enoughNotice = hoursUntil >= REFUND_CUTOFF_HOURS;
   }
 
-  await db.update(bookings).set({ status: "cancelled" }).where(eq(bookings.id, booking.id));
+  if (!withinGracePeriod && !enoughNotice) {
+    return {
+      success: false,
+      error: `Refunds are only available within ${REFUND_GRACE_MINUTES} minutes of booking, or if your class is more than ${REFUND_CUTOFF_HOURS} hours away. Please contact us directly.`,
+    };
+  }
+
+  if (!booking.paymentId) {
+    // Shouldn't happen for a "paid" booking, but don't block a cancellation over it.
+    await db.update(bookings).set({ status: "cancelled" }).where(eq(bookings.id, booking.id));
+    if (booking.sessionId) await releaseSeat(booking.sessionId);
+    revalidateTag("bookings");
+    return { success: true };
+  }
+
+  const [payment] = await db.select().from(payments).where(eq(payments.id, booking.paymentId)).limit(1);
+  if (!payment?.squarePaymentId) {
+    return { success: false, error: "No payment on file for this booking. Please contact us directly." };
+  }
+
+  const result = await refundSquarePayment({
+    paymentId: payment.squarePaymentId,
+    amountCents: booking.amountPaidCents ?? payment.amountCents,
+    idempotencyKey: crypto.randomUUID(),
+    reason: "Customer self-service cancellation",
+  });
+
+  if (!result.ok) {
+    return { success: false, error: result.error || "Refund failed. Please contact us directly." };
+  }
+
+  await db.update(payments).set({ status: "refunded", updatedAt: new Date() }).where(eq(payments.id, payment.id));
+  await db.update(bookings).set({ status: "refunded" }).where(eq(bookings.id, booking.id));
   if (booking.sessionId) await releaseSeat(booking.sessionId);
 
   revalidateTag("bookings");
