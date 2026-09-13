@@ -65,11 +65,18 @@ export async function createPaidBooking(input: CheckoutInput): Promise<CheckoutR
 
   const amountCents = session.price * 100;
 
-  const [paymentRow] = await db.insert(payments).values({
-    idempotencyKey: data.idempotencyKey,
-    amountCents,
-    status: "pending",
-  }).returning();
+  // A previous attempt with this idempotency key may have failed (e.g. card declined) — reuse
+  // that row instead of inserting a new one, which would violate the unique key constraint.
+  const [paymentRow] = existingPayment[0]
+    ? await db.update(payments)
+        .set({ status: "pending", amountCents, squarePaymentId: null, squareOrderId: null, updatedAt: new Date() })
+        .where(eq(payments.id, existingPayment[0].id))
+        .returning()
+    : await db.insert(payments).values({
+        idempotencyKey: data.idempotencyKey,
+        amountCents,
+        status: "pending",
+      }).returning();
 
   const paymentResult = await createSquarePayment({
     sourceId: data.sourceId,
