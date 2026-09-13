@@ -23,8 +23,10 @@ export default function SessionCard({ session, attendees }: { session: ClassSess
   const [open, setOpen] = useState(false)
   const [editingCapacity, setEditingCapacity] = useState(false)
   const [capacity, setCapacity] = useState(String(session.capacity))
+  const [capacityError, setCapacityError] = useState<string | null>(null)
   const [editingPrice, setEditingPrice] = useState(false)
   const [price, setPrice] = useState(String(session.price))
+  const [priceError, setPriceError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
 
   const activeAttendees = attendees.filter(a => a.status === 'paid')
@@ -32,14 +34,26 @@ export default function SessionCard({ session, attendees }: { session: ClassSess
 
   const saveCapacity = () => {
     const value = parseInt(capacity, 10)
-    if (Number.isNaN(value)) return
-    startTransition(async () => { await updateSessionCapacity(session.id, value); router.refresh(); setEditingCapacity(false) })
+    if (Number.isNaN(value)) { setCapacityError('Enter a valid number'); return }
+    setCapacityError(null)
+    startTransition(async () => {
+      const result = await updateSessionCapacity(session.id, value)
+      if (!result?.success) { setCapacityError(result?.error || 'Could not save'); return }
+      router.refresh()
+      setEditingCapacity(false)
+    })
   }
 
   const savePrice = () => {
     const value = parseInt(price, 10)
-    if (Number.isNaN(value)) return
-    startTransition(async () => { await updateSessionPrice(session.id, value); router.refresh(); setEditingPrice(false) })
+    if (Number.isNaN(value)) { setPriceError('Enter a valid number'); return }
+    setPriceError(null)
+    startTransition(async () => {
+      const result = await updateSessionPrice(session.id, value)
+      if (!result?.success) { setPriceError(result?.error || 'Could not save'); return }
+      router.refresh()
+      setEditingPrice(false)
+    })
   }
 
   return (
@@ -70,7 +84,8 @@ export default function SessionCard({ session, attendees }: { session: ClassSess
               <>
                 <input type="number" value={capacity} onChange={e => setCapacity(e.target.value)} style={{ width: 70, padding: '6px 8px', border: '1px solid #CCC', fontFamily: 'inherit', fontSize: 12 }} />
                 <button disabled={pending} onClick={saveCapacity} style={miniBtn('#1565C0')}>Save</button>
-                <button onClick={() => setEditingCapacity(false)} style={miniBtn('#888')}>Cancel</button>
+                <button onClick={() => { setCapacity(String(session.capacity)); setCapacityError(null); setEditingCapacity(false) }} style={miniBtn('#888')}>Cancel</button>
+                {capacityError && <span style={{ fontSize: 11, color: '#C62828' }}>{capacityError}</span>}
               </>
             ) : (
               <button onClick={() => setEditingCapacity(true)} style={miniBtn('#455A64')}>Edit Capacity ({session.capacity})</button>
@@ -79,7 +94,8 @@ export default function SessionCard({ session, attendees }: { session: ClassSess
               <>
                 <input type="number" value={price} onChange={e => setPrice(e.target.value)} style={{ width: 70, padding: '6px 8px', border: '1px solid #CCC', fontFamily: 'inherit', fontSize: 12 }} />
                 <button disabled={pending} onClick={savePrice} style={miniBtn('#1565C0')}>Save</button>
-                <button onClick={() => setEditingPrice(false)} style={miniBtn('#888')}>Cancel</button>
+                <button onClick={() => { setPrice(String(session.price)); setPriceError(null); setEditingPrice(false) }} style={miniBtn('#888')}>Cancel</button>
+                {priceError && <span style={{ fontSize: 11, color: '#C62828' }}>{priceError}</span>}
               </>
             ) : (
               <button onClick={() => setEditingPrice(true)} style={miniBtn('#455A64')}>Edit Price (${session.price})</button>

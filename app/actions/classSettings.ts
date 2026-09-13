@@ -39,7 +39,9 @@ export async function updateClassText(classType: string, desc: string, modalText
 export async function updateMonthlyPrice(classType: string, monthlyPrice: number) {
   const user = await getCurrentUser();
   if (!user || user.role !== "admin") redirect("/");
-  if (!Number.isInteger(monthlyPrice) || monthlyPrice < 0 || monthlyPrice > 10000) return;
+  if (!Number.isInteger(monthlyPrice) || monthlyPrice < 0 || monthlyPrice > 10000) {
+    return { success: false, error: "Invalid price" };
+  }
 
   await db
     .insert(classSettings)
@@ -50,6 +52,7 @@ export async function updateMonthlyPrice(classType: string, monthlyPrice: number
     });
 
   revalidateTag("class-settings");
+  return { success: true };
 }
 
 export async function updatePhotoUrl(classType: string, photoUrl: string) {
