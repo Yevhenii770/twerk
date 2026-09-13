@@ -6,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/admin', '/dashboard', '/api/'],
+        disallow: ['/admin', '/dashboard', '/api/', '/book-live-test'],
       },
     ],
     sitemap: 'https://bounce-lab.com/sitemap.xml',
