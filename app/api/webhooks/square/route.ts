@@ -53,6 +53,14 @@ async function reconcilePayment(squarePaymentId: string, squareStatus: string) {
     : squareStatus === "REFUNDED" ? "refunded"
     : paymentRow.status;
 
+  // A Square Payment object's own `status` never actually becomes "REFUNDED" — refunds are
+  // tracked on a separate Refund object, and the original payment keeps reporting "COMPLETED"
+  // forever after (Square just re-sends payment.updated whenever its refunded_money field
+  // changes). Our own refund flow (lib/refund.ts) is the source of truth once a payment is
+  // "refunded"/"refunding" — without this guard, that later "COMPLETED" echo regresses a
+  // correctly-refunded payment straight back to "completed".
+  if (paymentRow.status === "refunded" || paymentRow.status === "refunding") return;
+
   if (nextStatus === paymentRow.status) return;
 
   await db.update(payments).set({ status: nextStatus, updatedAt: new Date() }).where(eq(payments.id, paymentRow.id));
