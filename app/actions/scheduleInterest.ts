@@ -4,6 +4,8 @@ import { db } from "@/db";
 import { classScheduleInterest } from "@/db/schema";
 import { and, eq, or } from "drizzle-orm";
 import { z } from "zod";
+import { headers } from "next/headers";
+import { rateLimit } from "@/lib/rateLimit";
 
 const ScheduleInterestSchema = z.object({
   name:      z.string().trim().max(80).optional().or(z.literal("")),
@@ -24,6 +26,12 @@ export async function submitScheduleInterest(_: unknown, formData: FormData) {
   // Honeypot: real visitors never fill this hidden field.
   if (formData.get("website")) {
     return { success: true };
+  }
+
+  const hdrs = await headers();
+  const ip = hdrs.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  if (!(await rateLimit(`schedule-interest:${ip}`, 5, 10 * 60 * 1000))) {
+    return { success: false, errors: { _: ["Too many attempts. Please wait a few minutes and try again."] } };
   }
 
   const raw = {

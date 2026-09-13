@@ -47,7 +47,7 @@ export type ActionResponse = {
 export async function signUp(formData: FormData): Promise<ActionResponse> {
   try {
     const ip = await clientIp();
-    if (!rateLimit(`signup:${ip}`, 5, 15 * 60 * 1000)) {
+    if (!(await rateLimit(`signup:${ip}`, 5, 15 * 60 * 1000))) {
       return { success: false, message: "Too many attempts. Please wait a few minutes and try again." };
     }
 
@@ -129,7 +129,11 @@ export async function signIn(formData: FormData): Promise<ActionResponse> {
     // slows a single client down but doesn't cap total attempts, so this is the actual limit.
     const ip = await clientIp();
     const emailKey = validationResult.data.email.trim().toLowerCase();
-    if (!rateLimit(`signin-ip:${ip}`, 8, 15 * 60 * 1000) || !rateLimit(`signin-email:${emailKey}`, 8, 15 * 60 * 1000)) {
+    const [ipOk, emailOk] = await Promise.all([
+      rateLimit(`signin-ip:${ip}`, 8, 15 * 60 * 1000),
+      rateLimit(`signin-email:${emailKey}`, 8, 15 * 60 * 1000),
+    ]);
+    if (!ipOk || !emailOk) {
       return {
         success: false,
         message: "Too many attempts. Please wait a few minutes and try again.",

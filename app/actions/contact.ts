@@ -21,7 +21,7 @@ export async function submitContactMessage(_: unknown, formData: FormData) {
 
   const hdrs = await headers();
   const ip = hdrs.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-  if (!rateLimit(`contact:${ip}`, 5, 10 * 60 * 1000)) {
+  if (!(await rateLimit(`contact:${ip}`, 5, 10 * 60 * 1000))) {
     return { success: false, errors: { _: ["Too many messages sent. Please try again later."] } };
   }
 

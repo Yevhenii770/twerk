@@ -47,7 +47,7 @@ export async function getBookingByToken(token: string) {
 export async function cancelOwnBooking(token: string) {
   const hdrs = await headers();
   const ip = hdrs.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-  if (!rateLimit(`cancel-booking:${ip}`, 10, 10 * 60 * 1000)) {
+  if (!(await rateLimit(`cancel-booking:${ip}`, 10, 10 * 60 * 1000))) {
     return { success: false, error: "Too many attempts. Please wait a few minutes and try again." };
   }
 

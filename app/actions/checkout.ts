@@ -19,6 +19,7 @@ import {
 import { rateLimit } from "@/lib/rateLimit";
 import { CLASS_STATIC, MONTHLY_PASS_SESSION_COUNT, nextBookableSessions, type ClassId } from "@/lib/classes";
 import { getClassSettings } from "@/lib/dal";
+import { alertAdminError } from "@/lib/alerts";
 import crypto from "crypto";
 
 const CheckoutSchema = z.object({
@@ -39,10 +40,21 @@ export type CheckoutResult =
 
 const CLASS_LABELS: Record<string, string> = { twerk: "Twerk", highheels: "High Heels" };
 
+/** Thin wrapper so an unexpected exception (network blip, DB hiccup) surfaces as a normal
+ * "try again" error instead of an unhandled 500 with no admin visibility. */
 export async function createPaidBooking(input: CheckoutInput): Promise<CheckoutResult> {
+  try {
+    return await createPaidBookingImpl(input);
+  } catch (error) {
+    await alertAdminError("createPaidBooking", error);
+    return { success: false, error: "Something went wrong. Please try again or contact us directly." };
+  }
+}
+
+async function createPaidBookingImpl(input: CheckoutInput): Promise<CheckoutResult> {
   const hdrs = await headers();
   const ip = hdrs.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-  if (!rateLimit(`checkout:${ip}`, 8, 10 * 60 * 1000)) {
+  if (!(await rateLimit(`checkout:${ip}`, 8, 10 * 60 * 1000))) {
     return { success: false, error: "Too many attempts. Please wait a few minutes and try again." };
   }
 
@@ -185,10 +197,20 @@ export type MonthlyCheckoutInput = z.infer<typeof MonthlyCheckoutSchema>;
  * treats that shared paymentId as the unit of refund, so cancelling any one of them refunds and
  * releases the whole pass rather than just a single date.
  */
+/** Same crash-visibility wrapper as createPaidBooking, above. */
 export async function createPaidMonthlyBooking(input: MonthlyCheckoutInput): Promise<CheckoutResult> {
+  try {
+    return await createPaidMonthlyBookingImpl(input);
+  } catch (error) {
+    await alertAdminError("createPaidMonthlyBooking", error);
+    return { success: false, error: "Something went wrong. Please try again or contact us directly." };
+  }
+}
+
+async function createPaidMonthlyBookingImpl(input: MonthlyCheckoutInput): Promise<CheckoutResult> {
   const hdrs = await headers();
   const ip = hdrs.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-  if (!rateLimit(`checkout:${ip}`, 8, 10 * 60 * 1000)) {
+  if (!(await rateLimit(`checkout:${ip}`, 8, 10 * 60 * 1000))) {
     return { success: false, error: "Too many attempts. Please wait a few minutes and try again." };
   }
 
