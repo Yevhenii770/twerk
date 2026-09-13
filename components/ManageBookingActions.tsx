@@ -25,19 +25,22 @@ export default function ManageBookingActions({ token, canCancel }: { token: stri
       {error && <p style={{ fontSize: 12, color: 'var(--pink)', marginBottom: 10 }}>{error}</p>}
       {!confirming ? (
         <button type="button" onClick={() => setConfirming(true)} style={{ fontSize: 12, color: 'var(--mid)', background: 'none', border: '1px solid var(--border)', padding: '10px 18px', cursor: 'pointer', fontFamily: 'inherit' }}>
-          Cancel this booking
+          Cancel &amp; refund
         </button>
       ) : (
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           <span style={{ fontSize: 12, color: 'var(--dark)' }}>Are you sure?</span>
           <button type="button" onClick={handleCancel} disabled={pending} style={{ fontSize: 12, color: '#fff', background: 'var(--pink)', border: 'none', padding: '10px 18px', cursor: 'pointer', fontFamily: 'inherit' }}>
-            {pending ? 'Cancelling…' : 'Yes, cancel'}
+            {pending ? 'Cancelling…' : 'Yes, cancel & refund'}
           </button>
           <button type="button" onClick={() => setConfirming(false)} style={{ fontSize: 12, color: 'var(--mid)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'underline' }}>
             Never mind
           </button>
         </div>
       )}
+      <p style={{ fontSize: 11, color: 'var(--mid)', marginTop: 10 }}>
+        Refundable within 30 minutes of booking, or anytime up to 24 hours before class.
+      </p>
     </div>
   )
 }
