@@ -26,16 +26,34 @@ declare global {
     Square?: {
       payments: (appId: string, locationId: string) => Promise<SquarePayments>
     }
+    ApplePaySession?: { canMakePayments: () => boolean }
   }
 }
 
+type TokenizeResult = { status: string; token?: string; errors?: { message: string }[] }
+
 interface SquarePayments {
   card: () => Promise<SquareCard>
+  applePay: (request: SquarePaymentRequest) => Promise<SquareWalletMethod>
+  googlePay: (request: SquarePaymentRequest) => Promise<SquareGooglePay>
+  paymentRequest: (options: {
+    countryCode: string
+    currencyCode: string
+    total: { amount: string; label: string }
+  }) => SquarePaymentRequest
 }
+type SquarePaymentRequest = unknown
 interface SquareCard {
   attach: (selector: string) => Promise<void>
-  tokenize: () => Promise<{ status: string; token?: string; errors?: { message: string }[] }>
+  tokenize: () => Promise<TokenizeResult>
   destroy: () => Promise<void>
+}
+interface SquareWalletMethod {
+  tokenize: () => Promise<TokenizeResult>
+  destroy?: () => Promise<void>
+}
+interface SquareGooglePay extends SquareWalletMethod {
+  attach: (selector: string) => Promise<void>
 }
 
 export default function BookingFlow({ sessionsByClass }: { sessionsByClass: Record<string, ClassSession[]> }) {
@@ -61,6 +79,11 @@ export default function BookingFlow({ sessionsByClass }: { sessionsByClass: Reco
   const cardRef = useRef<SquareCard | null>(null)
   const [cardReady, setCardReady] = useState(false)
   const [sdkError, setSdkError] = useState<string | null>(null)
+
+  const applePayRef = useRef<SquareWalletMethod | null>(null)
+  const googlePayRef = useRef<SquareGooglePay | null>(null)
+  const [applePayReady, setApplePayReady] = useState(false)
+  const [googlePayReady, setGooglePayReady] = useState(false)
 
   const sessions = sessionsByClass[classType] ?? []
   const session = sessions.find(s => s.id === sessionId) ?? null
@@ -102,6 +125,34 @@ export default function BookingFlow({ sessionsByClass }: { sessionsByClass: Reco
       if (cancelled) { card.destroy(); return }
       cardRef.current = card
       setCardReady(true)
+
+      if (!session) return
+      const paymentRequest = payments.paymentRequest({
+        countryCode: 'US',
+        currencyCode: 'USD',
+        total: { amount: session.price.toFixed(2), label: staticInfo.label },
+      })
+
+      if (window.ApplePaySession?.canMakePayments()) {
+        try {
+          const applePay = await payments.applePay(paymentRequest)
+          if (cancelled) return
+          applePayRef.current = applePay
+          setApplePayReady(true)
+        } catch {
+          // Apple Pay not available for this browser/merchant setup — silently fall back to card.
+        }
+      }
+
+      try {
+        const googlePay = await payments.googlePay(paymentRequest)
+        await googlePay.attach('#sq-google-pay-button')
+        if (cancelled) { googlePay.destroy?.(); return }
+        googlePayRef.current = googlePay
+        setGooglePayReady(true)
+      } catch {
+        // Google Pay not available for this browser/merchant setup — silently fall back to card.
+      }
     }
 
     init().catch((err) => setSdkError(err instanceof Error ? err.message : 'Failed to load payment form'))
@@ -111,7 +162,14 @@ export default function BookingFlow({ sessionsByClass }: { sessionsByClass: Reco
       cardRef.current?.destroy().catch(() => {})
       cardRef.current = null
       setCardReady(false)
+      applePayRef.current?.destroy?.().catch(() => {})
+      applePayRef.current = null
+      setApplePayReady(false)
+      googlePayRef.current?.destroy?.().catch(() => {})
+      googlePayRef.current = null
+      setGooglePayReady(false)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step])
 
   const handlePhoneChange = (raw: string) => {
@@ -133,14 +191,14 @@ export default function BookingFlow({ sessionsByClass }: { sessionsByClass: Reco
     return true
   }
 
-  const handlePay = async () => {
-    if (!session || !cardRef.current) return
+  const payWithSource = async (getToken: () => Promise<TokenizeResult>, invalidSourceMessage: string) => {
+    if (!session) return
     setPaymentError(null)
     setPaying(true)
     try {
-      const tokenResult = await cardRef.current.tokenize()
+      const tokenResult = await getToken()
       if (tokenResult.status !== 'OK' || !tokenResult.token) {
-        setPaymentError(tokenResult.errors?.[0]?.message || 'Card details are invalid. Please check and try again.')
+        setPaymentError(tokenResult.errors?.[0]?.message || invalidSourceMessage)
         setPaying(false)
         return
       }
@@ -170,6 +228,19 @@ export default function BookingFlow({ sessionsByClass }: { sessionsByClass: Reco
       setPaymentError('Something went wrong. Please try again.')
       setPaying(false)
     }
+  }
+
+  const handlePay = () => {
+    if (!cardRef.current) return
+    payWithSource(() => cardRef.current!.tokenize(), 'Card details are invalid. Please check and try again.')
+  }
+  const handleApplePay = () => {
+    if (!applePayRef.current) return
+    payWithSource(() => applePayRef.current!.tokenize(), 'Apple Pay could not process this card. Please try again.')
+  }
+  const handleGooglePay = () => {
+    if (!googlePayRef.current) return
+    payWithSource(() => googlePayRef.current!.tokenize(), 'Google Pay could not process this card. Please try again.')
   }
 
   return (
@@ -320,6 +391,36 @@ export default function BookingFlow({ sessionsByClass }: { sessionsByClass: Reco
               <p style={{ fontSize: 13, color: 'var(--pink)' }}>{sdkError}</p>
             ) : (
               <>
+                {applePayReady && (
+                  <button
+                    type="button"
+                    onClick={handleApplePay}
+                    disabled={paying}
+                    aria-label="Pay with Apple Pay"
+                    style={{
+                      WebkitAppearance: '-apple-pay-button',
+                      '--apple-pay-button-type': 'plain',
+                      '--apple-pay-button-style': 'black',
+                      width: '100%',
+                      height: 48,
+                      border: 'none',
+                      cursor: paying ? 'default' : 'pointer',
+                      marginBottom: 10,
+                    } as React.CSSProperties}
+                  />
+                )}
+                <div
+                  id="sq-google-pay-button"
+                  onClick={googlePayReady && !paying ? handleGooglePay : undefined}
+                  style={{ marginBottom: googlePayReady ? 10 : 0, height: googlePayReady ? 48 : 0, overflow: 'hidden' }}
+                />
+                {(applePayReady || googlePayReady) && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '4px 0 16px' }}>
+                    <span style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+                    <span style={{ fontSize: 11, color: 'var(--mid)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>or pay with card</span>
+                    <span style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+                  </div>
+                )}
                 <div id="sq-card-container" style={{ marginBottom: 12, minHeight: 90, border: '1px solid var(--border)', padding: cardReady ? 0 : '16px' }}>
                   {!cardReady && <p style={{ fontSize: 12, color: 'var(--mid)' }}>Loading secure payment form…</p>}
                 </div>
