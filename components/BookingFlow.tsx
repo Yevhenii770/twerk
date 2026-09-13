@@ -3,12 +3,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import type { ClassSession } from '@/db/schema'
-import { CLASS_STATIC, CLASS_IDS, ID_TO_SLUG, type ClassId } from '@/lib/classes'
-import { createPaidBooking } from '@/app/actions/checkout'
+import { CLASS_STATIC, CLASS_IDS, ID_TO_SLUG, MONTHLY_PASS_SESSION_COUNT, nextBookableSessions, type ClassId } from '@/lib/classes'
+import { createPaidBooking, createPaidMonthlyBooking } from '@/app/actions/checkout'
 import { squareWebPaymentsSdkUrl, squareApplicationId, squareLocationIdPublic } from '@/lib/square-client'
 import { track } from '@/lib/analytics'
 
 type Step = 'class' | 'session' | 'details' | 'payment'
+type BookingKind = 'dropin' | 'monthly'
 
 function fmtDate(iso: string) {
   return new Date(iso + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
@@ -45,6 +46,7 @@ export default function BookingFlow({ sessionsByClass }: { sessionsByClass: Reco
   const hasPresetClass = Boolean(paramClass && CLASS_IDS.includes(paramClass))
 
   const [classType, setClassType] = useState<ClassId>(hasPresetClass ? (paramClass as ClassId) : 'twerk')
+  const [bookingKind, setBookingKind] = useState<BookingKind>('dropin')
   const [step, setStep] = useState<Step>(hasPresetClass ? 'session' : 'class')
   const [sessionId, setSessionId] = useState<number | null>(null)
   const [firstName, setFirstName] = useState('')
@@ -61,14 +63,23 @@ export default function BookingFlow({ sessionsByClass }: { sessionsByClass: Reco
   const [cardReady, setCardReady] = useState(false)
   const [sdkError, setSdkError] = useState<string | null>(null)
 
-  const sessions = sessionsByClass[classType] ?? []
+  const sessions = useMemo(() => sessionsByClass[classType] ?? [], [sessionsByClass, classType])
   const session = sessions.find(s => s.id === sessionId) ?? null
   const staticInfo = CLASS_STATIC[classType]
+  const isMonthly = bookingKind === 'monthly'
+  const monthlySessions = useMemo(() => nextBookableSessions(sessions, MONTHLY_PASS_SESSION_COUNT), [sessions])
+  const monthlyAvailable = staticInfo.monthly != null && monthlySessions.length === MONTHLY_PASS_SESSION_COUNT
 
   useEffect(() => {
     track('view_booking', { class_slug: hasPresetClass ? ID_TO_SLUG[paramClass as ClassId] : undefined })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // Monthly Pass has no per-date step — keep `step` in sync when the kind toggle changes.
+  useEffect(() => {
+    if (isMonthly && step === 'session') setStep('details')
+    if (!isMonthly && step === 'details' && !sessionId) setStep('session')
+  }, [isMonthly, step, sessionId])
 
   useEffect(() => {
     if (step !== 'payment') return
@@ -133,7 +144,8 @@ export default function BookingFlow({ sessionsByClass }: { sessionsByClass: Reco
   }
 
   const handlePay = async () => {
-    if (!session || !cardRef.current) return
+    if (!cardRef.current) return
+    if (isMonthly ? !monthlyAvailable : !session) return
     setPaymentError(null)
     setPaying(true)
     try {
@@ -146,20 +158,31 @@ export default function BookingFlow({ sessionsByClass }: { sessionsByClass: Reco
 
       track('begin_checkout', { class_slug: ID_TO_SLUG[classType] })
 
-      const result = await createPaidBooking({
-        sessionId: session.id,
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
-        email: email.trim(),
-        phone: `+1 ${phoneDisplay}`,
-        notes: notes.trim() || undefined,
-        sourceId: tokenResult.token,
-        // Square ties the idempotency key to the exact request, including the source token —
-        // reusing it for a retry (a new tokenize() call always produces a new token) gets
-        // rejected with IDEMPOTENCY_KEY_REUSED instead of actually processing the retry. Each
-        // distinct payment attempt needs its own key.
-        idempotencyKey: crypto.randomUUID(),
-      })
+      // Square ties the idempotency key to the exact request, including the source token —
+      // reusing it for a retry (a new tokenize() call always produces a new token) gets
+      // rejected with IDEMPOTENCY_KEY_REUSED instead of actually processing the retry. Each
+      // distinct payment attempt needs its own key.
+      const result = isMonthly
+        ? await createPaidMonthlyBooking({
+            classType,
+            firstName: firstName.trim(),
+            lastName: lastName.trim(),
+            email: email.trim(),
+            phone: `+1 ${phoneDisplay}`,
+            notes: notes.trim() || undefined,
+            sourceId: tokenResult.token,
+            idempotencyKey: crypto.randomUUID(),
+          })
+        : await createPaidBooking({
+            sessionId: session!.id,
+            firstName: firstName.trim(),
+            lastName: lastName.trim(),
+            email: email.trim(),
+            phone: `+1 ${phoneDisplay}`,
+            notes: notes.trim() || undefined,
+            sourceId: tokenResult.token,
+            idempotencyKey: crypto.randomUUID(),
+          })
 
       if (!result.success) {
         setPaymentError(result.error)
@@ -179,6 +202,17 @@ export default function BookingFlow({ sessionsByClass }: { sessionsByClass: Reco
     <div style={{ maxWidth: 560, margin: '0 auto', padding: '48px 24px 80px' }}>
       <Stepper step={step} />
 
+      {(step === 'class' || step === 'session') && (
+        <div style={{ display: 'flex', gap: 8, marginBottom: 28 }}>
+          <KindButton active={!isMonthly} onClick={() => setBookingKind('dropin')}>
+            Drop-in
+          </KindButton>
+          <KindButton active={isMonthly} onClick={() => setBookingKind('monthly')}>
+            Monthly Pass
+          </KindButton>
+        </div>
+      )}
+
       {step === 'class' && (
         <Section step={1} title="Choose a class">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -186,20 +220,28 @@ export default function BookingFlow({ sessionsByClass }: { sessionsByClass: Reco
               const info = CLASS_STATIC[key]
               const upcoming = sessionsByClass[key]?.filter(s => !s.cancelled) ?? []
               const next = upcoming[0]
+              const keyMonthlyPicks = nextBookableSessions(sessionsByClass[key] ?? [], MONTHLY_PASS_SESSION_COUNT)
+              const keyMonthlyAvailable = info.monthly != null && keyMonthlyPicks.length === MONTHLY_PASS_SESSION_COUNT
+              const disabled = isMonthly && !keyMonthlyAvailable
               return (
                 <button
                   key={key}
                   type="button"
-                  onClick={() => { setClassType(key); setSessionId(null); setStep('session'); track('select_class', { class_slug: ID_TO_SLUG[key] }) }}
-                  style={cardBtnStyle(false)}
+                  disabled={disabled}
+                  onClick={() => { setClassType(key); setSessionId(null); setStep(isMonthly ? 'details' : 'session'); track('select_class', { class_slug: ID_TO_SLUG[key] }) }}
+                  style={{ ...cardBtnStyle(false), opacity: disabled ? 0.5 : 1, cursor: disabled ? 'not-allowed' : 'pointer' }}
                 >
                   <div>
                     <p style={{ fontSize: 15, fontWeight: 600, marginBottom: 3, color: 'var(--dark)' }}>{info.label}</p>
                     <p style={{ fontSize: 12, color: 'var(--mid)' }}>{info.level} · {next ? `${fmtDate(next.date)}, ${fmtTime(next.startTime)}` : 'No upcoming sessions'}</p>
-                    <p style={{ fontSize: 12, color: 'var(--mid)', marginTop: 4 }}>{info.desc}</p>
+                    <p style={{ fontSize: 12, color: 'var(--mid)', marginTop: 4 }}>
+                      {isMonthly
+                        ? (keyMonthlyAvailable ? `${MONTHLY_PASS_SESSION_COUNT} classes, all booked today` : 'Monthly Pass not available right now')
+                        : info.desc}
+                    </p>
                   </div>
                   <span style={{ fontSize: 18, fontFamily: 'var(--font-cormorant)', fontStyle: 'italic', fontWeight: 300, color: 'var(--pink)', whiteSpace: 'nowrap', marginLeft: 12 }}>
-                    ${info.dropin}
+                    ${isMonthly ? info.monthly : info.dropin}
                   </span>
                 </button>
               )
@@ -212,12 +254,12 @@ export default function BookingFlow({ sessionsByClass }: { sessionsByClass: Reco
         <Section step={1} title="Your class">
           <div style={cardBtnStyle(true) as React.CSSProperties}>
             <div>
-              <p style={{ fontSize: 16, fontWeight: 600, marginBottom: 3, color: '#fff' }}>{staticInfo.label}</p>
+              <p style={{ fontSize: 16, fontWeight: 600, marginBottom: 3, color: '#fff' }}>{staticInfo.label}{isMonthly ? ' — Monthly Pass' : ''}</p>
               <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.65)' }}>{staticInfo.level}</p>
             </div>
             <div style={{ textAlign: 'right' }}>
-              <p style={{ fontSize: 20, fontFamily: 'var(--font-cormorant)', fontStyle: 'italic', fontWeight: 300, color: '#fff', marginBottom: 4 }}>${staticInfo.dropin}</p>
-              {step === 'session' && (
+              <p style={{ fontSize: 20, fontFamily: 'var(--font-cormorant)', fontStyle: 'italic', fontWeight: 300, color: '#fff', marginBottom: 4 }}>${isMonthly ? staticInfo.monthly : staticInfo.dropin}</p>
+              {(step === 'session' || (step === 'details' && isMonthly)) && (
                 <button type="button" onClick={() => setStep('class')} style={linkBtnStyle}>Change class</button>
               )}
             </div>
@@ -225,7 +267,7 @@ export default function BookingFlow({ sessionsByClass }: { sessionsByClass: Reco
         </Section>
       )}
 
-      {step === 'session' && (
+      {step === 'session' && !isMonthly && (
         <Section step={2} title="Choose date & time">
           {sessions.length === 0 && (
             <p style={{ fontSize: 13, color: 'var(--mid)' }}>No upcoming sessions scheduled yet — please check back soon or contact us.</p>
@@ -260,7 +302,7 @@ export default function BookingFlow({ sessionsByClass }: { sessionsByClass: Reco
         </Section>
       )}
 
-      {(step === 'details' || step === 'payment') && session && (
+      {(step === 'details' || step === 'payment') && !isMonthly && session && (
         <Section step={2} title="Date & time">
           <div style={cardBtnStyle(true) as React.CSSProperties}>
             <div>
@@ -271,6 +313,25 @@ export default function BookingFlow({ sessionsByClass }: { sessionsByClass: Reco
               <button type="button" onClick={() => setStep('session')} style={linkBtnStyle}>Change</button>
             )}
           </div>
+        </Section>
+      )}
+
+      {(step === 'details' || step === 'payment') && isMonthly && (
+        <Section step={2} title={`Your ${MONTHLY_PASS_SESSION_COUNT} classes`}>
+          {monthlyAvailable ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {monthlySessions.map(s => (
+                <div key={s.id} style={cardBtnStyle(true) as React.CSSProperties}>
+                  <div>
+                    <p style={{ fontSize: 14, fontWeight: 600, color: '#fff', marginBottom: 3 }}>{fmtDate(s.date)}</p>
+                    <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.65)' }}>{fmtTime(s.startTime)} – {fmtTime(s.endTime)}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p style={{ fontSize: 13, color: 'var(--pink)' }}>Monthly Pass isn&apos;t available for this class right now — please choose Drop-in or contact us.</p>
+          )}
         </Section>
       )}
 
@@ -294,6 +355,7 @@ export default function BookingFlow({ sessionsByClass }: { sessionsByClass: Reco
             <button
               type="button"
               onClick={() => { if (validateDetails()) { setStep('payment'); track('begin_checkout', { class_slug: ID_TO_SLUG[classType] }) } }}
+              disabled={isMonthly && !monthlyAvailable}
               style={primaryBtnStyle}
             >
               Continue to Payment
@@ -302,18 +364,26 @@ export default function BookingFlow({ sessionsByClass }: { sessionsByClass: Reco
         </Section>
       )}
 
-      {step === 'payment' && session && (
+      {step === 'payment' && (isMonthly ? monthlyAvailable : Boolean(session)) && (
         <>
           <Section step={4} title="Order summary">
             <div style={{ background: 'var(--card)', border: '1px solid var(--border)', padding: '20px 24px' }}>
-              <SummaryRow label="Class" value={staticInfo.label} />
-              <SummaryRow label="Date" value={fmtDate(session.date)} />
-              <SummaryRow label="Time" value={`${fmtTime(session.startTime)} – ${fmtTime(session.endTime)}`} />
+              <SummaryRow label="Class" value={`${staticInfo.label}${isMonthly ? ' Monthly Pass' : ''}`} />
+              {isMonthly ? (
+                monthlySessions.map(s => (
+                  <SummaryRow key={s.id} label={fmtDate(s.date)} value={`${fmtTime(s.startTime)} – ${fmtTime(s.endTime)}`} />
+                ))
+              ) : (
+                <>
+                  <SummaryRow label="Date" value={fmtDate(session!.date)} />
+                  <SummaryRow label="Time" value={`${fmtTime(session!.startTime)} – ${fmtTime(session!.endTime)}`} />
+                </>
+              )}
               <SummaryRow label="Location" value="2648 E Burnside St, Portland, OR" />
               <SummaryRow label="Name" value={`${firstName} ${lastName}`} />
               <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 12, marginTop: 4 }}>
                 <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--dark)' }}>Total</span>
-                <span style={{ fontSize: 22, fontFamily: 'var(--font-cormorant)', fontStyle: 'italic', fontWeight: 300, color: 'var(--dark)' }}>${session.price}</span>
+                <span style={{ fontSize: 22, fontFamily: 'var(--font-cormorant)', fontStyle: 'italic', fontWeight: 300, color: 'var(--dark)' }}>${isMonthly ? staticInfo.monthly : session!.price}</span>
               </div>
             </div>
           </Section>
@@ -332,7 +402,7 @@ export default function BookingFlow({ sessionsByClass }: { sessionsByClass: Reco
                   Your spot is only confirmed once payment succeeds.
                 </p>
                 <button type="button" onClick={handlePay} disabled={!cardReady || paying} style={primaryBtnStyle}>
-                  {paying ? 'Processing…' : `Pay $${session.price}`}
+                  {paying ? 'Processing…' : `Pay $${isMonthly ? staticInfo.monthly : session!.price}`}
                 </button>
               </>
             )}
@@ -343,6 +413,24 @@ export default function BookingFlow({ sessionsByClass }: { sessionsByClass: Reco
         </>
       )}
     </div>
+  )
+}
+
+function KindButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        flex: 1, padding: '12px 16px', fontSize: 12, fontWeight: 600, letterSpacing: '0.04em',
+        fontFamily: 'inherit', cursor: 'pointer',
+        border: active ? '1px solid var(--dark)' : '1px solid var(--border)',
+        background: active ? 'var(--dark)' : '#fff',
+        color: active ? '#fff' : 'var(--dark)',
+      }}
+    >
+      {children}
+    </button>
   )
 }
 

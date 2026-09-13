@@ -57,19 +57,28 @@ async function reconcilePayment(squarePaymentId: string, squareStatus: string) {
 
   await db.update(payments).set({ status: nextStatus, updatedAt: new Date() }).where(eq(payments.id, paymentRow.id));
 
-  const bookingRows = await db.select().from(bookings).where(eq(bookings.paymentId, paymentRow.id)).limit(1);
-  const booking = bookingRows[0];
-  if (!booking) return;
+  // A Monthly Pass links several bookings to one payment — a refund/failure on the payment
+  // (e.g. issued from the Square dashboard, bypassing our own refund flow) must reconcile every
+  // linked booking, not just one, or the others are left "paid" against a payment that no
+  // longer is.
+  const bookingRows = await db.select().from(bookings).where(eq(bookings.paymentId, paymentRow.id));
+  if (bookingRows.length === 0) return;
 
-  if (nextStatus === "refunded" && booking.status !== "refunded") {
-    await db.update(bookings).set({ status: "refunded" }).where(eq(bookings.id, booking.id));
-    if (booking.sessionId) await releaseSeat(booking.sessionId);
+  if (nextStatus === "refunded") {
+    for (const booking of bookingRows) {
+      if (booking.status === "refunded") continue;
+      await db.update(bookings).set({ status: "refunded" }).where(eq(bookings.id, booking.id));
+      if (booking.sessionId) await releaseSeat(booking.sessionId);
+    }
     revalidateTag("bookings");
   }
 
-  if (nextStatus === "failed" && booking.status === "pending_payment") {
-    await db.update(bookings).set({ status: "failed" }).where(eq(bookings.id, booking.id));
-    if (booking.sessionId) await releaseSeat(booking.sessionId);
+  if (nextStatus === "failed") {
+    for (const booking of bookingRows) {
+      if (booking.status !== "pending_payment") continue;
+      await db.update(bookings).set({ status: "failed" }).where(eq(bookings.id, booking.id));
+      if (booking.sessionId) await releaseSeat(booking.sessionId);
+    }
     revalidateTag("bookings");
   }
 }

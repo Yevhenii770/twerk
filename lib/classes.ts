@@ -22,6 +22,17 @@ export const ID_TO_SLUG: Record<ClassId, string> = {
 export const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 export const DAY_SHORT  = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
+export const MONTHLY_PASS_SESSION_COUNT = 4
+
+/** Deterministic pick of the next N bookable occurrences for a Monthly Pass — same rule used
+ * client-side (to preview the dates before payment) and server-side (to actually claim seats),
+ * so what's shown at checkout is what gets booked. */
+export function nextBookableSessions<T extends { capacity: number; booked: number; bookingOpen: boolean; cancelled: boolean }>(
+  sessions: T[], count: number = MONTHLY_PASS_SESSION_COUNT
+): T[] {
+  return sessions.filter(s => !s.cancelled && s.bookingOpen && s.booked < s.capacity).slice(0, count)
+}
+
 export function parseTimeDisplay(timeDisplay: string): { opens: string; closes: string } {
   const parts = timeDisplay.split(/[–—]/)
   const endPart = parts[1].trim()

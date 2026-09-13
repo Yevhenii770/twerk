@@ -9,8 +9,15 @@ import crypto from "crypto";
 export type RefundResult = { success: true } | { success: false; error: string };
 
 /**
- * Refunds a booking's Square payment in full and marks both rows refunded, freeing the seat.
- * Shared by the admin refund button and the customer self-service "Cancel & refund" flow.
+ * Refunds a booking's Square payment in full and marks it (and any other booking sharing the
+ * same payment) refunded, freeing every seat involved. Shared by the admin refund button and
+ * the customer self-service "Cancel & refund" flow.
+ *
+ * A Monthly Pass is one payment linking several bookings (one per class date, via
+ * bookingGroupId) — refunding it must refund and release the whole group, not just the single
+ * booking the caller happened to act on, or the customer would keep the other classes for free
+ * while getting all their money back. Looking the group up by paymentId (rather than trusting
+ * bookingGroupId to be set) also makes this safe as the one place that ever refunds a payment.
  *
  * The payments.completed -> refunding transition is a single conditional UPDATE (status =
  * 'completed' in the WHERE clause), the same atomic-claim pattern used for seat claiming in
@@ -40,9 +47,14 @@ export async function refundBookingPayment(bookingId: number, reason: string): P
     return { success: false, error: "No Square payment on file. Please contact us directly." };
   }
 
+  // Resolve every booking this payment covers before touching anything else, so a partial
+  // Monthly Pass state (e.g. one date already cancelled by an admin without refund) is handled
+  // correctly below rather than only ever seeing the one booking the caller passed in.
+  const linkedBookings = await db.select().from(bookings).where(eq(bookings.paymentId, payment.id));
+
   const result = await refundSquarePayment({
     paymentId: payment.squarePaymentId,
-    amountCents: booking.amountPaidCents ?? payment.amountCents,
+    amountCents: payment.amountCents,
     idempotencyKey: crypto.randomUUID(),
     reason,
   });
@@ -54,8 +66,11 @@ export async function refundBookingPayment(bookingId: number, reason: string): P
   }
 
   await db.update(payments).set({ status: "refunded", updatedAt: new Date() }).where(eq(payments.id, payment.id));
-  await db.update(bookings).set({ status: "refunded" }).where(eq(bookings.id, bookingId));
-  if (booking.sessionId) await releaseSeat(booking.sessionId);
+  for (const linked of linkedBookings) {
+    if (linked.status !== "paid") continue; // already cancelled/refunded independently — leave as-is
+    await db.update(bookings).set({ status: "refunded" }).where(eq(bookings.id, linked.id));
+    if (linked.sessionId) await releaseSeat(linked.sessionId);
+  }
 
   revalidateTag("bookings");
   return { success: true };

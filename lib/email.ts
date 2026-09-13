@@ -80,6 +80,73 @@ export async function sendBookingConfirmationEmail(data: BookingEmailData): Prom
   }).catch(() => {});
 }
 
+type MonthlyPassEmailData = {
+  firstName: string;
+  email: string;
+  classType: string;
+  sessions: { date: string; startTime: string; endTime: string }[];
+  amountCents: number;
+  bookingId: number;
+  managementToken: string;
+};
+
+/** Best-effort: never throws. A booking is confirmed by payment status, not by email delivery. */
+export async function sendMonthlyPassConfirmationEmail(data: MonthlyPassEmailData): Promise<void> {
+  const resend = client();
+  if (!resend) return;
+
+  const classLabel = CLASS_LABELS[data.classType] ?? data.classType;
+  const manageUrl = `${siteUrl()}/manage-booking/${data.managementToken}`;
+  const dateRows = data.sessions
+    .map((s) => `<tr><td style="padding:6px 0;color:#666">${fmtDate(s.date)}</td><td style="padding:6px 0;font-weight:600">${fmtTime(s.startTime)} – ${fmtTime(s.endTime)}</td></tr>`)
+    .join("");
+
+  const html = `
+    <div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#111">
+      <h2>Your Monthly Pass is booked!</h2>
+      <p>Hi ${escapeHtml(data.firstName)}, you're all set for ${classLabel} — ${data.sessions.length} classes:</p>
+      <table style="width:100%;border-collapse:collapse;margin:16px 0">
+        ${dateRows}
+      </table>
+      <table style="width:100%;border-collapse:collapse;margin:16px 0">
+        <tr><td style="padding:6px 0;color:#666">Location</td><td style="padding:6px 0;font-weight:600">${STUDIO_ADDRESS_DISPLAY}</td></tr>
+        <tr><td style="padding:6px 0;color:#666">Amount paid</td><td style="padding:6px 0;font-weight:600">$${(data.amountCents / 100).toFixed(2)}</td></tr>
+        <tr><td style="padding:6px 0;color:#666">Reference</td><td style="padding:6px 0;font-weight:600">#${data.bookingId}</td></tr>
+      </table>
+      <p><a href="${STUDIO_DIRECTIONS_URL}" style="color:#C9A96E">Get Directions</a></p>
+      <p><a href="${manageUrl}" style="color:#C9A96E">Manage your pass</a></p>
+      <p style="color:#666;font-size:13px">Need to cancel or have a question? Reply to this email or contact us through the site.</p>
+    </div>
+  `;
+
+  await resend.emails.send({
+    from: FROM,
+    to: data.email,
+    subject: "Your Monthly Pass is booked!",
+    html,
+  }).catch(() => {});
+}
+
+export async function sendAdminMonthlyPassNotificationEmail(data: {
+  firstName: string;
+  lastName: string;
+  classType: string;
+  sessions: { date: string; startTime: string }[];
+  amountCents: number;
+}): Promise<void> {
+  const resend = client();
+  if (!resend || !ADMIN_EMAIL) return;
+
+  const classLabel = CLASS_LABELS[data.classType] ?? data.classType;
+  const dateList = data.sessions.map((s) => `${fmtDate(s.date)} @ ${fmtTime(s.startTime)}`).join("; ");
+  await resend.emails.send({
+    from: FROM,
+    to: ADMIN_EMAIL,
+    subject: `New Monthly Pass — ${data.firstName} ${data.lastName} · ${classLabel}`,
+    html: `<p><b>${escapeHtml(data.firstName)} ${escapeHtml(data.lastName)}</b> bought a <b>${classLabel} Monthly Pass</b> (${data.sessions.length} classes) — $${(data.amountCents / 100).toFixed(2)} paid.</p><p style="color:#666">${dateList}</p>`,
+  }).catch(() => {});
+}
+
 export async function sendAdminBookingNotificationEmail(data: {
   firstName: string;
   lastName: string;
