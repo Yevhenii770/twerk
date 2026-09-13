@@ -8,7 +8,14 @@ import {
   deleteSession,
 } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { getUserByEmail } from "@/lib/dal";
+import { rateLimit } from "@/lib/rateLimit";
+
+async function clientIp(): Promise<string> {
+  const hdrs = await headers();
+  return hdrs.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+}
 
 // Define Zod schema for signin validation
 const SignInSchema = z.object({
@@ -39,8 +46,10 @@ export type ActionResponse = {
 
 export async function signUp(formData: FormData): Promise<ActionResponse> {
   try {
-    // Add a small delay to simulate network latency
-    
+    const ip = await clientIp();
+    if (!rateLimit(`signup:${ip}`, 5, 15 * 60 * 1000)) {
+      return { success: false, message: "Too many attempts. Please wait a few minutes and try again." };
+    }
 
     // Extract data from form
     const data = {
@@ -99,9 +108,6 @@ export async function signUp(formData: FormData): Promise<ActionResponse> {
 }
 export async function signIn(formData: FormData): Promise<ActionResponse> {
   try {
-    // Add a small delay to simulate network latency
-   
-
     // Extract data from form
     const data = {
       email: formData.get("email") as string,
@@ -115,6 +121,19 @@ export async function signIn(formData: FormData): Promise<ActionResponse> {
         success: false,
         message: "Validation failed",
         errors: validationResult.error.flatten().fieldErrors,
+      };
+    }
+
+    // Rate limit by IP (casual scripted abuse) and by the targeted email (a botnet spreading
+    // attempts across many IPs to brute-force one known admin account) — the 1.5s delay below
+    // slows a single client down but doesn't cap total attempts, so this is the actual limit.
+    const ip = await clientIp();
+    const emailKey = validationResult.data.email.trim().toLowerCase();
+    if (!rateLimit(`signin-ip:${ip}`, 8, 15 * 60 * 1000) || !rateLimit(`signin-email:${emailKey}`, 8, 15 * 60 * 1000)) {
+      return {
+        success: false,
+        message: "Too many attempts. Please wait a few minutes and try again.",
+        error: "Too many attempts. Please wait a few minutes and try again.",
       };
     }
 
