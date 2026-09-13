@@ -31,12 +31,6 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: '**.fbcdn.net' },
     ],
   },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   async headers() {
     return [
       { source: '/(.*)', headers: securityHeaders },

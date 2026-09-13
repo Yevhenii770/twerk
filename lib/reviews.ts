@@ -38,13 +38,22 @@ async function fetchGoogleReviews(): Promise<GoogleReviewsData> {
 
     const data = await res.json()
 
-    const reviews = (data.reviews ?? [])
-      .filter((r: any) => r.text?.text)
-      .map((r: any) => ({
+    type RawGoogleReview = {
+      text?: { text?: string }
+      authorAttribution?: { displayName?: string; photoUri?: string }
+      rating?: number
+      relativePublishTimeDescription?: string
+      googleMapsUri?: string
+      publishTime?: string
+    }
+
+    const reviews = ((data.reviews ?? []) as RawGoogleReview[])
+      .filter((r) => r.text?.text)
+      .map((r) => ({
         authorName: r.authorAttribution?.displayName ?? 'Anonymous',
         authorPhoto: r.authorAttribution?.photoUri ?? '',
         rating: r.rating ?? 5,
-        text: r.text.text,
+        text: r.text?.text ?? '',
         relativeTime: r.relativePublishTimeDescription ?? '',
         googleMapsUri: r.googleMapsUri ?? '',
         datePublished: r.publishTime ? r.publishTime.split('T')[0] : '',
