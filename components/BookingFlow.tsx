@@ -495,7 +495,7 @@ function TicketSwitch({ bookingKind, onChange, dropinPrice, monthlyPrice }: {
         }
         .bkf-ticket.is-active{background:var(--card);border-color:var(--pink);}
         .bkf-ticket-main{display:flex;flex-direction:column;gap:4px;}
-        .bkf-ticket-eyebrow{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--pink);}
+        .bkf-ticket-eyebrow{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--pink);}
         .bkf-ticket-name{font-family:var(--font-cormorant);font-style:italic;font-weight:600;font-size:19px;color:var(--dark);}
         .bkf-ticket-price{font-family:var(--font-cormorant);font-style:italic;font-weight:600;font-size:24px;color:var(--dark);}
         .bkf-ticket-stub{
@@ -510,10 +510,10 @@ function TicketSwitch({ bookingKind, onChange, dropinPrice, monthlyPrice }: {
         .bkf-ticket-dots{display:flex;flex-wrap:nowrap;gap:3px;}
         .bkf-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
         .bkf-dot--filled{background:var(--pink);}
-        .bkf-ticket-stub-label{font-size:9.5px;color:var(--mid);text-align:right;line-height:1.3;}
+        .bkf-ticket-stub-label{font-size:10px;color:var(--mid);text-align:right;line-height:1.3;}
         .bkf-ticket-badge{
-          position:absolute;top:-9px;right:10px;background:var(--pink);color:#fff;font-size:9px;
-          font-weight:700;letter-spacing:.03em;text-transform:uppercase;padding:4px 9px;
+          position:absolute;top:-9px;right:10px;background:var(--pink);color:#fff;font-size:10px;
+          font-weight:700;letter-spacing:.03em;text-transform:uppercase;padding:3px 8px;
         }
         .bkf-ticket:focus-visible{outline:2px solid var(--pink);outline-offset:3px;}
         @media (max-width: 380px){
