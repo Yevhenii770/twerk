@@ -27,6 +27,25 @@ export type CreatePaymentResult =
   | { ok: true; paymentId: string; orderId?: string; status: string; receiptUrl?: string }
   | { ok: false; error: string };
 
+// Square often returns GENERIC_DECLINE alongside a second, more specific error (e.g.
+// CVV_FAILURE) — surfacing only the first one hides the actionable reason from the customer.
+const DECLINE_MESSAGES: Record<string, string> = {
+  CVV_FAILURE: "The security code (CVV) doesn't match your card. Please check it and try again.",
+  ADDRESS_VERIFICATION_FAILURE: "The billing address doesn't match your card. Please check it and try again.",
+  INVALID_EXPIRATION: "The expiration date doesn't look right. Please check it and try again.",
+  CARD_EXPIRED: "This card has expired. Please use a different card.",
+  INSUFFICIENT_FUNDS: "This card was declined for insufficient funds.",
+  PAN_FAILURE: "The card number doesn't look right. Please check it and try again.",
+  INVALID_POSTAL_CODE: "The postal code doesn't match your card. Please check it and try again.",
+};
+
+function friendlyDeclineMessage(errors: { code?: string; detail?: string }[] | undefined): string | undefined {
+  if (!errors?.length) return undefined;
+  const specific = errors.find((e) => e.code && e.code !== "GENERIC_DECLINE");
+  if (specific?.code && DECLINE_MESSAGES[specific.code]) return DECLINE_MESSAGES[specific.code];
+  return (specific ?? errors[0])?.detail;
+}
+
 /**
  * Charges a Square payment token (sourceId, from the client-side Web Payments SDK — the raw
  * card number never touches our server). idempotencyKey must be stable across retries of the
@@ -62,8 +81,7 @@ export async function createSquarePayment(params: {
     const body = await res.json();
 
     if (!res.ok) {
-      const message = body?.errors?.[0]?.detail || `Square payment failed (HTTP ${res.status})`;
-      return { ok: false, error: message };
+      return { ok: false, error: friendlyDeclineMessage(body?.errors) || `Square payment failed (HTTP ${res.status})` };
     }
 
     const payment = body.payment;
