@@ -45,7 +45,7 @@ export const payments = pgTable("payments", {
   squareOrderId:    text("square_order_id"),
   amountCents:      integer("amount_cents").notNull(),
   currency:         text("currency").default("USD").notNull(),
-  status:           text("status").default("pending").notNull(), // pending | completed | failed | refunded
+  status:           text("status").default("pending").notNull(), // pending | completed | refunding | failed | refunded
   createdAt:        timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
   updatedAt:        timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
 });

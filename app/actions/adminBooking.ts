@@ -1,14 +1,13 @@
 "use server";
 
 import { db } from "@/db";
-import { bookings, classSessions, payments } from "@/db/schema";
+import { bookings, classSessions } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { revalidateTag } from "next/cache";
 import { getCurrentUser } from "@/lib/dal";
 import { releaseSeat } from "@/lib/reserve";
-import { refundSquarePayment } from "@/lib/square";
-import crypto from "crypto";
+import { refundBookingPayment } from "@/lib/refund";
 
 async function requireAdmin() {
   const user = await getCurrentUser();
@@ -33,28 +32,7 @@ export async function cancelPaidBooking(id: number) {
 /** Refunds the Square payment in full and cancels the booking, freeing the seat. */
 export async function refundPaidBooking(id: number) {
   await requireAdmin();
-  const [booking] = await db.select().from(bookings).where(eq(bookings.id, id)).limit(1);
-  if (!booking || !booking.paymentId) return { success: false, error: "No payment on this booking" };
-
-  const [payment] = await db.select().from(payments).where(eq(payments.id, booking.paymentId)).limit(1);
-  if (!payment?.squarePaymentId) return { success: false, error: "No Square payment on file" };
-  if (payment.status === "refunded") return { success: true };
-
-  const result = await refundSquarePayment({
-    paymentId: payment.squarePaymentId,
-    amountCents: booking.amountPaidCents ?? payment.amountCents,
-    idempotencyKey: crypto.randomUUID(),
-    reason: "Admin-initiated refund",
-  });
-
-  if (!result.ok) return { success: false, error: result.error };
-
-  await db.update(payments).set({ status: "refunded", updatedAt: new Date() }).where(eq(payments.id, payment.id));
-  await db.update(bookings).set({ status: "refunded" }).where(eq(bookings.id, id));
-  if (booking.sessionId) await releaseSeat(booking.sessionId);
-
-  revalidateTag("bookings");
-  return { success: true };
+  return refundBookingPayment(id, "Admin-initiated refund");
 }
 
 export async function markAttendance(id: number, attended: boolean) {
