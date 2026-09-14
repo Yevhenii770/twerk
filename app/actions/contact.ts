@@ -25,6 +25,11 @@ export async function submitContactMessage(_: unknown, formData: FormData) {
     return { success: false, errors: { _: ["Too many messages sent. Please try again later."] } };
   }
 
+  const turnstileToken = formData.get("cf-turnstile-response")?.toString() || "";
+  if (!(await verifyTurnstile(turnstileToken, ip))) {
+    return { success: false, errors: { _: ["Verification failed. Please try again."] } };
+  }
+
   const raw = {
     name: formData.get("name"),
     email: formData.get("email"),
@@ -50,6 +55,24 @@ export async function submitContactMessage(_: unknown, formData: FormData) {
     return { success: true };
   } catch {
     return { success: false, errors: { _: ["Something went wrong, please try again"] } };
+  }
+}
+
+async function verifyTurnstile(token: string, ip: string): Promise<boolean> {
+  const secret = process.env.TURNSTILE_SECRET_KEY;
+  if (!secret) return true; // not configured (e.g. local dev) — skip check
+  if (!token) return false;
+
+  try {
+    const res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ secret, response: token, remoteip: ip }),
+    });
+    const data = await res.json();
+    return data.success === true;
+  } catch {
+    return false;
   }
 }
 

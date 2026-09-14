@@ -1,8 +1,11 @@
 'use client'
 
 import { useActionState } from 'react'
+import Script from 'next/script'
 import { submitContactMessage } from '@/app/actions/contact'
 import { track } from '@/lib/analytics'
+
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
 
 export default function ContactForm() {
   const [state, action, pending] = useActionState(submitContactMessage, null)
@@ -50,6 +53,13 @@ export default function ContactForm() {
       </div>
 
       {generalError && <p style={errorStyle}>{generalError}</p>}
+
+      {TURNSTILE_SITE_KEY && (
+        <>
+          <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer />
+          <div className="cf-turnstile" data-sitekey={TURNSTILE_SITE_KEY} />
+        </>
+      )}
 
       <button
         type="submit"
