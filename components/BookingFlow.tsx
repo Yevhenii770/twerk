@@ -623,7 +623,8 @@ function InputField({ label, value, onChange, placeholder, type = 'text' }: {
 }
 
 const labelStyle: React.CSSProperties = { display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--mid)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }
-const inputStyle: React.CSSProperties = { width: '100%', padding: '14px 16px', border: '1px solid var(--border)', outline: 'none', fontFamily: 'inherit', fontSize: 14, color: 'var(--dark)', background: '#fff', boxSizing: 'border-box' }
+// 16px avoids iOS Safari's auto-zoom-on-focus behavior for inputs below that size.
+const inputStyle: React.CSSProperties = { width: '100%', padding: '14px 16px', border: '1px solid var(--border)', outline: 'none', fontFamily: 'inherit', fontSize: 16, color: 'var(--dark)', background: '#fff', boxSizing: 'border-box' }
 const linkBtnStyle: React.CSSProperties = { fontSize: 11, color: 'var(--pink)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'underline', padding: 0 }
 const primaryBtnStyle: React.CSSProperties = { width: '100%', background: 'var(--pink)', color: '#fff', fontSize: 13, letterSpacing: '0.15em', textTransform: 'uppercase', fontWeight: 600, padding: '18px 0', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }
 

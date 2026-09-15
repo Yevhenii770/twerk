@@ -83,9 +83,10 @@ const labelStyle: React.CSSProperties = {
   letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6,
 }
 
+// 16px avoids iOS Safari's auto-zoom-on-focus behavior for inputs below that size.
 const inputStyle: React.CSSProperties = {
   width: '100%', padding: '14px 16px', border: '1px solid var(--border)', outline: 'none',
-  fontFamily: 'inherit', fontSize: 14, color: 'var(--dark)', background: '#fff', boxSizing: 'border-box',
+  fontFamily: 'inherit', fontSize: 16, color: 'var(--dark)', background: '#fff', boxSizing: 'border-box',
 }
 
 const errorStyle: React.CSSProperties = { fontSize: 11, color: 'var(--pink)', marginTop: 4 }
