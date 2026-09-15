@@ -66,6 +66,8 @@ export default function BookingFlow({ sessionsByClass, monthlyPrices, dropinPric
   const cardRef = useRef<SquareCard | null>(null)
   const [cardReady, setCardReady] = useState(false)
   const [sdkError, setSdkError] = useState<string | null>(null)
+  const [sdkErrorRecoverable, setSdkErrorRecoverable] = useState(true)
+  const [sdkRetryToken, setSdkRetryToken] = useState(0)
 
   const sessions = useMemo(() => sessionsByClass[classType] ?? [], [sessionsByClass, classType])
   const session = sessions.find(s => s.id === sessionId) ?? null
@@ -92,6 +94,7 @@ export default function BookingFlow({ sessionsByClass, monthlyPrices, dropinPric
     const locationId = squareLocationIdPublic()
     if (!appId || !locationId) {
       setSdkError('Payments are not configured yet on this site. Please contact us to book directly.')
+      setSdkErrorRecoverable(false)
       return
     }
 
@@ -106,7 +109,9 @@ export default function BookingFlow({ sessionsByClass, monthlyPrices, dropinPric
           script.id = scriptId
           script.src = squareWebPaymentsSdkUrl()
           script.onload = () => resolve()
-          script.onerror = () => reject(new Error('Failed to load payment form'))
+          // Remove the failed tag so a retry (bumping sdkRetryToken) creates a fresh
+          // script instead of finding this one and waiting on a 'load' that will never fire.
+          script.onerror = () => { script.remove(); reject(new Error('Failed to load payment form')) }
           document.body.appendChild(script)
         })
       }
@@ -119,7 +124,10 @@ export default function BookingFlow({ sessionsByClass, monthlyPrices, dropinPric
       setCardReady(true)
     }
 
-    init().catch((err) => setSdkError(err instanceof Error ? err.message : 'Failed to load payment form'))
+    init().catch((err) => {
+      setSdkErrorRecoverable(true)
+      setSdkError(err instanceof Error ? err.message : 'Failed to load payment form')
+    })
 
     return () => {
       cancelled = true
@@ -127,7 +135,7 @@ export default function BookingFlow({ sessionsByClass, monthlyPrices, dropinPric
       cardRef.current = null
       setCardReady(false)
     }
-  }, [step])
+  }, [step, sdkRetryToken])
 
   const handlePhoneChange = (raw: string) => {
     const digits = raw.replace(/\D/g, '').slice(0, 10)
@@ -394,7 +402,18 @@ export default function BookingFlow({ sessionsByClass, monthlyPrices, dropinPric
 
           <Section step={5} title="Payment">
             {sdkError ? (
-              <p style={{ fontSize: 13, color: 'var(--pink)' }}>{sdkError}</p>
+              <>
+                <p style={{ fontSize: 13, color: 'var(--pink)', marginBottom: 12 }}>{sdkError}</p>
+                {sdkErrorRecoverable && (
+                  <button
+                    type="button"
+                    onClick={() => { setSdkError(null); setSdkRetryToken(t => t + 1) }}
+                    style={primaryBtnStyle}
+                  >
+                    Try again
+                  </button>
+                )}
+              </>
             ) : (
               <>
                 <div id="sq-card-container" style={{ marginBottom: 12, minHeight: 90, border: '1px solid var(--border)', padding: cardReady ? 0 : '16px' }}>
