@@ -7,6 +7,7 @@ import { CLASS_STATIC, CLASS_IDS, ID_TO_SLUG, MONTHLY_PASS_SESSION_COUNT, nextBo
 import { createPaidBooking, createPaidMonthlyBooking } from '@/app/actions/checkout'
 import { squareWebPaymentsSdkUrl, squareApplicationId, squareLocationIdPublic } from '@/lib/square-client'
 import { track } from '@/lib/analytics'
+import ContactForm from '@/components/ContactForm'
 
 type Step = 'class' | 'session' | 'details' | 'payment'
 type BookingKind = 'dropin' | 'monthly'
@@ -62,6 +63,7 @@ export default function BookingFlow({ sessionsByClass, monthlyPrices, dropinPric
   const [detailsError, setDetailsError] = useState<string | null>(null)
   const [paymentError, setPaymentError] = useState<string | null>(null)
   const [paying, setPaying] = useState(false)
+  const [showContactHelp, setShowContactHelp] = useState(false)
 
   const cardRef = useRef<SquareCard | null>(null)
   const [cardReady, setCardReady] = useState(false)
@@ -160,6 +162,7 @@ export default function BookingFlow({ sessionsByClass, monthlyPrices, dropinPric
     if (!cardRef.current) return
     if (isMonthly ? !monthlyAvailable : !session) return
     setPaymentError(null)
+    setShowContactHelp(false)
     setPaying(true)
     try {
       const tokenResult = await cardRef.current.tokenize()
@@ -419,7 +422,16 @@ export default function BookingFlow({ sessionsByClass, monthlyPrices, dropinPric
                 <div id="sq-card-container" style={{ marginBottom: 12, minHeight: 90, border: '1px solid var(--border)', padding: cardReady ? 0 : '16px' }}>
                   {!cardReady && <p style={{ fontSize: 12, color: 'var(--mid)' }}>Loading secure payment form…</p>}
                 </div>
-                {paymentError && <p style={{ fontSize: 12, color: 'var(--pink)', marginBottom: 12 }}>{paymentError}</p>}
+                {paymentError && (
+                  <div style={{ marginBottom: 16 }}>
+                    <p style={{ fontSize: 12, color: 'var(--pink)', marginBottom: 8 }}>{paymentError}</p>
+                    {!showContactHelp && (
+                      <button type="button" onClick={() => setShowContactHelp(true)} style={linkBtnStyle}>
+                        Trouble paying? Contact us →
+                      </button>
+                    )}
+                  </div>
+                )}
                 <p style={{ fontSize: 11, color: 'var(--mid)', marginBottom: 16, lineHeight: 1.6 }}>
                   Your card is processed securely by Square. We never see or store your card number.
                   Your spot is only confirmed once payment succeeds.
@@ -427,6 +439,22 @@ export default function BookingFlow({ sessionsByClass, monthlyPrices, dropinPric
                 <button type="button" onClick={handlePay} disabled={!cardReady || paying} style={primaryBtnStyle}>
                   {paying ? 'Processing…' : `Pay $${isMonthly ? monthlyPrice : session!.price}`}
                 </button>
+                {showContactHelp && (
+                  <div style={{ marginTop: 24, paddingTop: 24, borderTop: '1px solid var(--border)' }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--dark)', marginBottom: 12 }}>
+                      Let us know and we&apos;ll help you get booked in.
+                    </p>
+                    <ContactForm
+                      prefill={{
+                        name: `${firstName} ${lastName}`.trim(),
+                        email,
+                        phone: phoneDisplay,
+                        inquiryType: 'problem',
+                        message: `Trouble paying for ${staticInfo.label}${isMonthly ? ' Monthly Pass' : ''}${!isMonthly && session ? ` on ${fmtDate(session.date)}` : ''}. Error shown: "${paymentError}"`,
+                      }}
+                    />
+                  </div>
+                )}
               </>
             )}
             <button type="button" onClick={() => setStep('details')} style={{ ...linkBtnStyle, display: 'block', marginTop: 12, color: 'var(--mid)' }}>
