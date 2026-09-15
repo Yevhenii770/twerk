@@ -85,18 +85,31 @@ async function createPaidBookingImpl(input: CheckoutInput): Promise<CheckoutResu
 
   const amountCents = session.price * 100;
 
-  // A previous attempt with this idempotency key may have failed (e.g. card declined) — reuse
-  // that row instead of inserting a new one, which would violate the unique key constraint.
-  const [paymentRow] = existingPayment[0]
-    ? await db.update(payments)
-        .set({ status: "pending", amountCents, squarePaymentId: null, squareOrderId: null, updatedAt: new Date() })
-        .where(eq(payments.id, existingPayment[0].id))
-        .returning()
-    : await db.insert(payments).values({
-        idempotencyKey: data.idempotencyKey,
-        amountCents,
-        status: "pending",
-      }).returning();
+  // Everything from here up to the Square charge itself must release the seat on any failure —
+  // otherwise a DB hiccup (or any other exception) leaves the seat claimed forever with no
+  // booking and no charge to show for it. Once Square confirms the charge went through, we no
+  // longer release on error: the customer's card was charged, so the seat must stay theirs even
+  // if a later step (e.g. writing the booking row) fails — that failure needs a human to
+  // reconcile (see alertAdminError in the outer wrapper), not an auto-release that could let the
+  // seat get double-sold out from under a paying customer.
+  let paymentRow: typeof payments.$inferSelect;
+  try {
+    // A previous attempt with this idempotency key may have failed (e.g. card declined) — reuse
+    // that row instead of inserting a new one, which would violate the unique key constraint.
+    [paymentRow] = existingPayment[0]
+      ? await db.update(payments)
+          .set({ status: "pending", amountCents, squarePaymentId: null, squareOrderId: null, updatedAt: new Date() })
+          .where(eq(payments.id, existingPayment[0].id))
+          .returning()
+      : await db.insert(payments).values({
+          idempotencyKey: data.idempotencyKey,
+          amountCents,
+          status: "pending",
+        }).returning();
+  } catch (err) {
+    await releaseSeat(data.sessionId);
+    throw err;
+  }
 
   const paymentResult = await createSquarePayment({
     sourceId: data.sourceId,
@@ -242,28 +255,36 @@ async function createPaidMonthlyBookingImpl(input: MonthlyCheckoutInput): Promis
     return { success: false, error: "Not enough upcoming classes are open right now for a Monthly Pass. Please contact us." };
   }
 
-  const claimedIds: number[] = [];
-  for (const s of picks) {
-    const ok = await claimSeat(s.id);
-    if (!ok) {
-      for (const id of claimedIds) await releaseSeat(id);
-      return { success: false, error: "Sorry, one of these classes just sold out. Please try again." };
-    }
-    claimedIds.push(s.id);
-  }
-
+  // Same release-on-any-failure guarantee as createPaidBookingImpl, above, applied to every
+  // seat claimed for the pass: anything that throws before Square confirms the charge must give
+  // all of them back, not just the ones covered by an explicit failure branch.
   const amountCents = monthlyPrice * 100;
+  const claimedIds: number[] = [];
+  let paymentRow: typeof payments.$inferSelect;
+  try {
+    for (const s of picks) {
+      const ok = await claimSeat(s.id);
+      if (!ok) {
+        for (const id of claimedIds) await releaseSeat(id);
+        return { success: false, error: "Sorry, one of these classes just sold out. Please try again." };
+      }
+      claimedIds.push(s.id);
+    }
 
-  const [paymentRow] = existingPayment[0]
-    ? await db.update(payments)
-        .set({ status: "pending", amountCents, squarePaymentId: null, squareOrderId: null, updatedAt: new Date() })
-        .where(eq(payments.id, existingPayment[0].id))
-        .returning()
-    : await db.insert(payments).values({
-        idempotencyKey: data.idempotencyKey,
-        amountCents,
-        status: "pending",
-      }).returning();
+    [paymentRow] = existingPayment[0]
+      ? await db.update(payments)
+          .set({ status: "pending", amountCents, squarePaymentId: null, squareOrderId: null, updatedAt: new Date() })
+          .where(eq(payments.id, existingPayment[0].id))
+          .returning()
+      : await db.insert(payments).values({
+          idempotencyKey: data.idempotencyKey,
+          amountCents,
+          status: "pending",
+        }).returning();
+  } catch (err) {
+    for (const id of claimedIds) await releaseSeat(id);
+    throw err;
+  }
 
   const paymentResult = await createSquarePayment({
     sourceId: data.sourceId,
