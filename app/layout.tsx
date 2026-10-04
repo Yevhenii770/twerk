@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Montserrat } from "next/font/google";
 import { Toaster } from "react-hot-toast";
+import MetaPixel from "@/components/MetaPixel";
 import { getSchedule } from "@/lib/dal";
 import { DAY_NAMES, parseTimeDisplay } from "@/lib/classes";
 
@@ -156,6 +157,7 @@ export default async function RootLayout({
       <body
         className={`${cormorant.variable} ${montserrat.variable} font-sans antialiased`}
       >
+        <MetaPixel />
         {children}
         <Toaster
           position="top-right"

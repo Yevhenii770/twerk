@@ -7,6 +7,7 @@ import { CLASS_STATIC, CLASS_IDS, ID_TO_SLUG, MONTHLY_PASS_SESSION_COUNT, nextBo
 import { createPaidBooking, createPaidMonthlyBooking } from '@/app/actions/checkout'
 import { squareWebPaymentsSdkUrl, squareApplicationId, squareLocationIdPublic } from '@/lib/square-client'
 import { track } from '@/lib/analytics'
+import { purchaseEventId } from '@/lib/metaEventId'
 import ContactForm from '@/components/ContactForm'
 
 type Step = 'class' | 'session' | 'details' | 'payment'
@@ -206,7 +207,12 @@ export default function BookingFlow({ sessionsByClass, monthlyPrices, dropinPric
         return
       }
 
-      track('payment_success', { class_slug: ID_TO_SLUG[classType] })
+      track('payment_success', {
+        class_slug: ID_TO_SLUG[classType],
+        value: isMonthly ? monthlyPrice ?? undefined : session!.price,
+        currency: 'USD',
+        event_id: purchaseEventId(result.bookingId),
+      })
       router.push(`/manage-booking/${result.managementToken}?fresh=1`)
     } catch {
       setPaymentError('Something went wrong. Please try again.')

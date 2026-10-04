@@ -20,6 +20,7 @@ import { rateLimit } from "@/lib/rateLimit";
 import { CLASS_STATIC, MONTHLY_PASS_SESSION_COUNT, nextBookableSessions, type ClassId } from "@/lib/classes";
 import { getClassSettings } from "@/lib/dal";
 import { alertAdminError } from "@/lib/alerts";
+import { sendMetaPurchase } from "@/lib/metaCapi";
 import crypto from "crypto";
 
 const CheckoutSchema = z.object({
@@ -184,6 +185,16 @@ async function createPaidBookingImpl(input: CheckoutInput): Promise<CheckoutResu
     startTime: session.startTime,
     amountCents,
   }).catch(() => {});
+
+  await sendMetaPurchase({
+    bookingId: booking.id,
+    valueDollars: amountCents / 100,
+    classType: session.classType,
+    email: data.email,
+    phone: data.phone,
+    firstName: data.firstName,
+    lastName: data.lastName,
+  });
 
   return { success: true, bookingId: booking.id, managementToken };
 }
@@ -361,6 +372,16 @@ async function createPaidMonthlyBookingImpl(input: MonthlyCheckoutInput): Promis
     sessions: picks,
     amountCents,
   }).catch(() => {});
+
+  await sendMetaPurchase({
+    bookingId: primary.id,
+    valueDollars: amountCents / 100,
+    classType,
+    email: data.email,
+    phone: data.phone,
+    firstName: data.firstName,
+    lastName: data.lastName,
+  });
 
   return { success: true, bookingId: primary.id, managementToken: primary.managementToken! };
 }

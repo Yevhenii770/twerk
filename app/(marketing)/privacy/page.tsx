@@ -46,7 +46,7 @@ export default function PrivacyPage() {
         <p>We use industry-standard security measures to protect your personal information, including HTTPS encryption, secure database storage, and access controls. However, no method of transmission over the Internet is 100% secure.</p>
 
         <h2>Cookies</h2>
-        <p>Our website uses essential cookies to maintain your session and preferences. We do not use third-party tracking cookies.</p>
+        <p>Our website uses essential cookies to maintain your session and preferences. We also use the Meta Pixel and Meta Conversions API to measure how our ads perform. When you book a class, we share a hashed (encrypted) version of your email, phone number and name with Meta, along with the booking amount, so Meta can attribute the booking to an ad. You can limit ad tracking in your browser or in your Facebook/Instagram ad settings.</p>
 
         <h2>Your Rights</h2>
         <p>You have the right to:</p>
