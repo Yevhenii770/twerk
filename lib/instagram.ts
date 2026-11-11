@@ -12,6 +12,7 @@ const FALLBACK: InstaPost[] = [
     id: "4",
     media_type: "VIDEO",
     media_url: "/insta/4.mp4",
+    thumbnail_url: "/insta/4-poster.jpg",
     permalink: "https://www.instagram.com/iryna.pytska",
   },
   {
@@ -25,12 +26,14 @@ const FALLBACK: InstaPost[] = [
     id: "5",
     media_type: "VIDEO",
     media_url: "/insta/5.mp4",
+    thumbnail_url: "/insta/5-poster.jpg",
     permalink: "https://www.instagram.com/iryna.pytska",
   },
   {
     id: "1",
     media_type: "VIDEO",
     media_url: "/insta/1.mp4",
+    thumbnail_url: "/insta/1-poster.jpg",
     permalink: "https://www.instagram.com/iryna.pytska",
   },
 
@@ -44,6 +47,7 @@ const FALLBACK: InstaPost[] = [
     id: "6",
     media_type: "VIDEO",
     media_url: "/insta/6.mp4",
+    thumbnail_url: "/insta/6-poster.jpg",
     permalink: "https://www.instagram.com/iryna.pytska",
   },
 ];

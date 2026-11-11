@@ -4,6 +4,7 @@ import ClassesWithModals from '@/components/ClassesWithModals'
 import WeekCalendarClient from '@/components/WeekCalendarClient'
 import { fetchInstagramPosts } from '@/lib/instagram'
 import HeroVideo from '@/components/HeroVideo'
+import InstaVideo from '@/components/InstaVideo'
 import { getSchedule, getClassSettings } from '@/lib/dal'
 import type { Metadata } from 'next'
 import { DAY_SHORT, describeSchedule, startingPrices } from '@/lib/classes'
@@ -326,9 +327,7 @@ export default async function HomePage() {
             return (
               <a key={post.id} className="insta-cell" href={post.permalink} target="_blank" rel="noopener">
                 {isVideo && !isExternal ? (
-                  <video autoPlay muted loop playsInline style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: pos, transition: 'transform 0.55s ease' }}>
-                    <source src={post.media_url} type="video/mp4" />
-                  </video>
+                  <InstaVideo src={post.media_url} poster={post.thumbnail_url} objectPosition={pos} />
                 ) : isExternal ? (
                   <img src={imgSrc} alt="bounce lab dance studio Portland" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: pos, transition: 'transform 0.55s ease' }} />
                 ) : (
