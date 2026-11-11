@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
-import { CLASS_STATIC, DAY_NAMES, SLUG_TO_ID, ID_TO_SLUG, type ClassId } from '@/lib/classes'
+import { CLASS_STATIC, DAY_NAMES, SLUG_TO_ID, ID_TO_SLUG, classPrices, formatSlot, type ClassId } from '@/lib/classes'
+import { CLASS_SEO, STUDIO_ADDRESS, MAPS_URL, faqSchema } from '@/lib/seoContent'
 import { getSchedule, getClassSettings } from '@/lib/dal'
 import { getGoogleReviews } from '@/lib/reviews'
 import TrackedLink from '@/components/TrackedLink'
@@ -21,38 +22,45 @@ const CLASS_KEYWORDS: Record<ClassId, string[]> = {
 
 type Props = { params: Promise<{ slug: string }> }
 
-const META: Record<string, { title: string; description: string; keywords: string }> = {
+// Titles target the queries Search Console shows for each page ("twerk dance classes",
+// "heels dance class", "heels class portland"); the layout template appends " | bounce lab".
+const META: Record<string, { title: string; lead: string; keywords: string }> = {
   twerk: {
-    title: 'Twerk Classes in Portland, OR — bounce lab',
-    description: 'Beginner-friendly twerk classes in Portland, OR. Body confidence & choreography. Drop-in $30 or monthly $100. Book online.',
-    keywords: 'twerk class Portland, twerk Portland Oregon, twerk dance class near me, beginner twerk class, twerk lessons Portland, twerk workshop Portland OR',
+    title: 'Twerk Dance Classes in Portland, OR — Beginners Welcome',
+    lead: 'Beginner-friendly twerk dance classes in Portland, OR',
+    keywords: 'twerk dance classes Portland, twerk classes near me, twerk class Portland Oregon, beginner twerk class, twerk lessons Portland',
   },
   'high-heels': {
-    title: 'High Heels Dance Classes in Portland, OR — bounce lab',
-    description: 'High heels dance classes in Portland, OR. Posture & floor presence. Beginner-friendly. Drop-in $30 or monthly $100. Book online.',
-    keywords: 'high heels dance class Portland, high heels class Portland Oregon, heels dance near me, high heels dance lessons, heels choreography class Portland',
+    title: 'High Heels Dance Classes in Portland, OR — Beginner Heels Class',
+    lead: 'Beginner-friendly high heels dance classes in Portland, OR',
+    keywords: 'heels dance class Portland, high heels dance classes, heels class near me, beginner heels class, dance in heels class Portland',
   },
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const m = META[slug]
-  if (!m) return {}
+  const classId = SLUG_TO_ID[slug]
+  if (!m || !classId) return {}
+  const [schedule, classSettings] = await Promise.all([getSchedule(), getClassSettings()])
+  const sched = schedule.find(s => s.classType === classId)
+  const { dropin } = classPrices(classId, classSettings)
+  const description = `${m.lead}${sched ? ` — every ${formatSlot(sched)}` : ''}. No experience needed, judgment-free studio for women on E Burnside. Drop-in $${dropin}. Book online.`
   return {
     title: m.title,
-    description: m.description,
+    description,
     keywords: m.keywords,
     alternates: { canonical: `https://bounce-lab.com/classes/${slug}` },
     openGraph: {
       title: m.title,
-      description: m.description,
+      description,
       url: `https://bounce-lab.com/classes/${slug}`,
       images: [{ url: '/og-image-v2.jpg', width: 1200, height: 630, alt: m.title }],
     },
     twitter: {
       card: 'summary_large_image',
       title: m.title,
-      description: m.description,
+      description,
       images: ['/og-image-v2.jpg'],
     },
   }
@@ -70,9 +78,13 @@ export default async function ClassPage({ params }: Props) {
   const photo = photoPositions[classId]?.photoUrl ?? cls.photo
   const photoPos = photoPositions[classId]?.photoPosition ?? '50% 50%'
   const texts = photoPositions[classId]?.modalTexts ?? cls.modalTexts
+  const prices = classPrices(classId, photoPositions)
+  const seo = CLASS_SEO[classId]
+  const sections = seo.sections(sched)
+  const faqs = seo.faqs(sched, prices)
 
   const isBeginnerFriendly = cls.modalEyebrow.includes('Beginner Friendly')
-  const ctaLabel = `${CTA_VERB[classId]} Your First ${cls.label} Class — $${cls.dropin}`
+  const ctaLabel = `${CTA_VERB[classId]} Your First ${cls.label} Class — $${prices.dropin}`
 
   const { reviews } = reviewsData
   const matchedReview = reviews.find(r => CLASS_KEYWORDS[classId].some(k => r.text.toLowerCase().includes(k)))
@@ -97,13 +109,14 @@ export default async function ClassPage({ params }: Props) {
     '@context': 'https://schema.org',
     '@type': 'Service',
     name: `${cls.label} Dance Class in Portland, OR`,
-    description: META[slug]?.description ?? cls.desc,
+    description: cls.desc,
     provider: {
       '@type': 'DanceSchool',
       name: 'bounce lab Dance Studio',
       url: 'https://bounce-lab.com',
       telephone: '+15034220858',
-      address: { '@type': 'PostalAddress', addressLocality: 'Portland', addressRegion: 'OR', addressCountry: 'US' },
+      '@id': 'https://bounce-lab.com/#business',
+      address: { '@type': 'PostalAddress', streetAddress: '2648 E Burnside St', addressLocality: 'Portland', addressRegion: 'OR', postalCode: '97214', addressCountry: 'US' },
     },
     areaServed: [
       { '@type': 'City', name: 'Portland', containedIn: { '@type': 'State', name: 'Oregon' } },
@@ -111,7 +124,7 @@ export default async function ClassPage({ params }: Props) {
     ],
     offers: {
       '@type': 'Offer',
-      price: cls.dropin.toString(),
+      price: prices.dropin.toString(),
       priceCurrency: 'USD',
       availability: 'https://schema.org/InStock',
       url: `https://bounce-lab.com${cls.bookUrl}`,
@@ -123,6 +136,7 @@ export default async function ClassPage({ params }: Props) {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema(faqs)) }} />
       <TrackPageView event="class_page_view" params={{ class_slug: slug, class_name: cls.label }} />
 
       {/* HERO */}
@@ -134,7 +148,7 @@ export default async function ClassPage({ params }: Props) {
         <div className="cls-hero-content">
           <p className="mk-eyebrow">{cls.modalEyebrow}</p>
           <h1 className="cls-hero-title">
-            {cls.label} Classes <span>in Portland, OR</span>
+            {cls.label} Dance Classes <span>in Portland, OR</span>
           </h1>
           {sched && (
             <p className="cls-hero-meta">
@@ -157,7 +171,7 @@ export default async function ClassPage({ params }: Props) {
       <section className="cls-content">
         <div className="cls-text">
           <p className="mk-eyebrow">About this class</p>
-          <h2 className="mk-section-title" style={{ marginBottom: 32 }}>{cls.label}</h2>
+          <h2 className="mk-section-title" style={{ marginBottom: 32 }}>{cls.label} Class at bounce lab</h2>
           {texts.map((t, i) => (
             <p key={i} className="mk-section-body" style={{ marginBottom: 20 }}>{t}</p>
           ))}
@@ -197,12 +211,12 @@ export default async function ClassPage({ params }: Props) {
             <p className="mk-eyebrow">Pricing</p>
             <div className="cls-price-row">
               <span className="cls-price-label">Drop-in</span>
-              <span className="cls-price-val">${cls.dropin} <span style={{ fontSize: 14, fontStyle: 'normal', color: '#6B6059' }}>/ class</span></span>
+              <span className="cls-price-val">${prices.dropin} <span style={{ fontSize: 14, fontStyle: 'normal', color: '#6B6059' }}>/ class</span></span>
             </div>
-            {cls.monthly && (
+            {prices.monthly != null && (
               <div className="cls-price-row">
                 <span className="cls-price-label">Monthly pass</span>
-                <span className="cls-price-val">${cls.monthly} <span style={{ fontSize: 14, fontStyle: 'normal', color: '#6B6059' }}>/ mo</span></span>
+                <span className="cls-price-val">${prices.monthly} <span style={{ fontSize: 14, fontStyle: 'normal', color: '#6B6059' }}>/ mo</span></span>
               </div>
             )}
             <TrackedLink href={cls.bookUrl} className="btn-price" style={{ marginTop: 32 }} event="book_cta_clicked" params={{ class_slug: slug, class_name: cls.label, placement: 'sidebar' }}>
@@ -211,6 +225,56 @@ export default async function ClassPage({ params }: Props) {
 
             <ScheduleInterestForm classId={classId} className={cls.label} />
           </div>
+        </div>
+      </section>
+
+      {/* DETAILS — long-form copy for search; day/time/price come from live data */}
+      <section className="cls-details">
+        {sections.map(sec => (
+          <div key={sec.heading} className="cls-details-block">
+            <h2 className="cls-details-title">{sec.heading}</h2>
+            {sec.paragraphs.map((p, i) => <p key={i} className="mk-section-body">{p}</p>)}
+            {sec.bullets && (
+              <ul className="cls-details-list">
+                {sec.bullets.map(b => <li key={b}>{b}</li>)}
+              </ul>
+            )}
+          </div>
+        ))}
+        <div className="cls-details-block">
+          <h2 className="cls-details-title">Your Instructor</h2>
+          <p className="mk-section-body">
+            Classes are taught by Iryna Pytska, founder of bounce lab. She created the studio as a place where women can
+            reconnect with themselves and each other through dance — no judgment, no experience needed. Follow her on{' '}
+            <a href="https://www.instagram.com/iryna.pytska" target="_blank" rel="noopener" style={{ color: 'var(--pink)' }}>Instagram</a>{' '}
+            to see what we dance in class.
+          </p>
+        </div>
+        <div className="cls-details-block">
+          <h2 className="cls-details-title">Where &amp; When</h2>
+          <p className="mk-section-body">
+            {sched ? <>Every <strong>{formatSlot(sched)}</strong> ({sched.duration}) at </> : <>At </>}
+            <a href={MAPS_URL} target="_blank" rel="noopener" style={{ color: 'var(--pink)' }}>bounce lab, {STUDIO_ADDRESS}</a>.
+            {' '}Whole Foods next door is a convenient place to park. Drop-in ${prices.dropin}{prices.monthly != null && <> · Monthly Pass ${prices.monthly}</>}.
+          </p>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="mk-faq" id="faq">
+        <div className="mk-faq-head">
+          <div>
+            <p className="mk-eyebrow">Common questions</p>
+            <h2 className="mk-section-title">{cls.label} Class FAQ</h2>
+          </div>
+        </div>
+        <div className="faq-list">
+          {faqs.map(({ q, a }) => (
+            <details key={q} className="faq-item">
+              <summary>{q}</summary>
+              <p className="faq-answer">{a}</p>
+            </details>
+          ))}
         </div>
       </section>
 

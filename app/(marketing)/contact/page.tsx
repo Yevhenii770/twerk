@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import ContactForm from '@/components/ContactForm'
 
 export const metadata: Metadata = {
-  title: "Contact Us — bounce lab Portland, OR",
+  title: "Contact Us — Dance Studio in Portland, OR",
   description: "Questions, feedback, or a problem with the site? Get in touch with bounce lab dance studio in Portland, Oregon.",
   alternates: { canonical: "https://bounce-lab.com/contact" },
   robots: { index: true, follow: true },

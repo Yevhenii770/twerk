@@ -2,7 +2,7 @@ import { db } from "@/db";
 import { classSessions, schedules } from "@/db/schema";
 import { and, asc, eq, gte } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
-import { CLASS_STATIC, type ClassId } from "@/lib/classes";
+import { CLASS_STATIC, parseTimeRange, type ClassId } from "@/lib/classes";
 import { getClassSettings } from "@/lib/dal";
 
 const WEEKS_AHEAD = 8;
@@ -40,7 +40,9 @@ export async function ensureUpcomingSessions(): Promise<void> {
   for (const s of sched) {
     const info = CLASS_STATIC[s.classType as ClassId];
     if (!info) continue;
-    const { opens, closes } = parseTimeDisplay(s.timeDisplay);
+    const range = parseTimeRange(s.timeDisplay);
+    if (!range) continue; // unparseable admin input — never generate bogus 00:00 sessions
+    const { opens, closes } = range;
     const dates = nextOccurrences(s.dayOfWeek, WEEKS_AHEAD);
     const dropinPrice = classSettings[s.classType]?.dropinPrice ?? info.dropin;
 
@@ -66,29 +68,6 @@ const DEFAULT_CAPACITY: Record<string, number> = {
   highheels: 15,
 };
 
-// Duplicated (trimmed) copy of lib/classes.ts#parseTimeDisplay to avoid a client/server import
-// boundary headache — kept intentionally tiny and pure.
-function parseTimeDisplay(timeDisplay: string): { opens: string; closes: string } {
-  const parts = timeDisplay.split(/[–—-]/);
-  const endPart = parts[1]?.trim() ?? "";
-  const startPart = parts[0]?.trim() ?? "";
-  const endMatch = endPart.match(/(\d+):(\d+)\s*(AM|PM)/i);
-  const startMatch = startPart.match(/(\d+):(\d+)(?:\s*(AM|PM))?/i);
-  if (!endMatch || !startMatch) return { opens: "00:00", closes: "00:00" };
-  const endPeriod = endMatch[3].toUpperCase() as "AM" | "PM";
-  const startPeriod = (startMatch[3]?.toUpperCase() ?? endPeriod) as "AM" | "PM";
-  const to24 = (h: string, m: string, p: "AM" | "PM") => {
-    let hour = parseInt(h);
-    if (p === "PM" && hour !== 12) hour += 12;
-    if (p === "AM" && hour === 12) hour = 0;
-    return `${hour.toString().padStart(2, "0")}:${m}`;
-  };
-  return {
-    opens: to24(startMatch[1], startMatch[2], startPeriod),
-    closes: to24(endMatch[1], endMatch[2], endPeriod),
-  };
-}
-
 export const getUpcomingSessions = unstable_cache(
   async () => {
     const today = todayIso();
@@ -113,4 +92,41 @@ export function remainingSeats(session: { capacity: number; booked: number }): n
 
 export function isSoldOut(session: { capacity: number; booked: number; bookingOpen: boolean; cancelled: boolean }): boolean {
   return session.cancelled || !session.bookingOpen || remainingSeats(session) <= 0;
+}
+
+type SlotLike = { classType: string; date: string; startTime: string };
+
+/** Day of week (0=Sun) of a "YYYY-MM-DD" date, timezone-independent. */
+export function isoDayOfWeek(date: string): number {
+  return new Date(`${date}T00:00:00Z`).getUTCDay();
+}
+
+/** Sessions that no longer match their class's current weekly slot (e.g. left over after the
+ * admin moved Twerk from Saturday 11 AM to Thursday 7 PM). Classes whose schedule text can't be
+ * parsed are skipped rather than treating every session as stale. */
+export function findOffScheduleSessions<T extends SlotLike>(
+  sessions: T[],
+  schedule: { classType: string; dayOfWeek: number; timeDisplay: string }[],
+): T[] {
+  const slots = new Map<string, { dayOfWeek: number; opens: string }>();
+  for (const s of schedule) {
+    const range = parseTimeRange(s.timeDisplay);
+    if (range) slots.set(s.classType, { dayOfWeek: s.dayOfWeek, opens: range.opens });
+  }
+  return sessions.filter(s => {
+    const slot = slots.get(s.classType);
+    if (!slot) return false;
+    return isoDayOfWeek(s.date) !== slot.dayOfWeek || s.startTime !== slot.opens;
+  });
+}
+
+/** Upcoming, not-cancelled sessions sitting outside the current schedule (uncached — admin only). */
+export async function getOffScheduleSessions() {
+  const [sched, upcoming] = await Promise.all([
+    db.select().from(schedules),
+    db.select().from(classSessions)
+      .where(and(gte(classSessions.date, todayIso()), eq(classSessions.cancelled, false)))
+      .orderBy(asc(classSessions.date), asc(classSessions.startTime)),
+  ]);
+  return findOffScheduleSessions(upcoming, sched);
 }

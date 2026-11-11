@@ -771,3 +771,16 @@ section[id] { scroll-margin-top: 80px; }
     color: #3D4A30;
   }
 }
+
+/* ─── CLASS PAGE — LONG-FORM DETAILS ─── */
+.cls-details { padding: 80px 72px; border-bottom: 1px solid var(--border); display: grid; grid-template-columns: 1fr 1fr; gap: 56px 72px; }
+.cls-details-block .mk-section-body { margin-bottom: 14px; }
+.cls-details-title {
+  font-family: var(--font-cormorant), serif; font-size: clamp(26px,2.6vw,34px); font-style: italic; font-weight: 400;
+  color: var(--dark); line-height: 1.15; margin-bottom: 18px;
+}
+.cls-details-list { padding-left: 18px; margin: 4px 0 0; font-size: 14px; color: var(--mid); line-height: 1.9; }
+.cls-details-list li { margin-bottom: 6px; }
+@media (max-width: 900px) {
+  .cls-details { grid-template-columns: 1fr; padding: 52px 24px; gap: 40px; }
+}

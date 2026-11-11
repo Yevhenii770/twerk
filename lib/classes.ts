@@ -33,26 +33,72 @@ export function nextBookableSessions<T extends { capacity: number; booked: numbe
   return sessions.filter(s => !s.cancelled && s.bookingOpen && s.booked < s.capacity).slice(0, count)
 }
 
-export function parseTimeDisplay(timeDisplay: string): { opens: string; closes: string } {
-  const parts = timeDisplay.split(/[–—]/)
-  const endPart = parts[1].trim()
-  const startPart = parts[0].trim()
-  const endMatch = endPart.match(/(\d+):(\d+)\s*(AM|PM)/i)
-  const startMatch = startPart.match(/(\d+):(\d+)(?:\s*(AM|PM))?/i)
-  if (!endMatch || !startMatch) return { opens: '00:00', closes: '00:00' }
+const TIME_RANGE_SPLIT = /\s*[–—-]\s*/
+
+/** Parses an admin-entered range like "7:00–8:00 PM", "7:00 PM-8:00 PM" or "11:00 AM — 12:20 PM"
+ * into 24h "HH:MM" strings. Returns null (never throws) when the text isn't a valid range, so a
+ * typo in the admin can't take down every page that renders the schedule. */
+export function parseTimeRange(timeDisplay: string): { opens: string; closes: string } | null {
+  const parts = timeDisplay.split(TIME_RANGE_SPLIT)
+  if (parts.length !== 2) return null
+  const endMatch = parts[1].trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i)
+  const startMatch = parts[0].trim().match(/^(\d{1,2}):(\d{2})(?:\s*(AM|PM))?$/i)
+  if (!endMatch || !startMatch) return null
   const endPeriod = endMatch[3].toUpperCase() as 'AM' | 'PM'
   const startPeriod = (startMatch[3]?.toUpperCase() ?? endPeriod) as 'AM' | 'PM'
   const to24 = (h: string, m: string, p: 'AM' | 'PM') => {
     let hour = parseInt(h)
+    if (hour < 1 || hour > 12 || parseInt(m) > 59) return null
     if (p === 'PM' && hour !== 12) hour += 12
     if (p === 'AM' && hour === 12) hour = 0
     return `${hour.toString().padStart(2, '0')}:${m}`
   }
-  return { opens: to24(startMatch[1], startMatch[2], startPeriod), closes: to24(endMatch[1], endMatch[2], endPeriod) }
+  const opens = to24(startMatch[1], startMatch[2], startPeriod)
+  const closes = to24(endMatch[1], endMatch[2], endPeriod)
+  if (!opens || !closes) return null
+  return { opens, closes }
+}
+
+export function parseTimeDisplay(timeDisplay: string): { opens: string; closes: string } {
+  return parseTimeRange(timeDisplay) ?? { opens: '00:00', closes: '00:00' }
+}
+
+/** "Thursday · 7:00 PM–8:00 PM" style one-liners, always built from the live (admin-edited) schedule. */
+export function formatSlot(s: Pick<ClassSchedule, 'dayOfWeek' | 'timeDisplay'>): string {
+  return `${DAY_NAMES[s.dayOfWeek]}, ${s.timeDisplay}`
+}
+
+/** "Twerk (every Thursday, 7:00 PM–8:00 PM) and High Heels (every Friday, 7:00–8:00 PM)" */
+export function describeSchedule(schedule: ClassSchedule[]): string {
+  const parts = CLASS_IDS
+    .map(id => {
+      const s = schedule.find(x => x.classType === id)
+      return s ? `${CLASS_STATIC[id].label} (every ${formatSlot(s)})` : null
+    })
+    .filter((x): x is string => Boolean(x))
+  if (parts.length <= 1) return parts.join('')
+  return `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`
+}
+
+type PriceOverrides = Record<string, { dropinPrice: number | null; monthlyPrice: number | null } | undefined>
+
+/** Admin-edited price if set, otherwise the static default — the same rule the booking flow uses. */
+export function classPrices(id: ClassId, overrides: PriceOverrides): { dropin: number; monthly: number | null } {
+  return {
+    dropin: overrides[id]?.dropinPrice ?? CLASS_STATIC[id].dropin,
+    monthly: overrides[id]?.monthlyPrice ?? CLASS_STATIC[id].monthly,
+  }
+}
+
+/** Lowest drop-in / monthly price across classes, for "from $X" copy on site-wide pages. */
+export function startingPrices(overrides: PriceOverrides): { dropin: number; monthly: number | null } {
+  const all = CLASS_IDS.map(id => classPrices(id, overrides))
+  const monthlies = all.map(p => p.monthly).filter((m): m is number => m != null)
+  return { dropin: Math.min(...all.map(p => p.dropin)), monthly: monthlies.length ? Math.min(...monthlies) : null }
 }
 
 export const DEFAULT_SCHEDULES: ClassSchedule[] = [
-  { classType: 'twerk',      dayOfWeek: 6, timeDisplay: '11:00 AM–12:20 PM', duration: '80 min' },
+  { classType: 'twerk',      dayOfWeek: 4, timeDisplay: '7:00 PM–8:00 PM',   duration: '60 min' },
   { classType: 'highheels',  dayOfWeek: 5, timeDisplay: '7:00–8:00 PM',      duration: '60 min' },
 ]
 

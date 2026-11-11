@@ -31,6 +31,13 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: '**.fbcdn.net' },
     ],
   },
+  async redirects() {
+    return [
+      // The stretching class was retired but Google still shows the old URL (Search Console, Nov 2026).
+      { source: '/classes/stretching', destination: '/dance-classes-portland', permanent: true },
+      { source: '/favicon.ico', destination: '/favicon.png', permanent: true },
+    ];
+  },
   async headers() {
     return [
       { source: '/(.*)', headers: securityHeaders },

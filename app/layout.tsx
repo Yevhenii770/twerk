@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { Cormorant_Garamond, Montserrat } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import MetaPixel from "@/components/MetaPixel";
-import { getSchedule } from "@/lib/dal";
-import { DAY_NAMES, parseTimeDisplay } from "@/lib/classes";
+import { getSchedule, getClassSettings } from "@/lib/dal";
+import { DAY_NAMES, CLASS_IDS, CLASS_STATIC, ID_TO_SLUG, classPrices, formatSlot, parseTimeRange } from "@/lib/classes";
 
 import "./globals.css";
 
@@ -23,12 +23,11 @@ const montserrat = Montserrat({
 export const metadata: Metadata = {
   metadataBase: new URL("https://bounce-lab.com"),
   title: {
-    default:
-      "bounce lab — Twerk & High Heels in Portland, OR",
-    template: "%s | bounce lab Portland",
+    default: "Twerk & High Heels Dance Classes in Portland, OR | bounce lab",
+    template: "%s | bounce lab",
   },
   description:
-    "Twerk & High Heels dance classes in Portland, Oregon. Beginner-friendly studio for women. Drop-in $30 or Monthly Pass $100. Book online.",
+    "Twerk & High Heels dance classes in Portland, Oregon. Beginner-friendly, judgment-free studio for women on E Burnside. Book online.",
   keywords: [
     "twerk class Portland",
     "twerk Portland Oregon",
@@ -48,7 +47,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "bounce lab — Twerk & High Heels in Portland, OR",
     description:
-      "Judgment-free dance studio for women in Portland, Oregon. Twerk · High Heels. Drop-in $30 or Monthly Pass $100. Book your spot online.",
+      "Judgment-free dance studio for women in Portland, Oregon. Twerk · High Heels. Beginner-friendly. Book your spot online.",
     url: "https://bounce-lab.com",
     siteName: "bounce lab Dance Studio",
     images: [
@@ -89,10 +88,11 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const schedule = await getSchedule();
+  const [schedule, classSettings] = await Promise.all([getSchedule(), getClassSettings()]);
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "DanceSchool",
+    "@id": "https://bounce-lab.com/#business",
     name: "bounce lab Dance Studio",
     description:
       "Twerk & High Heels dance classes in Portland, Oregon. Beginner-friendly, judgment-free studio for women.",
@@ -131,19 +131,34 @@ export default async function RootLayout({
         containedIn: { "@type": "State", name: "Washington" },
       },
     ],
-    openingHoursSpecification: schedule.map(s => {
-      const { opens, closes } = parseTimeDisplay(s.timeDisplay);
-      return { "@type": "OpeningHoursSpecification", dayOfWeek: DAY_NAMES[s.dayOfWeek], opens, closes };
+    openingHoursSpecification: schedule.flatMap(s => {
+      const range = parseTimeRange(s.timeDisplay);
+      return range ? [{ "@type": "OpeningHoursSpecification", dayOfWeek: DAY_NAMES[s.dayOfWeek], opens: range.opens, closes: range.closes }] : [];
     }),
     hasOfferCatalog: {
       "@type": "OfferCatalog",
       name: "Dance Classes",
-      itemListElement: [
-        { "@type": "Offer", itemOffered: { "@type": "Service", name: "Twerk Class Portland", description: "Beginner & intermediate twerk class every Saturday 11 AM–12:20 PM" }, price: "30", priceCurrency: "USD" },
-        { "@type": "Offer", itemOffered: { "@type": "Service", name: "High Heels Dance Class Portland", description: "High heels dance class every Friday 7–8 PM" }, price: "30", priceCurrency: "USD" },
-      ],
+      // Built from the live schedule + admin prices so Google never sees a stale day/time.
+      itemListElement: CLASS_IDS.map(id => {
+        const s = schedule.find(x => x.classType === id);
+        const label = CLASS_STATIC[id].label;
+        return {
+          "@type": "Offer",
+          price: String(classPrices(id, classSettings).dropin),
+          priceCurrency: "USD",
+          url: `https://bounce-lab.com/classes/${ID_TO_SLUG[id]}`,
+          itemOffered: {
+            "@type": "Service",
+            name: `${label} Dance Class Portland`,
+            description: s ? `Beginner-friendly ${label.toLowerCase()} dance class every ${formatSlot(s)}` : `Beginner-friendly ${label.toLowerCase()} dance class`,
+          },
+        };
+      }),
     },
-    sameAs: ["https://www.instagram.com/iryna.pytska"],
+    sameAs: [
+      "https://www.instagram.com/iryna.pytska",
+      "https://www.google.com/maps/place/Bounce+Lab/@45.5308718,-122.6595633,17z",
+    ],
   };
 
   return (

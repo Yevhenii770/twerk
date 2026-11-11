@@ -1,9 +1,9 @@
 import { Suspense } from 'react'
 import BookingFlow from '@/components/BookingFlow'
 import type { Metadata } from 'next'
-import { ensureUpcomingSessions, getUpcomingSessions } from '@/lib/sessions'
+import { ensureUpcomingSessions, getUpcomingSessions, findOffScheduleSessions } from '@/lib/sessions'
 import { CLASS_STATIC, CLASS_IDS, type ClassId } from '@/lib/classes'
-import { getClassSettings } from '@/lib/dal'
+import { getClassSettings, getSchedule } from '@/lib/dal'
 import type { ClassSession } from '@/db/schema'
 
 export const metadata: Metadata = {
@@ -27,7 +27,11 @@ export const metadata: Metadata = {
 
 export default async function BookPage() {
   await ensureUpcomingSessions()
-  const [sessions, classSettings] = await Promise.all([getUpcomingSessions(), getClassSettings()])
+  const [allSessions, classSettings, schedule] = await Promise.all([getUpcomingSessions(), getClassSettings(), getSchedule()])
+  // Sessions left at an old weekly slot after a schedule change are closed by updateSchedule —
+  // hide them instead of showing a confusing "Sold Out" date that the class no longer runs on.
+  const retired = new Set(findOffScheduleSessions(allSessions, schedule).filter(s => !s.bookingOpen).map(s => s.id))
+  const sessions = allSessions.filter(s => !retired.has(s.id))
 
   const sessionsByClass: Record<string, ClassSession[]> = Object.fromEntries(CLASS_IDS.map(id => [id, []]))
   for (const s of sessions) {

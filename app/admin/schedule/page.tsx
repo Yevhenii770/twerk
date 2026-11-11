@@ -4,12 +4,17 @@ import { updateSchedule } from "@/app/actions/schedule";
 import { CLASS_STATIC, CLASS_IDS, DAY_NAMES } from "@/lib/classes";
 import Link from "next/link";
 import type { ClassId } from "@/lib/classes";
+import { getOffScheduleSessions, isoDayOfWeek } from "@/lib/sessions";
 
-export default async function SchedulePage() {
+type SearchParams = Promise<{ saved?: string; cancelled?: string; closed?: string; error?: string }>;
+
+export default async function SchedulePage({ searchParams }: { searchParams: SearchParams }) {
   const currentUser = await getCurrentUser();
   if (!currentUser || currentUser.role !== "admin") redirect("/");
 
-  const schedule = await getSchedule();
+  const [schedule, offSchedule, params] = await Promise.all([getSchedule(), getOffScheduleSessions(), searchParams]);
+  const needsAttention = offSchedule.filter(s => s.booked > 0);
+  const savedLabel = params.saved && params.saved in CLASS_STATIC ? CLASS_STATIC[params.saved as ClassId].label : null;
   const scheduleMap = Object.fromEntries(schedule.map(s => [s.classType, s]));
 
   return (
@@ -47,11 +52,47 @@ export default async function SchedulePage() {
 
       <div className="p-4 md:p-8" style={{ maxWidth: 760 }}>
         <p style={{ fontSize: 13, color: "#666", marginBottom: 28, lineHeight: 1.6 }}>
-          Edit the day and time for each class. New bookable sessions are generated automatically
-          for the next 8 weeks based on this — changes here apply to newly generated sessions going forward.
-          To adjust the capacity, price, or open/closed state of a specific already-scheduled date,
-          use the roster on the <Link href="/admin" style={{ color: "#C9A96E" }}>main admin page</Link> instead.
+          Edit the day and time for each class. Saving updates the schedule everywhere on the site
+          (home page, class pages, footer, FAQ, Google data) and the booking page: dates for the new
+          day/time are created for the next 8 weeks, and empty dates at the old day/time are removed.
+          Time format: <b>7:00–8:00 PM</b> or <b>11:00 AM–12:20 PM</b>.
+          To adjust the capacity or open/closed state of one specific date,
+          use the roster on the <Link href="/admin" style={{ color: "#C9A96E" }}>main admin page</Link>.
         </p>
+
+        {savedLabel && (
+          <div style={{ background: "#EAF6EC", border: "1px solid #9BC8A3", padding: "14px 18px", marginBottom: 20, fontSize: 13, lineHeight: 1.6 }}>
+            ✓ {savedLabel} schedule saved and updated across the site and booking page.
+            {Number(params.cancelled) > 0 && <> Removed {params.cancelled} empty date(s) at the old time.</>}
+            {Number(params.closed) > 0 && <> {params.closed} date(s) at the old time already had students — see below.</>}
+          </div>
+        )}
+        {params.error === "time" && (
+          <div style={{ background: "#FDECEC", border: "1px solid #E3A1A1", padding: "14px 18px", marginBottom: 20, fontSize: 13, lineHeight: 1.6 }}>
+            Not saved: the time must look like <b>7:00–8:00 PM</b> or <b>11:00 AM–12:20 PM</b>.
+          </div>
+        )}
+        {params.error === "invalid" && (
+          <div style={{ background: "#FDECEC", border: "1px solid #E3A1A1", padding: "14px 18px", marginBottom: 20, fontSize: 13 }}>
+            Not saved: please fill in day, time and duration.
+          </div>
+        )}
+
+        {needsAttention.length > 0 && (
+          <div style={{ border: "2px solid #C9A96E", background: "#FFF8EC", padding: "16px 18px", marginBottom: 28, fontSize: 13, lineHeight: 1.6 }}>
+            <p style={{ fontWeight: 700, marginBottom: 6 }}>⚠ Students booked at an old time</p>
+            <p style={{ color: "#555", marginBottom: 10 }}>
+              These dates are no longer on the schedule and are closed to new bookings, but students
+              already paid for them. Contact them to move or refund, then cancel the date on the{" "}
+              <Link href="/admin" style={{ color: "#C9A96E" }}>main admin page</Link>.
+            </p>
+            {needsAttention.map(s => (
+              <div key={s.id} style={{ padding: "6px 0", borderTop: "1px solid #EEDDBB" }}>
+                {CLASS_STATIC[s.classType as ClassId]?.label ?? s.classType} — {DAY_NAMES[isoDayOfWeek(s.date)]}, {s.date}, {s.startTime} · <b>{s.booked} booked</b>
+              </div>
+            ))}
+          </div>
+        )}
 
         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
           {CLASS_IDS.map(id => {

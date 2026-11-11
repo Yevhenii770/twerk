@@ -5,8 +5,21 @@ import WeekCalendarClient from '@/components/WeekCalendarClient'
 import { fetchInstagramPosts } from '@/lib/instagram'
 import HeroVideo from '@/components/HeroVideo'
 import { getSchedule, getClassSettings } from '@/lib/dal'
-import { DAY_SHORT } from '@/lib/classes'
+import type { Metadata } from 'next'
+import { DAY_SHORT, describeSchedule, startingPrices } from '@/lib/classes'
 import { getGoogleReviews } from '@/lib/reviews'
+import { homeFaqs, faqSchema } from '@/lib/seoContent'
+
+export async function generateMetadata(): Promise<Metadata> {
+  const [schedule, classSettings] = await Promise.all([getSchedule(), getClassSettings()])
+  const p = startingPrices(classSettings)
+  const description = `Beginner-friendly twerk & high heels dance classes for women in Portland, OR: ${describeSchedule(schedule)}. Drop-in $${p.dropin}. Book online.`
+  return {
+    description,
+    alternates: { canonical: 'https://bounce-lab.com' },
+    openGraph: { description },
+  }
+}
 
 const INSTA_SVG = (
   <svg viewBox="0 0 24 24" fill="currentColor" style={{ width: 12, height: 12, color: 'var(--pink)' }}>
@@ -36,7 +49,9 @@ const instaOverlay = (
 export default async function HomePage() {
   const [instaPosts, schedule, photoPositions, reviewsData] = await Promise.all([fetchInstagramPosts(), getSchedule(), getClassSettings(), getGoogleReviews()])
   const { reviews, rating: googleRating, totalCount: googleReviewCount } = reviewsData
-  const scheduleDays = schedule.map(s => DAY_SHORT[s.dayOfWeek]).join(' · ')
+  const scheduleDays = [...schedule].sort((a, b) => a.dayOfWeek - b.dayOfWeek).map(s => DAY_SHORT[s.dayOfWeek]).join(' · ')
+  const prices = startingPrices(photoPositions)
+  const faqs = homeFaqs(schedule, prices)
 
   const websiteSchema = {
     '@context': 'https://schema.org',
@@ -219,7 +234,7 @@ export default async function HomePage() {
             <p className="mk-eyebrow">When we meet</p>
             <h2 className="mk-section-title">Weekly Schedule</h2>
           </div>
-          <span className="mk-schedule-note">2 classes · every week</span>
+          <span className="mk-schedule-note">{schedule.length} classes · every week</span>
         </div>
         <WeekCalendarClient schedule={schedule} />
       </section>
@@ -241,7 +256,7 @@ export default async function HomePage() {
                 <span className="popt-label">Drop-in</span>
                 <div className="popt-price">
                   <span className="popt-curr">$</span>
-                  <span className="popt-num">30</span>
+                  <span className="popt-num">{prices.dropin}</span>
                   <span className="popt-per">/ class</span>
                 </div>
               </div>
@@ -249,7 +264,7 @@ export default async function HomePage() {
                 <span className="popt-label">Monthly Pass</span>
                 <div className="popt-price">
                   <span className="popt-curr">$</span>
-                  <span className="popt-num">100</span>
+                  <span className="popt-num">{prices.monthly}</span>
                   <span className="popt-per">/ month</span>
                 </div>
                 <span className="popt-note">Valid for 5 weeks from the purchase date. Use your pass for any classes on the schedule.</span>
@@ -263,29 +278,13 @@ export default async function HomePage() {
             <p className="pricing-private-text">Also available: <span>Private Lessons</span></p>
             <p className="pricing-private-sub">One-on-one sessions tailored to your pace — any direction, flexible scheduling.</p>
           </div>
-          <Link href="/book" className="btn-private">Inquire</Link>
+          <Link href="/private-lessons" className="btn-private">Inquire</Link>
         </div>
       </section>
 
       {/* ═══ FAQ ═══ */}
       <section className="mk-faq fade-in" id="faq">
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "FAQPage",
-            mainEntity: [
-              { "@type": "Question", name: "Do I need dance experience to join?", acceptedAnswer: { "@type": "Answer", text: "No experience needed. All classes at bounce lab are beginner-friendly — the most important thing is showing up and enjoying the movement. Many students come with zero dance background." } },
-              { "@type": "Question", name: "What if I feel self-conscious or nervous?", acceptedAnswer: { "@type": "Answer", text: "That's completely normal — most of our students felt the same way before their first class. bounce lab is a judgment-free space where everyone supports each other. You'll feel comfortable from the very first minute." } },
-              { "@type": "Question", name: "What should I wear to a twerk or high heels class?", acceptedAnswer: { "@type": "Answer", text: "Wear comfortable clothes you can move in. For Twerk classes, wear shorts or pants that allow your glutes to move freely — avoid tight compression or shaping clothing that restricts movement. For High Heels class, bring a pair of heels (5–8 cm recommended) or train in socks while you build confidence." } },
-              { "@type": "Question", name: "How much does a drop-in class cost in Portland?", acceptedAnswer: { "@type": "Answer", text: "Every class is priced the same: Drop-in is $30, and a Monthly Pass is $100. The Monthly Pass is valid for 5 weeks from your purchase date and can be used for any classes on the schedule — Twerk or High Heels." } },
-              { "@type": "Question", name: "Can I cancel or reschedule my booking?", acceptedAnswer: { "@type": "Answer", text: "Yes! You can reschedule or cancel your booking up to 24 hours before the class at no charge. Just reach out to us by phone or email." } },
-              { "@type": "Question", name: "Where do bounce lab classes take place in Portland?", acceptedAnswer: { "@type": "Answer", text: "Classes are held at 2648 E Burnside St, Portland, OR 97214, United States. Whole Foods is located nearby and may be a convenient nearby option for parking." } },
-              { "@type": "Question", name: "Do I need to book in advance?", acceptedAnswer: { "@type": "Answer", text: "We recommend booking online to reserve your spot — classes can fill up quickly. Walk-ins are welcome based on availability." } },
-              { "@type": "Question", name: "What dance styles does bounce lab offer?", acceptedAnswer: { "@type": "Answer", text: "bounce lab offers two weekly classes in Portland: Twerk (every Saturday 11 AM–12:20 PM) and High Heels (every Friday 7–8 PM). Both styles are beginner-friendly." } },
-            ],
-          }) }}
-        />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema(faqs)) }} />
         <div className="mk-faq-head">
           <div>
             <p className="mk-eyebrow">Common questions</p>
@@ -294,16 +293,7 @@ export default async function HomePage() {
           <span className="mk-schedule-note">Beginner-friendly · Portland, OR</span>
         </div>
         <div className="faq-list">
-          {[
-            { q: "Do I need dance experience to join?", a: "No experience needed. All classes at bounce lab are beginner-friendly — the most important thing is showing up and enjoying the movement. Many students come with zero dance background." },
-            { q: "What if I feel self-conscious or nervous?", a: "That's completely normal — most of our students felt the same way before their first class. bounce lab is a judgment-free space where everyone supports each other. You'll feel comfortable from the very first minute." },
-            { q: "What should I wear to a twerk or high heels class?", a: "Wear comfortable clothes you can move in. For Twerk classes, wear shorts or pants that allow your glutes to move freely — avoid tight compression or shaping clothing that restricts movement. For High Heels, bring a pair of heels (5–8 cm recommended) or train in socks while you build confidence." },
-            { q: "How much does a drop-in class cost in Portland?", a: "Every class is priced the same: Drop-in is $30, and a Monthly Pass is $100. The Monthly Pass is valid for 5 weeks from your purchase date and can be used for any classes on the schedule — Twerk or High Heels." },
-            { q: "Can I cancel or reschedule my booking?", a: "Yes! You can reschedule or cancel your booking up to 24 hours before the class at no charge. Just reach out to us by phone or email." },
-            { q: "Where do bounce lab classes take place in Portland?", a: "Classes are held at 2648 E Burnside St, Portland, OR 97214, United States. Whole Foods is located nearby and may be a convenient nearby option for parking." },
-            { q: "Do I need to book in advance?", a: "We recommend booking online to reserve your spot — classes can fill up quickly. Walk-ins are welcome based on availability." },
-            { q: "What dance styles does bounce lab offer?", a: "Two weekly classes: Twerk (every Saturday 11 AM–12:20 PM) and High Heels (every Friday 7–8 PM). Both styles are beginner-friendly." },
-          ].map(({ q, a }) => (
+          {faqs.map(({ q, a }) => (
             <details key={q} className="faq-item">
               <summary>{q}</summary>
               <p className="faq-answer">{a}</p>
