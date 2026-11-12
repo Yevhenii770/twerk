@@ -8,6 +8,7 @@ import { getGoogleReviews } from '@/lib/reviews'
 import TrackedLink from '@/components/TrackedLink'
 import TrackPageView from '@/components/TrackPageView'
 import ScheduleInterestForm from '@/components/ScheduleInterestForm'
+import InstagramLink from '@/components/InstagramLink'
 
 // Contextual CTA verb per class — copy only, price/day/time always pulled from live data.
 const CTA_VERB: Record<ClassId, string> = {
@@ -246,7 +247,7 @@ export default async function ClassPage({ params }: Props) {
           <p className="mk-section-body">
             Classes are taught by Iryna Pytska, founder of bounce lab. She created the studio as a place where women can
             reconnect with themselves and each other through dance — no judgment, no experience needed. Follow her on{' '}
-            <a href="https://www.instagram.com/iryna.pytska" target="_blank" rel="noopener" style={{ color: 'var(--pink)' }}>Instagram</a>{' '}
+            <InstagramLink href="https://www.instagram.com/iryna.pytska" style={{ color: 'var(--pink)' }}>Instagram</InstagramLink>{' '}
             to see what we dance in class.
           </p>
         </div>

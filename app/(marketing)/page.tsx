@@ -5,6 +5,7 @@ import WeekCalendarClient from '@/components/WeekCalendarClient'
 import { fetchInstagramPosts } from '@/lib/instagram'
 import HeroVideo from '@/components/HeroVideo'
 import InstaVideo from '@/components/InstaVideo'
+import InstagramLink from '@/components/InstagramLink'
 import { getSchedule, getClassSettings } from '@/lib/dal'
 import type { Metadata } from 'next'
 import { DAY_SHORT, describeSchedule, startingPrices } from '@/lib/classes'
@@ -325,7 +326,7 @@ export default async function HomePage() {
 
             const pos = post.objectPosition ?? 'center'
             return (
-              <a key={post.id} className="insta-cell" href={post.permalink} target="_blank" rel="noopener">
+              <InstagramLink key={post.id} className="insta-cell" href={post.permalink} ariaLabel="bounce lab on Instagram">
                 {isVideo && !isExternal ? (
                   <InstaVideo src={post.media_url} poster={post.thumbnail_url} objectPosition={pos} />
                 ) : isExternal ? (
@@ -335,7 +336,7 @@ export default async function HomePage() {
                 )}
                 {instaBadge}
                 {instaOverlay}
-              </a>
+              </InstagramLink>
             )
           })}
         </div>
@@ -344,9 +345,9 @@ export default async function HomePage() {
             <p className="mk-instagram-handle"><span>@</span>iryna.pytska</p>
             <p className="mk-instagram-sub">Follow along for class updates, behind-the-scenes, and real studio moments.</p>
           </div>
-          <a href="https://www.instagram.com/iryna.pytska" target="_blank" rel="noopener" className="btn-insta">
+          <InstagramLink href="https://www.instagram.com/iryna.pytska" className="btn-insta">
             Follow on Instagram
-          </a>
+          </InstagramLink>
         </div>
       </section>
 

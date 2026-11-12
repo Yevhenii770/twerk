@@ -5,6 +5,7 @@ import ScrollFadeClient from '@/components/ScrollFadeClient'
 import { getCurrentUser, getSchedule } from '@/lib/dal'
 import { DAY_NAMES, ID_TO_SLUG, CLASS_STATIC, CLASS_IDS, type ClassSchedule } from '@/lib/classes'
 import { GUIDES } from '@/lib/guides'
+import InstagramLink from '@/components/InstagramLink'
 
 export default async function MarketingLayout({ children }: { children: React.ReactNode }) {
   const [user, schedule] = await Promise.all([getCurrentUser(), getSchedule()])
@@ -63,7 +64,7 @@ function Footer({ schedule }: { schedule: ClassSchedule[] }) {
             </span>
           ))}
           <div style={{ marginTop: '24px', display: 'flex', gap: '20px' }}>
-            <a href="https://www.instagram.com/iryna.pytska" target="_blank" rel="noopener" className="mk-foot-link" style={{ margin: 0 }}>Instagram</a>
+            <InstagramLink href="https://www.instagram.com/iryna.pytska" className="mk-foot-link" style={{ margin: 0 }}>Instagram</InstagramLink>
           </div>
         </div>
       </div>
