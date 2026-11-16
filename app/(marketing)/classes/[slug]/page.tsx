@@ -9,6 +9,7 @@ import TrackedLink from '@/components/TrackedLink'
 import TrackPageView from '@/components/TrackPageView'
 import ScheduleInterestForm from '@/components/ScheduleInterestForm'
 import InstagramLink from '@/components/InstagramLink'
+import { GUIDES } from '@/lib/guides'
 
 // Contextual CTA verb per class — copy only, price/day/time always pulled from live data.
 const CTA_VERB: Record<ClassId, string> = {
@@ -250,6 +251,14 @@ export default async function ClassPage({ params }: Props) {
             <InstagramLink href="https://www.instagram.com/iryna.pytska" style={{ color: 'var(--pink)' }}>Instagram</InstagramLink>{' '}
             to see what we dance in class.
           </p>
+        </div>
+        <div className="cls-details-block">
+          <h2 className="cls-details-title">Beginner Guides</h2>
+          <ul className="cls-details-list">
+            {GUIDES.filter(g => g.classSlug === slug || g.classSlug === 'both').map(g => (
+              <li key={g.slug}><Link href={`/guides/${g.slug}`} style={{ color: 'var(--pink)' }}>{g.title}</Link></li>
+            ))}
+          </ul>
         </div>
         <div className="cls-details-block">
           <h2 className="cls-details-title">Where &amp; When</h2>

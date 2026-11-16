@@ -29,11 +29,18 @@ export default async function GuidePage({ params }: Props) {
   const g = GUIDE_BY_SLUG[slug]
   if (!g) notFound()
 
-  const classId = SLUG_TO_ID[g.classSlug]
-  const cls = CLASS_STATIC[classId]
+  const classSlugs = g.classSlug === 'both' ? ['twerk', 'high-heels'] : [g.classSlug]
   const [schedule, classSettings] = await Promise.all([getSchedule(), getClassSettings()])
-  const sched = schedule.find(s => s.classType === classId)
-  const price = classPrices(classId, classSettings)
+  const ctas = classSlugs.map(slug => {
+    const id = SLUG_TO_ID[slug]
+    return {
+      slug,
+      cls: CLASS_STATIC[id],
+      sched: schedule.find(s => s.classType === id),
+      price: classPrices(id, classSettings),
+    }
+  })
+  const eyebrow = ctas.map(c => c.cls.label).join(' & ')
 
   const articleSchema = {
     '@context': 'https://schema.org',
@@ -52,7 +59,7 @@ export default async function GuidePage({ params }: Props) {
     <article className="legal-page" style={{ paddingTop: 40 }}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
       <div className="legal-header">
-        <p className="mk-eyebrow">Beginner guide · {cls.label}</p>
+        <p className="mk-eyebrow">Beginner guide · {eyebrow}</p>
         <h1 className="mk-section-title">{g.title}</h1>
         <p className="legal-updated">By Iryna Pytska, founder of bounce lab · Portland, OR</p>
       </div>
@@ -66,14 +73,18 @@ export default async function GuidePage({ params }: Props) {
           </section>
         ))}
 
-        <h2>Ready for your first {cls.label} class?</h2>
-        <p>
-          Join our beginner-friendly <Link href={`/classes/${g.classSlug}`}>{cls.label.toLowerCase()} dance class in Portland</Link>
-          {sched && <> — every <strong>{formatSlot(sched)}</strong></>}. Drop-in ${price.dropin}, no experience needed.
-        </p>
-        <p style={{ marginTop: 28 }}>
-          <Link href={cls.bookUrl} className="btn-price" style={{ display: 'inline-block', width: 'auto', padding: '16px 40px', color: 'white' }}>Book {cls.label}</Link>
-        </p>
+        {ctas.map(({ slug, cls, sched, price }) => (
+          <section key={slug}>
+            <h2>Ready for your first {cls.label} class?</h2>
+            <p>
+              Join our beginner-friendly <Link href={`/classes/${slug}`}>{cls.label.toLowerCase()} dance class in Portland</Link>
+              {sched && <> — every <strong>{formatSlot(sched)}</strong></>}. Drop-in ${price.dropin}, no experience needed.
+            </p>
+            <p style={{ marginTop: 28 }}>
+              <Link href={cls.bookUrl} className="btn-price" style={{ display: 'inline-block', width: 'auto', padding: '16px 40px', color: 'white' }}>Book {cls.label}</Link>
+            </p>
+          </section>
+        ))}
 
         <h2>More beginner guides</h2>
         <ul>
