@@ -41,7 +41,7 @@ export default async function DanceClassesPortlandPage() {
       <div className="legal-content">
         <p>
           Looking for a dance class in Portland where you don&apos;t have to be &ldquo;a dancer&rdquo; already? bounce lab is a
-          small studio in Portland's Central Eastside built for adult women who want to move, sweat and feel more confident in their
+          small studio in Portland&apos;s Central Eastside built for adult women who want to move, sweat and feel more confident in their
           bodies. Most of our students start with zero dance experience.
         </p>
 
