@@ -21,6 +21,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/dance-classes-portland`,      lastModified: scheduleUpdated, changeFrequency: 'weekly',  priority: 0.8  },
     { url: `${base}/book`,                        lastModified: scheduleUpdated, changeFrequency: 'daily',   priority: 0.8  },
     { url: `${base}/private-lessons`,             lastModified: '2026-11-11',    changeFrequency: 'monthly', priority: 0.6  },
+    { url: `${base}/instructor`,                  lastModified: '2026-11-16',    changeFrequency: 'monthly', priority: 0.6  },
+    { url: `${base}/bachelorette-dance-class-portland`, lastModified: '2026-11-16', changeFrequency: 'monthly', priority: 0.6 },
     ...GUIDES.map(g => ({ url: `${base}/guides/${g.slug}`, lastModified: g.published, changeFrequency: 'monthly' as const, priority: 0.6 })),
     { url: `${base}/contact`,                     lastModified: '2026-11-11',    changeFrequency: 'yearly',  priority: 0.3  },
     { url: `${base}/privacy`,                     lastModified: '2026-06-18',    changeFrequency: 'yearly',  priority: 0.2  },

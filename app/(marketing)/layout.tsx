@@ -45,6 +45,8 @@ function Footer({ schedule }: { schedule: ClassSchedule[] }) {
             </Link>
           ))}
           <Link href="/private-lessons" className="mk-foot-link">Private Lessons</Link>
+          <Link href="/bachelorette-dance-class-portland" className="mk-foot-link">Bachelorette &amp; Girls&apos; Night</Link>
+          <Link href="/instructor" className="mk-foot-link">Meet Your Instructor</Link>
           <Link href="/dance-classes-portland" className="mk-foot-link">Dance Classes for Beginners</Link>
           {GUIDES.map(g => (
             <Link key={g.slug} href={`/guides/${g.slug}`} className="mk-foot-link">{g.title}</Link>

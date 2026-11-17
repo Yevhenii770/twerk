@@ -247,7 +247,7 @@ export default async function ClassPage({ params }: Props) {
         <div className="cls-details-block">
           <h2 className="cls-details-title">Your Instructor</h2>
           <p className="mk-section-body">
-            Classes are taught by Iryna Pytska, founder of bounce lab. She created the studio as a place where women can
+            Classes are taught by <Link href="/instructor" style={{ color: 'var(--pink)' }}>Iryna Pytska</Link>, founder of bounce lab — dancing for 20 years, a former professional dancer and teaching twerk and heels since 2022. She created the studio as a place where women can
             reconnect with themselves and each other through dance — no judgment, no experience needed. Follow her on{' '}
             <InstagramLink href="https://www.instagram.com/iryna.pytska" style={{ color: 'var(--pink)' }}>Instagram</InstagramLink>{' '}
             to see what we dance in class.

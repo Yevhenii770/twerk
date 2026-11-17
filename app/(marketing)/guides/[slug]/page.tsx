@@ -51,7 +51,7 @@ export default async function GuidePage({ params }: Props) {
     dateModified: g.published,
     image: 'https://bounce-lab.com/og-image-v2.jpg',
     mainEntityOfPage: `https://bounce-lab.com/guides/${g.slug}`,
-    author: { '@type': 'Person', name: 'Iryna Pytska', url: 'https://www.instagram.com/iryna.pytska' },
+    author: { '@type': 'Person', name: 'Iryna Pytska', url: 'https://bounce-lab.com/instructor', sameAs: ['https://www.instagram.com/iryna.pytska'] },
     publisher: { '@type': 'Organization', name: 'bounce lab Dance Studio', url: 'https://bounce-lab.com', logo: { '@type': 'ImageObject', url: 'https://bounce-lab.com/logo.png' } },
   }
 
@@ -61,7 +61,7 @@ export default async function GuidePage({ params }: Props) {
       <div className="legal-header">
         <p className="mk-eyebrow">Beginner guide · {eyebrow}</p>
         <h1 className="mk-section-title">{g.title}</h1>
-        <p className="legal-updated">By Iryna Pytska, founder of bounce lab · Portland, OR</p>
+        <p className="legal-updated">By <Link href="/instructor">Iryna Pytska</Link>, founder of bounce lab · Portland, OR</p>
       </div>
       <div className="legal-content">
         <p>{g.intro}</p>
