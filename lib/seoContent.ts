@@ -9,8 +9,9 @@ import { CLASS_STATIC, describeSchedule, formatSlot, type ClassId, type ClassSch
 export type Faq = { q: string; a: string }
 export type Prices = { dropin: number; monthly: number | null }
 
-export const STUDIO_ADDRESS = '2648 E Burnside St, Portland, OR 97214'
-export const MAPS_URL = 'https://www.google.com/maps/place/Bounce+Lab/@45.5308718,-122.6595633,17z'
+import { STUDIO_ADDRESS, STUDIO_DIRECTIONS_URL } from '@/lib/studio'
+export { STUDIO_ADDRESS }
+export const MAPS_URL = STUDIO_DIRECTIONS_URL
 
 export function faqSchema(faqs: Faq[]) {
   return {
@@ -33,7 +34,7 @@ export function homeFaqs(schedule: ClassSchedule[], prices: Prices): Faq[] {
     { q: 'What should I wear to a twerk or high heels class?', a: 'Wear comfortable clothes you can move in. For Twerk classes, wear shorts or pants that allow your glutes to move freely — avoid tight compression or shaping clothing that restricts movement. For High Heels, bring a pair of heels (5–8 cm recommended) or train in socks while you build confidence.' },
     { q: 'How much does a drop-in class cost in Portland?', a: `${priceSentence(prices)}.${prices.monthly != null ? ' The Monthly Pass is valid for 5 weeks from your purchase date and can be used for any classes on the schedule — Twerk or High Heels.' : ''}` },
     { q: 'Can I cancel or reschedule my booking?', a: 'Yes! You can reschedule or cancel your booking up to 24 hours before the class at no charge. Just reach out to us by phone or email.' },
-    { q: 'Where do bounce lab classes take place in Portland?', a: `Classes are held at ${STUDIO_ADDRESS}, United States. Whole Foods is located nearby and may be a convenient nearby option for parking.` },
+    { q: 'Where do bounce lab classes take place in Portland?', a: `Classes are held at ${STUDIO_ADDRESS}, in Portland's Central Eastside.` },
     { q: 'Do I need to book in advance?', a: 'We recommend booking online to reserve your spot — classes can fill up quickly. Walk-ins are welcome based on availability.' },
     { q: 'What dance styles does bounce lab offer?', a: `bounce lab offers weekly classes in Portland: ${describeSchedule(schedule)}. Both styles are beginner-friendly.` },
   ]

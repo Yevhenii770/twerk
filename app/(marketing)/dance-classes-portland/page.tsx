@@ -27,7 +27,7 @@ export default async function DanceClassesPortlandPage() {
     { q: 'Are there dance classes in Portland for adults with no experience?', a: `Yes — every class at bounce lab is built for adult beginners. Our weekly classes are ${describeSchedule(schedule)}.` },
     { q: 'How much do adult dance classes cost in Portland?', a: `At bounce lab a drop-in class is $${p.dropin}${p.monthly != null ? ` and a Monthly Pass is $${p.monthly} (valid 5 weeks, any class on the schedule)` : ''}.` },
     { q: 'Which dance class should I try first?', a: 'If you want something energetic that works the glutes and hips, start with Twerk. If you want to feel confident, feminine and work on posture and presence, try High Heels. Both are beginner-friendly.' },
-    { q: 'Where is the studio?', a: `bounce lab is at ${STUDIO_ADDRESS}, on East Burnside — easy to reach from Northeast and Southeast Portland.` },
+    { q: 'Where is the studio?', a: `bounce lab is at ${STUDIO_ADDRESS}, in the Central Eastside — just across the river from downtown, easy to reach from anywhere in Portland.` },
   ]
 
   return (
@@ -41,7 +41,7 @@ export default async function DanceClassesPortlandPage() {
       <div className="legal-content">
         <p>
           Looking for a dance class in Portland where you don&apos;t have to be &ldquo;a dancer&rdquo; already? bounce lab is a
-          small studio on East Burnside built for adult women who want to move, sweat and feel more confident in their
+          small studio in Portland's Central Eastside built for adult women who want to move, sweat and feel more confident in their
           bodies. Most of our students start with zero dance experience.
         </p>
 
@@ -78,7 +78,7 @@ export default async function DanceClassesPortlandPage() {
 
         <h2>Location</h2>
         <p>
-          <a href={MAPS_URL} target="_blank" rel="noopener">{STUDIO_ADDRESS}</a>. Whole Foods next door is a convenient place to park.
+          <a href={MAPS_URL} target="_blank" rel="noopener">{STUDIO_ADDRESS}</a>.
         </p>
 
         <h2>FAQ</h2>

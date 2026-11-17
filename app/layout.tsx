@@ -4,6 +4,7 @@ import { Toaster } from "react-hot-toast";
 import MetaPixel from "@/components/MetaPixel";
 import { getSchedule, getClassSettings } from "@/lib/dal";
 import { DAY_NAMES, CLASS_IDS, CLASS_STATIC, ID_TO_SLUG, classPrices, formatSlot, parseTimeRange } from "@/lib/classes";
+import { STUDIO_POSTAL_ADDRESS } from "@/lib/studio";
 
 import "./globals.css";
 
@@ -27,7 +28,7 @@ export const metadata: Metadata = {
     template: "%s | bounce lab",
   },
   description:
-    "Twerk & High Heels dance classes in Portland, Oregon. Beginner-friendly, judgment-free studio for women on E Burnside. Book online.",
+    "Twerk & High Heels dance classes in Portland, Oregon. Beginner-friendly, judgment-free studio for women in Portland's Central Eastside. Book online.",
   keywords: [
     "twerk class Portland",
     "twerk Portland Oregon",
@@ -106,19 +107,7 @@ export default async function RootLayout({
       contactType: "reservations",
       availableLanguage: ["English"],
     },
-    address: {
-      "@type": "PostalAddress",
-      streetAddress: "2648 E Burnside St",
-      addressLocality: "Portland",
-      addressRegion: "OR",
-      postalCode: "97214",
-      addressCountry: "US",
-    },
-    geo: {
-      "@type": "GeoCoordinates",
-      latitude: 45.5226344,
-      longitude: -122.6383752,
-    },
+    address: STUDIO_POSTAL_ADDRESS,
     areaServed: [
       {
         "@type": "City",

@@ -7,6 +7,7 @@ import { CLASS_STATIC, CLASS_IDS, ID_TO_SLUG, MONTHLY_PASS_SESSION_COUNT, nextBo
 import { createPaidBooking, createPaidMonthlyBooking } from '@/app/actions/checkout'
 import { squareWebPaymentsSdkUrl, squareApplicationId, squareLocationIdPublic } from '@/lib/square-client'
 import { track } from '@/lib/analytics'
+import { STUDIO_ADDRESS } from '@/lib/studio'
 import { purchaseEventId } from '@/lib/metaEventId'
 import ContactForm from '@/components/ContactForm'
 
@@ -400,7 +401,7 @@ export default function BookingFlow({ sessionsByClass, monthlyPrices, dropinPric
                   <SummaryRow label="Time" value={`${fmtTime(session!.startTime)} – ${fmtTime(session!.endTime)}`} />
                 </>
               )}
-              <SummaryRow label="Location" value="2648 E Burnside St, Portland, OR" />
+              <SummaryRow label="Location" value={STUDIO_ADDRESS} />
               <SummaryRow label="Name" value={`${firstName} ${lastName}`} />
               <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 12, marginTop: 4 }}>
                 <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--dark)' }}>Total</span>

@@ -6,6 +6,7 @@ import { getCurrentUser, getSchedule } from '@/lib/dal'
 import { DAY_NAMES, ID_TO_SLUG, CLASS_STATIC, CLASS_IDS, type ClassSchedule } from '@/lib/classes'
 import { GUIDES } from '@/lib/guides'
 import InstagramLink from '@/components/InstagramLink'
+import { STUDIO_ADDRESS } from '@/lib/studio'
 
 export default async function MarketingLayout({ children }: { children: React.ReactNode }) {
   const [user, schedule] = await Promise.all([getCurrentUser(), getSchedule()])
@@ -53,7 +54,7 @@ function Footer({ schedule }: { schedule: ClassSchedule[] }) {
         <div className="mk-foot-col">
           <p className="mk-foot-title">Contact</p>
           <a href="tel:+15034220858" className="mk-foot-link">(503) 422-0858</a>
-          <span className="mk-foot-link" style={{ cursor: 'default' }}>2648 E Burnside St, Portland, OR 97214</span>
+          <span className="mk-foot-link" style={{ cursor: 'default' }}>{STUDIO_ADDRESS}</span>
           <Link href="/contact" className="mk-foot-link" style={{ marginTop: 8 }}>Found a problem? Contact us →</Link>
         </div>
         <div className="mk-foot-col">

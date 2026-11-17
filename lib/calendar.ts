@@ -1,4 +1,4 @@
-const STUDIO_ADDRESS = "2648 E Burnside St, Portland, OR 97214";
+import { STUDIO_ADDRESS, STUDIO_DIRECTIONS_URL as DIRECTIONS } from "@/lib/studio";
 
 function toIcsDate(date: string, time: string): string {
   // date: "2026-09-04", time: "18:00" (studio-local; treated as floating local time)
@@ -54,4 +54,4 @@ function escapeIcs(text: string): string {
 }
 
 export const STUDIO_ADDRESS_DISPLAY = STUDIO_ADDRESS;
-export const STUDIO_DIRECTIONS_URL = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(STUDIO_ADDRESS)}`;
+export const STUDIO_DIRECTIONS_URL = DIRECTIONS;

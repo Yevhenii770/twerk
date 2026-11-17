@@ -11,6 +11,7 @@ import type { Metadata } from 'next'
 import { DAY_SHORT, describeSchedule, startingPrices } from '@/lib/classes'
 import { getGoogleReviews } from '@/lib/reviews'
 import { homeFaqs, faqSchema } from '@/lib/seoContent'
+import { STUDIO_POSTAL_ADDRESS } from '@/lib/studio'
 
 export async function generateMetadata(): Promise<Metadata> {
   const [schedule, classSettings] = await Promise.all([getSchedule(), getClassSettings()])
@@ -74,7 +75,7 @@ export default async function HomePage() {
     image: 'https://bounce-lab.com/og-image-v2.jpg',
     telephone: '+15034220858',
     priceRange: '$$',
-    address: { '@type': 'PostalAddress', streetAddress: '2648 E Burnside St', addressLocality: 'Portland', addressRegion: 'OR', postalCode: '97214', addressCountry: 'US' },
+    address: STUDIO_POSTAL_ADDRESS,
     aggregateRating: {
       '@type': 'AggregateRating',
       ratingValue: googleRating.toFixed(1),

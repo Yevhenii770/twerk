@@ -10,6 +10,7 @@ import TrackPageView from '@/components/TrackPageView'
 import ScheduleInterestForm from '@/components/ScheduleInterestForm'
 import InstagramLink from '@/components/InstagramLink'
 import { GUIDES } from '@/lib/guides'
+import { STUDIO_POSTAL_ADDRESS } from '@/lib/studio'
 
 // Contextual CTA verb per class — copy only, price/day/time always pulled from live data.
 const CTA_VERB: Record<ClassId, string> = {
@@ -47,7 +48,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const [schedule, classSettings] = await Promise.all([getSchedule(), getClassSettings()])
   const sched = schedule.find(s => s.classType === classId)
   const { dropin } = classPrices(classId, classSettings)
-  const description = `${m.lead}${sched ? ` — every ${formatSlot(sched)}` : ''}. No experience needed, judgment-free studio for women on E Burnside. Drop-in $${dropin}. Book online.`
+  const description = `${m.lead}${sched ? ` — every ${formatSlot(sched)}` : ''}. No experience needed, judgment-free studio for women in Portland's Central Eastside. Drop-in $${dropin}. Book online.`
   return {
     title: m.title,
     description,
@@ -118,7 +119,7 @@ export default async function ClassPage({ params }: Props) {
       url: 'https://bounce-lab.com',
       telephone: '+15034220858',
       '@id': 'https://bounce-lab.com/#business',
-      address: { '@type': 'PostalAddress', streetAddress: '2648 E Burnside St', addressLocality: 'Portland', addressRegion: 'OR', postalCode: '97214', addressCountry: 'US' },
+      address: STUDIO_POSTAL_ADDRESS,
     },
     areaServed: [
       { '@type': 'City', name: 'Portland', containedIn: { '@type': 'State', name: 'Oregon' } },
@@ -265,7 +266,7 @@ export default async function ClassPage({ params }: Props) {
           <p className="mk-section-body">
             {sched ? <>Every <strong>{formatSlot(sched)}</strong> ({sched.duration}) at </> : <>At </>}
             <a href={MAPS_URL} target="_blank" rel="noopener" style={{ color: 'var(--pink)' }}>bounce lab, {STUDIO_ADDRESS}</a>.
-            {' '}Whole Foods next door is a convenient place to park. Drop-in ${prices.dropin}{prices.monthly != null && <> · Monthly Pass ${prices.monthly}</>}.
+            {' '}Drop-in ${prices.dropin}{prices.monthly != null && <> · Monthly Pass ${prices.monthly}</>}.
           </p>
         </div>
       </section>
