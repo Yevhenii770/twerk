@@ -2,26 +2,27 @@ import Image from 'next/image'
 import Link from 'next/link'
 import HeaderScrollClient from '@/components/HeaderScrollClient'
 import ScrollFadeClient from '@/components/ScrollFadeClient'
-import { getCurrentUser, getSchedule } from '@/lib/dal'
+import { getCurrentUser, getSchedule, getClassSettings } from '@/lib/dal'
 import { DAY_NAMES, ID_TO_SLUG, CLASS_STATIC, CLASS_IDS, type ClassSchedule } from '@/lib/classes'
 import { GUIDES } from '@/lib/guides'
 import InstagramLink from '@/components/InstagramLink'
-import { STUDIO_ADDRESS } from '@/lib/studio'
+import { classAddress, directionsUrl } from '@/lib/studio'
 
 export default async function MarketingLayout({ children }: { children: React.ReactNode }) {
-  const [user, schedule] = await Promise.all([getCurrentUser(), getSchedule()])
+  const [user, schedule, settings] = await Promise.all([getCurrentUser(), getSchedule(), getClassSettings()])
+  const addresses = CLASS_IDS.map(id => ({ id, address: classAddress(id, settings) }))
 
   return (
     <div className="marketing-root">
       <HeaderScrollClient user={user} />
       <main>{children}</main>
-      <Footer schedule={schedule} />
+      <Footer schedule={schedule} addresses={addresses} />
       <ScrollFadeClient />
     </div>
   )
 }
 
-function Footer({ schedule }: { schedule: ClassSchedule[] }) {
+function Footer({ schedule, addresses }: { schedule: ClassSchedule[]; addresses: { id: (typeof CLASS_IDS)[number]; address: string }[] }) {
   const sorted = [...schedule].sort((a, b) => a.dayOfWeek - b.dayOfWeek)
 
   return (
@@ -56,7 +57,11 @@ function Footer({ schedule }: { schedule: ClassSchedule[] }) {
         <div className="mk-foot-col">
           <p className="mk-foot-title">Contact</p>
           <a href="tel:+15034220858" className="mk-foot-link">(503) 422-0858</a>
-          <span className="mk-foot-link" style={{ cursor: 'default' }}>{STUDIO_ADDRESS}</span>
+          {addresses.map(a => (
+            <a key={a.id} href={directionsUrl(a.address)} target="_blank" rel="noopener" className="mk-foot-link">
+              {CLASS_STATIC[a.id].label}: {a.address}
+            </a>
+          ))}
           <Link href="/contact" className="mk-foot-link" style={{ marginTop: 8 }}>Found a problem? Contact us →</Link>
         </div>
         <div className="mk-foot-col">

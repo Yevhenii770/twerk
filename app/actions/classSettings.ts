@@ -103,3 +103,25 @@ export async function updatePhotoUrl(classType: string, photoUrl: string) {
 
   revalidateTag("class-settings");
 }
+
+/** Hall address for a class ("232 SE Oak St, Portland, OR 97214"). Read live by the booking
+ * page, emails, reminders, calendar invites, class pages, FAQ and footer. Empty = default. */
+export async function updateClassAddress(classType: string, address: string) {
+  const user = await getCurrentUser();
+  if (!user || user.role !== "admin") redirect("/");
+  const clean = address.trim().replace(/\s+/g, " ");
+  if (clean && !/^.{5,},\s*.+,\s*[A-Z]{2}\s+\d{5}$/.test(clean)) {
+    return { success: false, error: "Use the format: 232 SE Oak St, Portland, OR 97214" };
+  }
+
+  await db
+    .insert(classSettings)
+    .values({ classType, address: clean || null, photoPosition: "50% 50%" })
+    .onConflictDoUpdate({
+      target: classSettings.classType,
+      set: { address: clean || null, updatedAt: new Date() },
+    });
+
+  revalidateTag("class-settings");
+  return { success: true };
+}

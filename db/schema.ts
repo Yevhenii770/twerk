@@ -96,6 +96,7 @@ export const bookings = pgTable("bookings", {
   bookingGroupId:   text("booking_group_id"), // links the 4 sessions of one monthly-pass purchase
   managementToken:  text("management_token").unique(), // secure token for the "Manage Booking" email link
   attended:         boolean("attended"),
+  reminderSentAt:   timestamp("reminder_sent_at", { mode: "date" }), // day-before reminder email sent
 });
 
 // Leads from visitors who like a class but can't make its current scheduled time.
@@ -116,6 +117,7 @@ export const classSettings = pgTable("class_settings", {
   modalTexts:    text("modal_texts"), // JSON array
   dropinPrice:   integer("dropin_price"), // USD dollars; null = fall back to CLASS_STATIC default
   monthlyPrice:  integer("monthly_price"), // USD dollars; null = fall back to CLASS_STATIC default
+  address:       text("address"), // hall address for this class; null = DEFAULT_CLASS_ADDRESS (lib/studio.ts)
   updatedAt:     timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
 });
 

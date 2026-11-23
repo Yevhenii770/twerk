@@ -4,6 +4,7 @@ import { updateBookingStatus } from "@/app/actions/booking";
 import DeleteConfirmBtn from "@/components/DeleteConfirmBtn";
 import SessionCard from "@/components/admin/SessionCard";
 import ClassPricingCard from "@/components/admin/ClassPricingCard";
+import { classAddress } from "@/lib/studio";
 import { CLASS_STATIC, CLASS_IDS } from "@/lib/classes";
 import Link from "next/link";
 
@@ -93,7 +94,7 @@ export default async function AdminPage() {
 
       <div className="p-4 md:p-8">
         <h2 style={{ fontSize: 14, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 16 }}>
-          Pricing
+          Pricing &amp; Studio Address
         </h2>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 32 }}>
           {CLASS_IDS.map(id => (
@@ -102,6 +103,7 @@ export default async function AdminPage() {
               classType={id}
               dropinPrice={classSettings[id]?.dropinPrice ?? CLASS_STATIC[id].dropin}
               monthlyPrice={classSettings[id]?.monthlyPrice ?? CLASS_STATIC[id].monthly ?? 0}
+              address={classAddress(id, classSettings)}
             />
           ))}
         </div>

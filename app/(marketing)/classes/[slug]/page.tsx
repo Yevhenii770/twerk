@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { CLASS_STATIC, DAY_NAMES, SLUG_TO_ID, ID_TO_SLUG, classPrices, formatSlot, type ClassId } from '@/lib/classes'
-import { CLASS_SEO, STUDIO_ADDRESS, MAPS_URL, faqSchema } from '@/lib/seoContent'
+import { CLASS_SEO, faqSchema } from '@/lib/seoContent'
 import { getSchedule, getClassSettings } from '@/lib/dal'
 import { getGoogleReviews } from '@/lib/reviews'
 import TrackedLink from '@/components/TrackedLink'
@@ -10,7 +10,7 @@ import TrackPageView from '@/components/TrackPageView'
 import ScheduleInterestForm from '@/components/ScheduleInterestForm'
 import InstagramLink from '@/components/InstagramLink'
 import { GUIDES } from '@/lib/guides'
-import { STUDIO_POSTAL_ADDRESS } from '@/lib/studio'
+import { MAIN_POSTAL_ADDRESS, classAddress, directionsUrl } from '@/lib/studio'
 
 // Contextual CTA verb per class — copy only, price/day/time always pulled from live data.
 const CTA_VERB: Record<ClassId, string> = {
@@ -48,7 +48,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const [schedule, classSettings] = await Promise.all([getSchedule(), getClassSettings()])
   const sched = schedule.find(s => s.classType === classId)
   const { dropin } = classPrices(classId, classSettings)
-  const description = `${m.lead}${sched ? ` — every ${formatSlot(sched)}` : ''}. No experience needed, judgment-free studio for women in Portland's Central Eastside. Drop-in $${dropin}. Book online.`
+  const description = `${m.lead}${sched ? ` — every ${formatSlot(sched)}` : ''}. No experience needed, judgment-free studio for women on Portland's inner east side. Drop-in $${dropin}. Book online.`
   return {
     title: m.title,
     description,
@@ -84,7 +84,10 @@ export default async function ClassPage({ params }: Props) {
   const prices = classPrices(classId, photoPositions)
   const seo = CLASS_SEO[classId]
   const sections = seo.sections(sched)
-  const faqs = seo.faqs(sched, prices)
+  const address = classAddress(classId, photoPositions)
+  const otherId = classId === 'twerk' ? 'highheels' : 'twerk'
+  const otherAddress = classAddress(otherId, photoPositions)
+  const faqs = seo.faqs(sched, prices, address)
 
   const isBeginnerFriendly = cls.modalEyebrow.includes('Beginner Friendly')
   const ctaLabel = `${CTA_VERB[classId]} Your First ${cls.label} Class — $${prices.dropin}`
@@ -119,7 +122,7 @@ export default async function ClassPage({ params }: Props) {
       url: 'https://bounce-lab.com',
       telephone: '+15034220858',
       '@id': 'https://bounce-lab.com/#business',
-      address: STUDIO_POSTAL_ADDRESS,
+      address: MAIN_POSTAL_ADDRESS,
     },
     areaServed: [
       { '@type': 'City', name: 'Portland', containedIn: { '@type': 'State', name: 'Oregon' } },
@@ -265,9 +268,14 @@ export default async function ClassPage({ params }: Props) {
           <h2 className="cls-details-title">Where &amp; When</h2>
           <p className="mk-section-body">
             {sched ? <>Every <strong>{formatSlot(sched)}</strong> ({sched.duration}) at </> : <>At </>}
-            <a href={MAPS_URL} target="_blank" rel="noopener" style={{ color: 'var(--pink)' }}>bounce lab, {STUDIO_ADDRESS}</a>.
+            <a href={directionsUrl(address)} target="_blank" rel="noopener" style={{ color: 'var(--pink)' }}>{address}</a>.
             {' '}Drop-in ${prices.dropin}{prices.monthly != null && <> · Monthly Pass ${prices.monthly}</>}.
           </p>
+          {otherAddress !== address && (
+            <p className="mk-section-body" style={{ marginTop: 8 }}>
+              Heads up: {CLASS_STATIC[otherId].label} classes are in a different studio ({otherAddress}), so check the address in your booking email before you go.
+            </p>
+          )}
         </div>
       </section>
 

@@ -5,6 +5,7 @@ import { ensureUpcomingSessions, getUpcomingSessions, findOffScheduleSessions } 
 import { CLASS_STATIC, CLASS_IDS, type ClassId } from '@/lib/classes'
 import { getClassSettings, getSchedule } from '@/lib/dal'
 import type { ClassSession } from '@/db/schema'
+import { classAddress } from '@/lib/studio'
 
 export const metadata: Metadata = {
   title: "Book a Dance Class in Portland, OR",
@@ -50,6 +51,8 @@ export default async function BookPage() {
     CLASS_IDS.map((id: ClassId) => [id, sessionsByClass[id]?.[0]?.price ?? CLASS_STATIC[id].dropin])
   ) as Record<ClassId, number>
 
+  const addresses = Object.fromEntries(CLASS_IDS.map(id => [id, classAddress(id, classSettings)])) as Record<ClassId, string>
+
   return (
     <section style={{ minHeight: '100vh', paddingTop: 40 }}>
       <div style={{ borderBottom: '1px solid var(--border)', padding: '52px 72px 40px' }}>
@@ -57,7 +60,7 @@ export default async function BookPage() {
         <h1 className="mk-section-title">Book a Class</h1>
       </div>
       <Suspense fallback={<div style={{ padding: 48, color: 'var(--mid)', fontSize: 14 }}>Loading...</div>}>
-        <BookingFlow sessionsByClass={sessionsByClass} monthlyPrices={monthlyPrices} dropinPrices={dropinPrices} />
+        <BookingFlow sessionsByClass={sessionsByClass} monthlyPrices={monthlyPrices} dropinPrices={dropinPrices} addresses={addresses} />
       </Suspense>
     </section>
   )

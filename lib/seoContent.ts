@@ -9,9 +9,19 @@ import { CLASS_STATIC, describeSchedule, formatSlot, type ClassId, type ClassSch
 export type Faq = { q: string; a: string }
 export type Prices = { dropin: number; monthly: number | null }
 
-import { STUDIO_ADDRESS, STUDIO_DIRECTIONS_URL } from '@/lib/studio'
-export { STUDIO_ADDRESS }
-export const MAPS_URL = STUDIO_DIRECTIONS_URL
+import { classAddress, STUDIO_AREA } from '@/lib/studio'
+import { CLASS_IDS } from '@/lib/classes'
+
+/** Hall address per class (Twerk and Heels are in different studios). */
+export type ClassAddresses = Record<ClassId, string>
+export const defaultAddresses = (): ClassAddresses =>
+  Object.fromEntries(CLASS_IDS.map(id => [id, classAddress(id)])) as ClassAddresses
+
+/** "Twerk classes are at …, High Heels classes are at …" — collapses if both use one hall. */
+export function whereSentence(a: ClassAddresses): string {
+  if (a.twerk === a.highheels) return `Classes are held at ${a.twerk}, on ${STUDIO_AREA}.`
+  return `We dance in two studios on ${STUDIO_AREA}: Twerk classes are at ${a.twerk}, and High Heels classes are at ${a.highheels}. Your booking confirmation always shows the exact address for your class.`
+}
 
 export function faqSchema(faqs: Faq[]) {
   return {
@@ -27,14 +37,14 @@ function priceSentence(p: Prices): string {
     : `A drop-in class is $${p.dropin}`
 }
 
-export function homeFaqs(schedule: ClassSchedule[], prices: Prices): Faq[] {
+export function homeFaqs(schedule: ClassSchedule[], prices: Prices, addresses: ClassAddresses = defaultAddresses()): Faq[] {
   return [
     { q: 'Do I need dance experience to join?', a: 'No experience needed. All classes at bounce lab are beginner-friendly — the most important thing is showing up and enjoying the movement. Many students come with zero dance background.' },
     { q: 'What if I feel self-conscious or nervous?', a: "That's completely normal — most of our students felt the same way before their first class. bounce lab is a judgment-free space where everyone supports each other. You'll feel comfortable from the very first minute." },
     { q: 'What should I wear to a twerk or high heels class?', a: 'Wear comfortable clothes you can move in. For Twerk classes, wear shorts or pants that allow your glutes to move freely — avoid tight compression or shaping clothing that restricts movement. For High Heels, bring a pair of heels (5–8 cm recommended) or train in socks while you build confidence.' },
     { q: 'How much does a drop-in class cost in Portland?', a: `${priceSentence(prices)}.${prices.monthly != null ? ' The Monthly Pass is valid for 5 weeks from your purchase date and can be used for any classes on the schedule — Twerk or High Heels.' : ''}` },
     { q: 'Can I cancel or reschedule my booking?', a: 'Yes! You can reschedule or cancel your booking up to 24 hours before the class at no charge. Just reach out to us by phone or email.' },
-    { q: 'Where do bounce lab classes take place in Portland?', a: `Classes are held at ${STUDIO_ADDRESS}, in Portland's Central Eastside.` },
+    { q: 'Where do bounce lab classes take place in Portland?', a: whereSentence(addresses) },
     { q: 'Do I need to book in advance?', a: 'We recommend booking online to reserve your spot — classes can fill up quickly. Walk-ins are welcome based on availability.' },
     { q: 'What dance styles does bounce lab offer?', a: `bounce lab offers weekly classes in Portland: ${describeSchedule(schedule)}. Both styles are beginner-friendly.` },
   ]
@@ -45,7 +55,7 @@ type Section = { heading: string; paragraphs: string[]; bullets?: string[] }
 type ClassSeo = {
   /** H2 sections shown under "About this class" on /classes/[slug]. */
   sections: (sched: ClassSchedule | undefined) => Section[]
-  faqs: (sched: ClassSchedule | undefined, prices: Prices) => Faq[]
+  faqs: (sched: ClassSchedule | undefined, prices: Prices, address?: string) => Faq[]
 }
 
 const whenText = (id: ClassId, sched: ClassSchedule | undefined) =>
@@ -84,9 +94,9 @@ export const CLASS_SEO: Record<ClassId, ClassSeo> = {
         ],
       },
     ],
-    faqs: (sched, prices) => [
+    faqs: (sched, prices, address = classAddress('twerk')) => [
       { q: 'Is the twerk class good for complete beginners?', a: 'Yes. The class is beginner-friendly: every move is broken down step by step, with easier and harder options. No dance background is needed.' },
-      { q: 'When is the twerk class in Portland?', a: `${whenText('twerk', sched)} at bounce lab, ${STUDIO_ADDRESS}.` },
+      { q: 'When is the twerk class in Portland?', a: `${whenText('twerk', sched)} at ${address}.` },
       { q: 'How much is a twerk class?', a: `${priceSentence(prices)}. You can book and pay online.` },
       { q: 'What should I wear to my first twerk class?', a: 'Shorts, leggings or loose pants that let your glutes move freely, plus sneakers or socks. Avoid shapewear. Knee pads are optional for floor work.' },
       { q: 'Is twerking a good workout?', a: 'Yes — twerk works the glutes, legs and core, gets your heart rate up and improves hip mobility. It feels like a dance class, but your legs will know you trained.' },
@@ -125,9 +135,9 @@ export const CLASS_SEO: Record<ClassId, ClassSeo> = {
         ],
       },
     ],
-    faqs: (sched, prices) => [
+    faqs: (sched, prices, address = classAddress('highheels')) => [
       { q: 'Can I take a heels dance class with no experience?', a: 'Yes. The class is beginner-friendly and you can start in socks or flats. Every step is broken down slowly.' },
-      { q: 'When is the high heels class in Portland?', a: `${whenText('highheels', sched)} at bounce lab, ${STUDIO_ADDRESS}.` },
+      { q: 'When is the high heels class in Portland?', a: `${whenText('highheels', sched)} at ${address}.` },
       { q: 'How much is a heels dance class?', a: `${priceSentence(prices)}. You can book and pay online.` },
       { q: 'What heels should I wear to a heels dance class?', a: 'Start with a stable heel of about 5–8 cm (2–3 in), ideally with an ankle strap. Block heels are easier than thin stilettos. You can also start in socks or flats.' },
       { q: 'What should I wear for high heels class?', a: 'Anything you feel good in and can move in — leggings, shorts or a bodysuit work well. Knee pads are handy for floor choreography.' },

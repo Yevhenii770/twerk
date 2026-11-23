@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { STUDIO_ADDRESS, faqSchema, type Faq } from '@/lib/seoContent'
+import { faqSchema, type Faq } from '@/lib/seoContent'
 
 const URL = 'https://bounce-lab.com/private-lessons'
 const TITLE = 'Private Twerk & Heels Dance Lessons in Portland, OR'
@@ -17,7 +17,7 @@ const faqs: Faq[] = [
   { q: 'Who are private dance lessons for?', a: 'Anyone who wants faster progress or more personal attention: complete beginners who would like a few lessons before joining a group class, students who want to polish technique, or anyone preparing a routine.' },
   { q: 'Which styles can I learn privately?', a: 'Twerk and High Heels — or a mix of both. The lesson is built around your level and goals.' },
   { q: 'How do I book a private lesson?', a: 'Send us a message through the contact form with the style you want and the days/times that work for you, and we will get back to you with options and pricing.' },
-  { q: 'Where do private lessons take place?', a: `At the bounce lab studio, ${STUDIO_ADDRESS}.` },
+  { q: 'Where do private lessons take place?', a: 'At one of our two studios on Portland’s inner east side. We confirm the exact address when we set your time.' },
 ]
 
 export default function PrivateLessonsPage() {

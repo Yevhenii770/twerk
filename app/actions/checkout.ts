@@ -19,6 +19,7 @@ import {
 import { rateLimit } from "@/lib/rateLimit";
 import { CLASS_STATIC, MONTHLY_PASS_SESSION_COUNT, nextBookableSessions, type ClassId } from "@/lib/classes";
 import { getClassSettings } from "@/lib/dal";
+import { classAddress } from "@/lib/studio";
 import { alertAdminError } from "@/lib/alerts";
 import { sendMetaPurchase } from "@/lib/metaCapi";
 import crypto from "crypto";
@@ -166,6 +167,7 @@ async function createPaidBookingImpl(input: CheckoutInput): Promise<CheckoutResu
     amountCents,
     bookingId: booking.id,
     managementToken,
+    address: classAddress(session.classType, await getClassSettings().catch(() => undefined)),
   }).catch(() => {});
 
   sendAdminBookingNotificationEmail({
@@ -355,6 +357,7 @@ async function createPaidMonthlyBookingImpl(input: MonthlyCheckoutInput): Promis
     amountCents,
     bookingId: primary.id,
     managementToken: primary.managementToken!,
+    address: classAddress(classType, classSettings),
   }).catch(() => {});
 
   sendAdminMonthlyPassNotificationEmail({

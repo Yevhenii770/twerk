@@ -11,7 +11,7 @@ import type { Metadata } from 'next'
 import { DAY_SHORT, describeSchedule, startingPrices } from '@/lib/classes'
 import { getGoogleReviews } from '@/lib/reviews'
 import { homeFaqs, faqSchema } from '@/lib/seoContent'
-import { STUDIO_POSTAL_ADDRESS } from '@/lib/studio'
+import { MAIN_POSTAL_ADDRESS, classAddress } from '@/lib/studio'
 
 export async function generateMetadata(): Promise<Metadata> {
   const [schedule, classSettings] = await Promise.all([getSchedule(), getClassSettings()])
@@ -54,7 +54,7 @@ export default async function HomePage() {
   const { reviews, rating: googleRating, totalCount: googleReviewCount } = reviewsData
   const scheduleDays = [...schedule].sort((a, b) => a.dayOfWeek - b.dayOfWeek).map(s => DAY_SHORT[s.dayOfWeek]).join(' · ')
   const prices = startingPrices(photoPositions)
-  const faqs = homeFaqs(schedule, prices)
+  const faqs = homeFaqs(schedule, prices, { twerk: classAddress('twerk', photoPositions), highheels: classAddress('highheels', photoPositions) })
 
   const websiteSchema = {
     '@context': 'https://schema.org',
@@ -75,7 +75,7 @@ export default async function HomePage() {
     image: 'https://bounce-lab.com/og-image-v2.jpg',
     telephone: '+15034220858',
     priceRange: '$$',
-    address: STUDIO_POSTAL_ADDRESS,
+    address: MAIN_POSTAL_ADDRESS,
     aggregateRating: {
       '@type': 'AggregateRating',
       ratingValue: googleRating.toFixed(1),

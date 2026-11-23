@@ -1,5 +1,6 @@
 import { Resend } from "resend";
-import { STUDIO_ADDRESS_DISPLAY, STUDIO_DIRECTIONS_URL, buildGoogleCalendarUrl } from "@/lib/calendar";
+import { buildGoogleCalendarUrl } from "@/lib/calendar";
+import { directionsUrl } from "@/lib/studio";
 
 const FROM = process.env.EMAIL_FROM || "bounce lab <booking@bounce-lab.com>";
 const ADMIN_EMAIL = process.env.ADMIN_NOTIFICATION_EMAIL;
@@ -33,6 +34,8 @@ type BookingEmailData = {
   amountCents: number;
   bookingId: number;
   managementToken: string;
+  /** Hall address for this class (classAddress()). */
+  address: string;
 };
 
 function siteUrl() {
@@ -51,7 +54,8 @@ export async function sendBookingConfirmationEmail(data: BookingEmailData): Prom
     date: data.date,
     startTime: data.startTime,
     endTime: data.endTime,
-    details: `Your ${classLabel} class at bounce lab. Manage your booking: ${manageUrl}`,
+    details: `Your ${classLabel} class at bounce lab, ${data.address}. Manage your booking: ${manageUrl}`,
+    location: data.address,
   });
 
   const html = `
@@ -62,11 +66,11 @@ export async function sendBookingConfirmationEmail(data: BookingEmailData): Prom
         <tr><td style="padding:6px 0;color:#666">Class</td><td style="padding:6px 0;font-weight:600">${classLabel}</td></tr>
         <tr><td style="padding:6px 0;color:#666">Date</td><td style="padding:6px 0;font-weight:600">${fmtDate(data.date)}</td></tr>
         <tr><td style="padding:6px 0;color:#666">Time</td><td style="padding:6px 0;font-weight:600">${fmtTime(data.startTime)} – ${fmtTime(data.endTime)}</td></tr>
-        <tr><td style="padding:6px 0;color:#666">Location</td><td style="padding:6px 0;font-weight:600">${STUDIO_ADDRESS_DISPLAY}</td></tr>
+        <tr><td style="padding:6px 0;color:#666">Location</td><td style="padding:6px 0;font-weight:600">${escapeHtml(data.address)}</td></tr>
         <tr><td style="padding:6px 0;color:#666">Amount paid</td><td style="padding:6px 0;font-weight:600">$${(data.amountCents / 100).toFixed(2)}</td></tr>
         <tr><td style="padding:6px 0;color:#666">Reference</td><td style="padding:6px 0;font-weight:600">#${data.bookingId}</td></tr>
       </table>
-      <p><a href="${STUDIO_DIRECTIONS_URL}" style="color:#C9A96E">Get Directions</a> &nbsp;·&nbsp; <a href="${calUrl}" style="color:#C9A96E">Add to Google Calendar</a></p>
+      <p><a href="${directionsUrl(data.address)}" style="color:#C9A96E">Get Directions</a> &nbsp;·&nbsp; <a href="${calUrl}" style="color:#C9A96E">Add to Google Calendar</a></p>
       <p><a href="${manageUrl}" style="color:#C9A96E">Manage your booking</a></p>
       <p style="color:#666;font-size:13px">Need to cancel or have a question? Reply to this email or contact us through the site.</p>
     </div>
@@ -88,6 +92,7 @@ type MonthlyPassEmailData = {
   amountCents: number;
   bookingId: number;
   managementToken: string;
+  address: string;
 };
 
 /** Best-effort: never throws. A booking is confirmed by payment status, not by email delivery. */
@@ -109,11 +114,11 @@ export async function sendMonthlyPassConfirmationEmail(data: MonthlyPassEmailDat
         ${dateRows}
       </table>
       <table style="width:100%;border-collapse:collapse;margin:16px 0">
-        <tr><td style="padding:6px 0;color:#666">Location</td><td style="padding:6px 0;font-weight:600">${STUDIO_ADDRESS_DISPLAY}</td></tr>
+        <tr><td style="padding:6px 0;color:#666">Location</td><td style="padding:6px 0;font-weight:600">${escapeHtml(data.address)}</td></tr>
         <tr><td style="padding:6px 0;color:#666">Amount paid</td><td style="padding:6px 0;font-weight:600">$${(data.amountCents / 100).toFixed(2)}</td></tr>
         <tr><td style="padding:6px 0;color:#666">Reference</td><td style="padding:6px 0;font-weight:600">#${data.bookingId}</td></tr>
       </table>
-      <p><a href="${STUDIO_DIRECTIONS_URL}" style="color:#C9A96E">Get Directions</a></p>
+      <p><a href="${directionsUrl(data.address)}" style="color:#C9A96E">Get Directions</a></p>
       <p><a href="${manageUrl}" style="color:#C9A96E">Manage your pass</a></p>
       <p style="color:#666;font-size:13px">Need to cancel or have a question? Reply to this email or contact us through the site.</p>
     </div>
@@ -167,27 +172,43 @@ export async function sendAdminBookingNotificationEmail(data: {
   }).catch(() => {});
 }
 
-export async function sendReminderEmail(data: BookingEmailData): Promise<void> {
+export type ReminderEmailData = {
+  firstName: string;
+  email: string;
+  classType: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  managementToken: string;
+  address: string;
+};
+
+/** Day-before reminder. The address is read at send time, so a hall change in admin reaches
+ * everyone already booked. Returns true only when Resend accepted the email. */
+export async function sendReminderEmail(data: ReminderEmailData): Promise<boolean> {
   const resend = client();
-  if (!resend) return;
+  if (!resend) return false;
 
   const classLabel = CLASS_LABELS[data.classType] ?? data.classType;
   const manageUrl = `${siteUrl()}/manage-booking/${data.managementToken}`;
+  const street = data.address.split(",")[0];
 
-  await resend.emails.send({
+  const res = await resend.emails.send({
     from: FROM,
     to: data.email,
-    subject: `Reminder: ${classLabel} tomorrow at ${fmtTime(data.startTime)}`,
+    subject: `Tomorrow: ${classLabel} at ${fmtTime(data.startTime)} — ${street}`,
     html: `
       <div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#111">
-        <h2>See you tomorrow!</h2>
-        <p>${classLabel} — ${fmtDate(data.date)} at ${fmtTime(data.startTime)}</p>
-        <p>${STUDIO_ADDRESS_DISPLAY}</p>
-        <p><a href="${STUDIO_DIRECTIONS_URL}" style="color:#C9A96E">Get Directions</a></p>
+        <h2>See you tomorrow, ${escapeHtml(data.firstName)}!</h2>
+        <p><b>${classLabel}</b> — ${fmtDate(data.date)}, ${fmtTime(data.startTime)} – ${fmtTime(data.endTime)}</p>
+        <p style="font-size:16px"><b>Where:</b> ${escapeHtml(data.address)}</p>
+        <p style="color:#666;font-size:13px">Heads up: Twerk and Heels classes are held in two different studios, so please check the address above before you go.</p>
+        <p><a href="${directionsUrl(data.address)}" style="color:#C9A96E">Get Directions</a></p>
         <p><a href="${manageUrl}" style="color:#C9A96E">Manage your booking</a></p>
       </div>
     `,
-  }).catch(() => {});
+  }).catch(() => null);
+  return !!res && !res.error;
 }
 
 function escapeHtml(s: string): string {

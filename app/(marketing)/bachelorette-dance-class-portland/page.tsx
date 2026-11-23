@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { STUDIO_ADDRESS, faqSchema, type Faq } from '@/lib/seoContent'
+import { faqSchema, type Faq } from '@/lib/seoContent'
 
 const URL = 'https://bounce-lab.com/bachelorette-dance-class-portland'
 const TITLE = 'Bachelorette Party Dance Class in Portland — Twerk or Heels'
@@ -20,7 +20,7 @@ const faqs: Faq[] = [
   { q: 'Can we film the routine?', a: 'Yes — most groups film the final routine at the end. It is the best souvenir of the party.' },
   { q: 'What should we wear?', a: 'Anything you can move in. For heels, bring heels with an ankle strap or dance in socks. Matching outfits are always a good idea for the video.' },
   { q: 'Is it only for bachelorettes?', a: 'Not at all. Birthdays, girls’ nights out and women’s team events are all welcome.' },
-  { q: 'Where is it?', a: `At the bounce lab studio, ${STUDIO_ADDRESS}.` },
+  { q: 'Where is it?', a: 'At one of our two studios on Portland’s inner east side. We send the exact address together with your time.' },
   { q: 'How do we book?', a: 'Send us a message with your date, the number of people and the style you like. We will reply with available times and pricing.' },
 ]
 

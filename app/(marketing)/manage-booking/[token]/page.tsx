@@ -1,7 +1,9 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { getBookingByToken } from '@/app/actions/manageBooking'
-import { buildGoogleCalendarUrl, STUDIO_ADDRESS_DISPLAY, STUDIO_DIRECTIONS_URL } from '@/lib/calendar'
+import { buildGoogleCalendarUrl } from '@/lib/calendar'
+import { getClassSettings } from '@/lib/dal'
+import { classAddress, directionsUrl } from '@/lib/studio'
 import ManageBookingActions from '@/components/ManageBookingActions'
 
 export const metadata: Metadata = { robots: { index: false, follow: false } }
@@ -36,13 +38,16 @@ export default async function ManageBookingPage({
   const { booking, session, groupBookings } = data
   const isGroup = groupBookings.length > 1
   const classLabel = session ? (CLASS_LABELS[session.classType] ?? session.classType) : booking.classType
+  const address = classAddress(session?.classType ?? booking.classType, await getClassSettings())
+  const directions = directionsUrl(address)
 
   const calUrl = session ? buildGoogleCalendarUrl({
     title: `${classLabel} @ bounce lab`,
     date: session.date,
     startTime: session.startTime,
     endTime: session.endTime,
-    details: `Your ${classLabel} class at bounce lab.`,
+    details: `Your ${classLabel} class at bounce lab, ${address}.`,
+    location: address,
   }) : null
 
   const totalPaidCents = isGroup
@@ -70,7 +75,7 @@ export default async function ManageBookingPage({
           <Row label="Class" value={classLabel} />
           {!isGroup && session && <Row label="Date" value={fmtDate(session.date)} />}
           {!isGroup && session && <Row label="Time" value={`${fmtTime(session.startTime)} – ${fmtTime(session.endTime)}`} />}
-          <Row label="Location" value={STUDIO_ADDRESS_DISPLAY} />
+          <Row label="Location" value={address} />
           <Row label="Name" value={booking.name} />
           {totalPaidCents != null && <Row label="Amount paid" value={`$${(totalPaidCents / 100).toFixed(2)}`} />}
           <Row label="Reference" value={`#${booking.id}`} />
@@ -86,7 +91,8 @@ export default async function ManageBookingPage({
               const gCalUrl = s ? buildGoogleCalendarUrl({
                 title: `${CLASS_LABELS[s.classType] ?? s.classType} @ bounce lab`,
                 date: s.date, startTime: s.startTime, endTime: s.endTime,
-                details: `Your ${classLabel} class at bounce lab.`,
+                details: `Your ${classLabel} class at bounce lab, ${address}.`,
+                location: address,
               }) : null
               return (
                 <div key={g.booking.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid var(--border)', gap: 12, flexWrap: 'wrap' }}>
@@ -111,7 +117,7 @@ export default async function ManageBookingPage({
 
         {!isGroup && booking.status === 'paid' && session && (
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 8 }}>
-            <a href={STUDIO_DIRECTIONS_URL} target="_blank" rel="noopener" className="btn-outline-dark" style={{ fontSize: 11, padding: '12px 20px' }}>
+            <a href={directions} target="_blank" rel="noopener" className="btn-outline-dark" style={{ fontSize: 11, padding: '12px 20px' }}>
               Get Directions
             </a>
             {calUrl && (
@@ -126,7 +132,7 @@ export default async function ManageBookingPage({
         )}
         {isGroup && hasPaidBooking && (
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 8 }}>
-            <a href={STUDIO_DIRECTIONS_URL} target="_blank" rel="noopener" className="btn-outline-dark" style={{ fontSize: 11, padding: '12px 20px' }}>
+            <a href={directions} target="_blank" rel="noopener" className="btn-outline-dark" style={{ fontSize: 11, padding: '12px 20px' }}>
               Get Directions
             </a>
           </div>

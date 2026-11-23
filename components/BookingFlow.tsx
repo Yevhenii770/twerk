@@ -7,7 +7,7 @@ import { CLASS_STATIC, CLASS_IDS, ID_TO_SLUG, MONTHLY_PASS_SESSION_COUNT, nextBo
 import { createPaidBooking, createPaidMonthlyBooking } from '@/app/actions/checkout'
 import { squareWebPaymentsSdkUrl, squareApplicationId, squareLocationIdPublic } from '@/lib/square-client'
 import { track } from '@/lib/analytics'
-import { STUDIO_ADDRESS } from '@/lib/studio'
+import { classAddress } from '@/lib/studio'
 import { purchaseEventId } from '@/lib/metaEventId'
 import ContactForm from '@/components/ContactForm'
 
@@ -42,10 +42,12 @@ interface SquareCard {
   destroy: () => Promise<void>
 }
 
-export default function BookingFlow({ sessionsByClass, monthlyPrices, dropinPrices }: {
+export default function BookingFlow({ sessionsByClass, monthlyPrices, dropinPrices, addresses }: {
   sessionsByClass: Record<string, ClassSession[]>
   monthlyPrices: Record<ClassId, number | null>
   dropinPrices: Record<ClassId, number>
+  /** Hall address per class — Twerk and Heels are in different studios. */
+  addresses: Record<ClassId, string>
 }) {
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -278,6 +280,7 @@ export default function BookingFlow({ sessionsByClass, monthlyPrices, dropinPric
             <div>
               <p style={{ fontSize: 16, fontWeight: 600, marginBottom: 3, color: '#fff' }}>{staticInfo.label}{isMonthly ? ' — Monthly Pass' : ''}</p>
               <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.65)' }}>{staticInfo.level}</p>
+              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)', marginTop: 4 }}>📍 {addresses[classType] ?? classAddress(classType)}</p>
             </div>
             <div style={{ textAlign: 'right' }}>
               <p style={{ fontSize: 20, fontFamily: 'var(--font-cormorant)', fontStyle: 'italic', fontWeight: 300, color: '#fff', marginBottom: 4 }}>${isMonthly ? monthlyPrice : dropinPrices[classType]}</p>
@@ -401,7 +404,7 @@ export default function BookingFlow({ sessionsByClass, monthlyPrices, dropinPric
                   <SummaryRow label="Time" value={`${fmtTime(session!.startTime)} – ${fmtTime(session!.endTime)}`} />
                 </>
               )}
-              <SummaryRow label="Location" value={STUDIO_ADDRESS} />
+              <SummaryRow label="Location" value={addresses[classType] ?? classAddress(classType)} />
               <SummaryRow label="Name" value={`${firstName} ${lastName}`} />
               <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 12, marginTop: 4 }}>
                 <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--dark)' }}>Total</span>

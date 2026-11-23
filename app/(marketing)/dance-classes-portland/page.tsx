@@ -2,7 +2,8 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { CLASS_IDS, CLASS_STATIC, ID_TO_SLUG, classPrices, describeSchedule, formatSlot, startingPrices } from '@/lib/classes'
 import { getSchedule, getClassSettings } from '@/lib/dal'
-import { STUDIO_ADDRESS, MAPS_URL, faqSchema, type Faq } from '@/lib/seoContent'
+import { faqSchema, whereSentence, type Faq } from '@/lib/seoContent'
+import { classAddress, directionsUrl } from '@/lib/studio'
 import { GUIDES } from '@/lib/guides'
 
 const URL = 'https://bounce-lab.com/dance-classes-portland'
@@ -22,12 +23,13 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function DanceClassesPortlandPage() {
   const [schedule, classSettings] = await Promise.all([getSchedule(), getClassSettings()])
   const p = startingPrices(classSettings)
+  const addresses = { twerk: classAddress('twerk', classSettings), highheels: classAddress('highheels', classSettings) }
 
   const faqs: Faq[] = [
     { q: 'Are there dance classes in Portland for adults with no experience?', a: `Yes — every class at bounce lab is built for adult beginners. Our weekly classes are ${describeSchedule(schedule)}.` },
     { q: 'How much do adult dance classes cost in Portland?', a: `At bounce lab a drop-in class is $${p.dropin}${p.monthly != null ? ` and a Monthly Pass is $${p.monthly} (valid 5 weeks, any class on the schedule)` : ''}.` },
     { q: 'Which dance class should I try first?', a: 'If you want something energetic that works the glutes and hips, start with Twerk. If you want to feel confident, feminine and work on posture and presence, try High Heels. Both are beginner-friendly.' },
-    { q: 'Where is the studio?', a: `bounce lab is at ${STUDIO_ADDRESS}, in the Central Eastside — just across the river from downtown, easy to reach from anywhere in Portland.` },
+    { q: 'Where is the studio?', a: whereSentence(addresses) },
   ]
 
   return (
@@ -41,7 +43,7 @@ export default async function DanceClassesPortlandPage() {
       <div className="legal-content">
         <p>
           Looking for a dance class in Portland where you don&apos;t have to be &ldquo;a dancer&rdquo; already? bounce lab is a
-          small studio in Portland&apos;s Central Eastside built for adult women who want to move, sweat and feel more confident in their
+          small studio on Portland&apos;s inner east side built for adult women who want to move, sweat and feel more confident in their
           bodies. Most of our students start with zero dance experience.
         </p>
 
@@ -77,9 +79,14 @@ export default async function DanceClassesPortlandPage() {
         </p>
 
         <h2>Location</h2>
-        <p>
-          <a href={MAPS_URL} target="_blank" rel="noopener">{STUDIO_ADDRESS}</a>.
-        </p>
+        <ul>
+          {CLASS_IDS.map(id => (
+            <li key={id}>
+              {CLASS_STATIC[id].label}:{' '}
+              <a href={directionsUrl(addresses[id])} target="_blank" rel="noopener">{addresses[id]}</a>
+            </li>
+          ))}
+        </ul>
 
         <h2>FAQ</h2>
         {faqs.map(f => (

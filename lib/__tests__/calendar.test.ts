@@ -9,7 +9,9 @@ describe("buildGoogleCalendarUrl", () => {
       startTime: "18:00",
       endTime: "19:00",
       details: "details",
+      location: "2648 E Burnside St, Portland, OR 97214",
     });
+    expect(url).toContain("location=2648+E+Burnside+St");
     expect(url).toContain("dates=20260904T180000%2F20260904T190000");
     expect(url).toContain("action=TEMPLATE");
   });
@@ -24,7 +26,9 @@ describe("buildIcsFile", () => {
       startTime: "18:00",
       endTime: "19:00",
       details: "Booked via bounce-lab.com",
+      location: "232 SE Oak St, Portland, OR 97214",
     });
+    expect(ics).toContain("LOCATION:232 SE Oak St\\, Portland\\, OR 97214");
     expect(ics).toContain("BEGIN:VEVENT");
     expect(ics).toContain("DTSTART:20260904T180000");
     expect(ics).toContain("DTEND:20260904T190000");
@@ -40,6 +44,7 @@ describe("buildIcsFile", () => {
       startTime: "18:00",
       endTime: "19:00",
       details: "",
+      location: "x",
     });
     expect(ics).toContain("Class\\; with\\, special\\ncharacters");
   });

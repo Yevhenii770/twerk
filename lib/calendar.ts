@@ -1,5 +1,3 @@
-import { STUDIO_ADDRESS, STUDIO_DIRECTIONS_URL as DIRECTIONS } from "@/lib/studio";
-
 function toIcsDate(date: string, time: string): string {
   // date: "2026-09-04", time: "18:00" (studio-local; treated as floating local time)
   return `${date.replace(/-/g, "")}T${time.replace(":", "")}00`;
@@ -11,6 +9,7 @@ export function buildGoogleCalendarUrl(params: {
   startTime: string;
   endTime: string;
   details: string;
+  location: string;
 }): string {
   const dates = `${toIcsDate(params.date, params.startTime)}/${toIcsDate(params.date, params.endTime)}`;
   const url = new URL("https://calendar.google.com/calendar/render");
@@ -18,7 +17,7 @@ export function buildGoogleCalendarUrl(params: {
   url.searchParams.set("text", params.title);
   url.searchParams.set("dates", dates);
   url.searchParams.set("details", params.details);
-  url.searchParams.set("location", STUDIO_ADDRESS);
+  url.searchParams.set("location", params.location);
   return url.toString();
 }
 
@@ -29,6 +28,7 @@ export function buildIcsFile(params: {
   startTime: string;
   endTime: string;
   details: string;
+  location: string;
 }): string {
   const lines = [
     "BEGIN:VCALENDAR",
@@ -42,7 +42,7 @@ export function buildIcsFile(params: {
     `DTEND:${toIcsDate(params.date, params.endTime)}`,
     `SUMMARY:${escapeIcs(params.title)}`,
     `DESCRIPTION:${escapeIcs(params.details)}`,
-    `LOCATION:${escapeIcs(STUDIO_ADDRESS)}`,
+    `LOCATION:${escapeIcs(params.location)}`,
     "END:VEVENT",
     "END:VCALENDAR",
   ];
@@ -52,6 +52,3 @@ export function buildIcsFile(params: {
 function escapeIcs(text: string): string {
   return text.replace(/[\\;,]/g, (m) => `\\${m}`).replace(/\n/g, "\\n");
 }
-
-export const STUDIO_ADDRESS_DISPLAY = STUDIO_ADDRESS;
-export const STUDIO_DIRECTIONS_URL = DIRECTIONS;

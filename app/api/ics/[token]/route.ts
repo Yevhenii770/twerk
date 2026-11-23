@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getBookingByToken } from "@/app/actions/manageBooking";
 import { buildIcsFile } from "@/lib/calendar";
+import { getClassSettings } from "@/lib/dal";
+import { classAddress } from "@/lib/studio";
 
 const CLASS_LABELS: Record<string, string> = { twerk: "Twerk", highheels: "High Heels" };
 
@@ -19,6 +21,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ tok
     startTime: session.startTime,
     endTime: session.endTime,
     details: "Booked via bounce-lab.com",
+    location: classAddress(session.classType, await getClassSettings()),
   });
 
   return new NextResponse(ics, {
