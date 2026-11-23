@@ -38,32 +38,36 @@ function nextOccurrences(dayOfWeek: number, count: number): string[] {
 export async function ensureUpcomingSessions(): Promise<void> {
   const [sched, classSettings, closureList] = await Promise.all([db.select().from(schedules), getClassSettings(), getUpcomingClosures()]);
 
+  // One bulk INSERT … ON CONFLICT DO NOTHING instead of one round trip per date: this runs on
+  // every /book view, and ~16 sequential HTTP queries to Neon made the page wait ~1.3s.
+  const rows: (typeof classSessions.$inferInsert)[] = []
   for (const s of sched) {
     const info = CLASS_STATIC[s.classType as ClassId];
     if (!info) continue;
     const range = parseTimeRange(s.timeDisplay);
     if (!range) continue; // unparseable admin input — never generate bogus 00:00 sessions
     const { opens, closes } = range;
-    const dates = nextOccurrences(s.dayOfWeek, WEEKS_AHEAD);
     const dropinPrice = classSettings[s.classType]?.dropinPrice ?? info.dropin;
-
-    for (const date of dates) {
+    for (const date of nextOccurrences(s.dayOfWeek, WEEKS_AHEAD)) {
       // A date inside a vacation/holiday closure is created already cancelled, so it never
       // becomes bookable — even when the closure was set months before the date is generated.
       const closed = isClosed(s.classType, date, closureList);
-      await db
-        .insert(classSessions)
-        .values({
-          classType: s.classType,
-          date,
-          startTime: opens,
-          endTime: closes,
-          price: dropinPrice,
-          capacity: DEFAULT_CAPACITY[s.classType] ?? 15,
-          ...(closed ? { cancelled: true, bookingOpen: false } : {}),
-        })
-        .onConflictDoNothing({ target: [classSessions.classType, classSessions.date, classSessions.startTime] });
+      rows.push({
+        classType: s.classType,
+        date,
+        startTime: opens,
+        endTime: closes,
+        price: dropinPrice,
+        capacity: DEFAULT_CAPACITY[s.classType] ?? 15,
+        ...(closed ? { cancelled: true, bookingOpen: false } : {}),
+      });
     }
+  }
+  if (rows.length) {
+    await db
+      .insert(classSessions)
+      .values(rows)
+      .onConflictDoNothing({ target: [classSessions.classType, classSessions.date, classSessions.startTime] });
   }
 }
 
