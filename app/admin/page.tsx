@@ -5,6 +5,8 @@ import DeleteConfirmBtn from "@/components/DeleteConfirmBtn";
 import SessionCard from "@/components/admin/SessionCard";
 import ClassPricingCard from "@/components/admin/ClassPricingCard";
 import { classAddress } from "@/lib/studio";
+import ClosuresPanel from "@/components/admin/ClosuresPanel";
+import { getClosuresForAdmin } from "@/app/actions/closures";
 import { CLASS_STATIC, CLASS_IDS } from "@/lib/classes";
 import Link from "next/link";
 
@@ -24,7 +26,7 @@ export default async function AdminPage() {
   const currentUser = await getCurrentUser();
   if (!currentUser || currentUser.role !== "admin") redirect("/");
 
-  const [roster, legacyBookings, classSettings] = await Promise.all([getAdminSessionRoster(), getLegacyBookings(), getClassSettings()]);
+  const [roster, legacyBookings, classSettings, closureRows] = await Promise.all([getAdminSessionRoster(), getLegacyBookings(), getClassSettings(), getClosuresForAdmin()]);
 
   const totalUpcomingPaid = roster.reduce((sum, r) => sum + r.attendees.filter(a => a.status === "paid").length, 0);
   const totalUpcomingSpots = roster.reduce((sum, r) => sum + r.session.capacity, 0);
@@ -107,6 +109,11 @@ export default async function AdminPage() {
             />
           ))}
         </div>
+
+        <h2 style={{ fontSize: 14, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 16 }}>
+          Vacation &amp; Closed Dates
+        </h2>
+        <ClosuresPanel closures={closureRows} />
 
         <h2 style={{ fontSize: 14, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 16 }}>
           Upcoming Schedule &amp; Roster

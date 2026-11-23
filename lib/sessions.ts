@@ -4,6 +4,7 @@ import { and, asc, eq, gte } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 import { CLASS_STATIC, parseTimeRange, type ClassId } from "@/lib/classes";
 import { getClassSettings } from "@/lib/dal";
+import { getUpcomingClosures, isClosed } from "@/lib/closures";
 
 const WEEKS_AHEAD = 8;
 
@@ -35,7 +36,7 @@ function nextOccurrences(dayOfWeek: number, count: number): string[] {
  * generated sessions become visible without needing a render-time tag invalidation.
  */
 export async function ensureUpcomingSessions(): Promise<void> {
-  const [sched, classSettings] = await Promise.all([db.select().from(schedules), getClassSettings()]);
+  const [sched, classSettings, closureList] = await Promise.all([db.select().from(schedules), getClassSettings(), getUpcomingClosures()]);
 
   for (const s of sched) {
     const info = CLASS_STATIC[s.classType as ClassId];
@@ -47,6 +48,9 @@ export async function ensureUpcomingSessions(): Promise<void> {
     const dropinPrice = classSettings[s.classType]?.dropinPrice ?? info.dropin;
 
     for (const date of dates) {
+      // A date inside a vacation/holiday closure is created already cancelled, so it never
+      // becomes bookable — even when the closure was set months before the date is generated.
+      const closed = isClosed(s.classType, date, closureList);
       await db
         .insert(classSessions)
         .values({
@@ -56,6 +60,7 @@ export async function ensureUpcomingSessions(): Promise<void> {
           endTime: closes,
           price: dropinPrice,
           capacity: DEFAULT_CAPACITY[s.classType] ?? 15,
+          ...(closed ? { cancelled: true, bookingOpen: false } : {}),
         })
         .onConflictDoNothing({ target: [classSessions.classType, classSessions.date, classSessions.startTime] });
     }

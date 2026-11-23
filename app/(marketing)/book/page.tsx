@@ -6,6 +6,7 @@ import { CLASS_STATIC, CLASS_IDS, type ClassId } from '@/lib/classes'
 import { getClassSettings, getSchedule } from '@/lib/dal'
 import type { ClassSession } from '@/db/schema'
 import { classAddress } from '@/lib/studio'
+import { getUpcomingClosures, closureNotice } from '@/lib/closures'
 
 export const metadata: Metadata = {
   title: "Book a Dance Class in Portland, OR",
@@ -28,7 +29,7 @@ export const metadata: Metadata = {
 
 export default async function BookPage() {
   await ensureUpcomingSessions()
-  const [allSessions, classSettings, schedule] = await Promise.all([getUpcomingSessions(), getClassSettings(), getSchedule()])
+  const [allSessions, classSettings, schedule, closureList] = await Promise.all([getUpcomingSessions(), getClassSettings(), getSchedule(), getUpcomingClosures()])
   // Sessions left at an old weekly slot after a schedule change are closed by updateSchedule —
   // hide them instead of showing a confusing "Sold Out" date that the class no longer runs on.
   const retired = new Set(findOffScheduleSessions(allSessions, schedule).filter(s => !s.bookingOpen).map(s => s.id))
@@ -58,6 +59,9 @@ export default async function BookPage() {
       <div style={{ borderBottom: '1px solid var(--border)', padding: '52px 72px 40px' }}>
         <p className="mk-eyebrow">Reserve your spot</p>
         <h1 className="mk-section-title">Book a Class</h1>
+        {closureList.map(c => (
+          <p key={c.id} style={{ marginTop: 14, fontSize: 14, color: 'var(--pink)', fontWeight: 600 }}>🌴 {closureNotice(c)}</p>
+        ))}
       </div>
       <Suspense fallback={<div style={{ padding: 48, color: 'var(--mid)', fontSize: 14 }}>Loading...</div>}>
         <BookingFlow sessionsByClass={sessionsByClass} monthlyPrices={monthlyPrices} dropinPrices={dropinPrices} addresses={addresses} />

@@ -11,6 +11,7 @@ import ScheduleInterestForm from '@/components/ScheduleInterestForm'
 import InstagramLink from '@/components/InstagramLink'
 import { GUIDES } from '@/lib/guides'
 import { MAIN_POSTAL_ADDRESS, classAddress, directionsUrl } from '@/lib/studio'
+import { getUpcomingClosures, closureNotice } from '@/lib/closures'
 
 // Contextual CTA verb per class — copy only, price/day/time always pulled from live data.
 const CTA_VERB: Record<ClassId, string> = {
@@ -74,7 +75,8 @@ export default async function ClassPage({ params }: Props) {
   const classId = SLUG_TO_ID[slug]
   if (!classId) notFound()
 
-  const [schedule, photoPositions, reviewsData] = await Promise.all([getSchedule(), getClassSettings(), getGoogleReviews()])
+  const [schedule, photoPositions, reviewsData, closureList] = await Promise.all([getSchedule(), getClassSettings(), getGoogleReviews(), getUpcomingClosures()])
+  const breaks = closureList.filter(c => c.classType == null || c.classType === SLUG_TO_ID[slug])
   const cls = CLASS_STATIC[classId]
   const sched = schedule.find(s => s.classType === classId)
   const dayName = sched ? DAY_NAMES[sched.dayOfWeek] : ''
@@ -271,6 +273,9 @@ export default async function ClassPage({ params }: Props) {
             <a href={directionsUrl(address)} target="_blank" rel="noopener" style={{ color: 'var(--pink)' }}>{address}</a>.
             {' '}Drop-in ${prices.dropin}{prices.monthly != null && <> · Monthly Pass ${prices.monthly}</>}.
           </p>
+          {breaks.map(c => (
+            <p key={c.id} className="mk-section-body" style={{ marginTop: 8, color: 'var(--pink)', fontWeight: 600 }}>🌴 {closureNotice(c)}</p>
+          ))}
           {otherAddress !== address && (
             <p className="mk-section-body" style={{ marginTop: 8 }}>
               Heads up: {CLASS_STATIC[otherId].label} classes are in a different studio ({otherAddress}), so check the address in your booking email before you go.

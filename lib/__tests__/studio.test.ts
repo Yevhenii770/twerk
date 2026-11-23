@@ -28,3 +28,25 @@ describe("per-class studio address", () => {
     expect(heels).toContain("B St");
   });
 });
+
+import { isClosed, closureNotice, formatRange } from "@/lib/closures";
+
+describe("closures (vacation)", () => {
+  const list = [
+    { startDate: "2026-12-20", endDate: "2027-01-03", classType: null },
+    { startDate: "2026-12-04", endDate: "2026-12-04", classType: "highheels" },
+  ];
+  it("closes every class inside an all-classes range, inclusive", () => {
+    expect(isClosed("twerk", "2026-12-20", list)).toBe(true);
+    expect(isClosed("highheels", "2027-01-03", list)).toBe(true);
+    expect(isClosed("twerk", "2027-01-04", list)).toBe(false);
+  });
+  it("a class-specific day closes only that class", () => {
+    expect(isClosed("highheels", "2026-12-04", list)).toBe(true);
+    expect(isClosed("twerk", "2026-12-04", list)).toBe(false);
+  });
+  it("formats a customer notice", () => {
+    expect(formatRange(list[0])).toBe("Dec 20 – Jan 3");
+    expect(closureNotice({ ...list[1], note: "holiday" })).toBe("No High Heels classes Dec 4 (holiday).");
+  });
+});

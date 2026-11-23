@@ -50,6 +50,18 @@ export const payments = pgTable("payments", {
   updatedAt:        timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
 });
 
+// Admin-set breaks (vacation, holidays): every session of the class (or all classes when
+// classType is null) between startDate and endDate inclusive is cancelled and not bookable —
+// including sessions that are only generated later (ensureUpcomingSessions checks this table).
+export const closures = pgTable("closures", {
+  id:        serial("id").primaryKey(),
+  startDate: date("start_date").notNull(),
+  endDate:   date("end_date").notNull(),
+  classType: text("class_type"), // twerk | highheels | null = all classes
+  note:      text("note"),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+});
+
 // "Contact us / found a problem" — the general-purpose lead form, no longer used for booking.
 export const contactMessages = pgTable("contact_messages", {
   id:        serial("id").primaryKey(),
@@ -128,3 +140,4 @@ export type ClassScheduleInterest = InferSelectModel<typeof classScheduleInteres
 export type ClassSession = InferSelectModel<typeof classSessions>;
 export type Payment = InferSelectModel<typeof payments>;
 export type ContactMessage = InferSelectModel<typeof contactMessages>;
+export type Closure = InferSelectModel<typeof closures>;
