@@ -43,7 +43,9 @@ function friendlyDeclineMessage(errors: { code?: string; detail?: string }[] | u
   if (!errors?.length) return undefined;
   const specific = errors.find((e) => e.code && e.code !== "GENERIC_DECLINE");
   if (specific?.code && DECLINE_MESSAGES[specific.code]) return DECLINE_MESSAGES[specific.code];
-  return (specific ?? errors[0])?.detail;
+  if (specific?.detail) return specific.detail;
+  // Bare GENERIC_DECLINE: Square's detail is a raw code ("Authorization error: 'GENERIC_DECLINE'").
+  return "Your card was declined by your bank. Please try another card, or Apple Pay / Google Pay.";
 }
 
 /**

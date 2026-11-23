@@ -71,10 +71,10 @@ export async function checkoutBlockReason(w: Who & { sessionIds: number[]; human
 }
 
 /** After a declined card: alert once when a person or the whole site crosses the threshold. */
-export async function afterDecline(w: Who) {
+export async function afterDecline(w: Who, limit: number = LIMITS.declinesPerHour) {
   try {
     const mine = await countPayments(w, "failed", true);
-    if (mine === LIMITS.declinesPerHour) {
+    if (mine === limit) {
       await notify(
         `${mine} declined cards in an hour`,
         `Payments from ${normEmail(w.email)} / ${normPhone(w.phone)} (IP ${w.ip}) were paused for an hour after ${mine} declined cards. Usually a real customer with card trouble — if they contact you, help them book. If it repeats, it may be someone testing stolen cards.`,

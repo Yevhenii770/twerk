@@ -22,7 +22,7 @@ import { getClassSettings } from "@/lib/dal";
 import { classAddress } from "@/lib/studio";
 import { alertAdminError } from "@/lib/alerts";
 import { sendMetaPurchase } from "@/lib/metaCapi";
-import { checkoutBlockReason, afterDecline, normEmail, normPhone } from "@/lib/abuse";
+import { checkoutBlockReason, afterDecline, normEmail, normPhone, LIMITS } from "@/lib/abuse";
 import { verifyTurnstile } from "@/lib/turnstile";
 import crypto from "crypto";
 
@@ -81,9 +81,10 @@ async function createPaidBookingImpl(input: CheckoutInput): Promise<CheckoutResu
     return { success: false, error: "This booking is already being processed." };
   }
 
+  const humanVerified = await verifyTurnstile(data.turnstileToken ?? "", ip);
+  const declineLimit = humanVerified ? LIMITS.declinesPerHour : LIMITS.declinesPerHourNoCaptcha;
   const blocked = await checkoutBlockReason({
-    email: data.email, phone: data.phone, ip, sessionIds: [data.sessionId],
-    humanVerified: await verifyTurnstile(data.turnstileToken ?? "", ip),
+    email: data.email, phone: data.phone, ip, sessionIds: [data.sessionId], humanVerified,
   });
   if (blocked) return { success: false, error: blocked };
 
@@ -136,7 +137,7 @@ async function createPaidBookingImpl(input: CheckoutInput): Promise<CheckoutResu
   if (!paymentResult.ok) {
     await releaseSeat(data.sessionId);
     await db.update(payments).set({ status: "failed", updatedAt: new Date() }).where(eq(payments.id, paymentRow.id));
-    await afterDecline({ email: data.email, phone: data.phone, ip });
+    await afterDecline({ email: data.email, phone: data.phone, ip }, declineLimit);
     return { success: false, error: paymentResult.error || "Payment failed. Please check your card details and try again." };
   }
 
@@ -283,9 +284,10 @@ async function createPaidMonthlyBookingImpl(input: MonthlyCheckoutInput): Promis
     return { success: false, error: "Not enough upcoming classes are open right now for a Monthly Pass. Please contact us." };
   }
 
+  const humanVerified = await verifyTurnstile(data.turnstileToken ?? "", ip);
+  const declineLimit = humanVerified ? LIMITS.declinesPerHour : LIMITS.declinesPerHourNoCaptcha;
   const blocked = await checkoutBlockReason({
-    email: data.email, phone: data.phone, ip, sessionIds: picks.map((s) => s.id),
-    humanVerified: await verifyTurnstile(data.turnstileToken ?? "", ip),
+    email: data.email, phone: data.phone, ip, sessionIds: picks.map((s) => s.id), humanVerified,
   });
   if (blocked) return { success: false, error: blocked };
 
@@ -334,7 +336,7 @@ async function createPaidMonthlyBookingImpl(input: MonthlyCheckoutInput): Promis
   if (!paymentResult.ok) {
     for (const id of claimedIds) await releaseSeat(id);
     await db.update(payments).set({ status: "failed", updatedAt: new Date() }).where(eq(payments.id, paymentRow.id));
-    await afterDecline({ email: data.email, phone: data.phone, ip });
+    await afterDecline({ email: data.email, phone: data.phone, ip }, declineLimit);
     return { success: false, error: paymentResult.error || "Payment failed. Please check your card details and try again." };
   }
 
