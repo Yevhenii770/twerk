@@ -50,6 +50,7 @@ export default function StickyBookBar({ links, price }: { links: Record<string, 
             font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;text-decoration:none;white-space:nowrap;}
           .sbb .sbb-btn:focus-visible{outline:2px solid var(--dark);outline-offset:2px;}
         }
+        @media (max-width:400px){.sbb-label{display:none;}}
         @media (prefers-reduced-motion: reduce){.sbb{transition:none;}}
       `}</style>
     </div>
