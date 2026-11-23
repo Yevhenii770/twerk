@@ -20,3 +20,9 @@ export function whenLabel(iso: string, now = new Date()): string {
 }
 
 export const TRUST_LINE = 'No experience needed · Free cancellation up to 24h before · Small groups'
+
+/** Compact for tight spots (phone bar): "Tonight" / "Tomorrow" / "Thu". */
+export function whenShort(iso: string, now = new Date()): string {
+  const w = whenLabel(iso, now)
+  return w === 'Tonight' || w === 'Tomorrow' ? w : new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-US', { weekday: 'short', timeZone: 'UTC' })
+}

@@ -18,4 +18,4 @@ export async function getNextBookable(): Promise<Partial<Record<ClassId, ClassSe
   return out
 }
 
-export { fmtShortDate, fmtClock, whenLabel, TRUST_LINE } from '@/lib/nextFormat'
+export { fmtShortDate, fmtClock, whenLabel, whenShort, TRUST_LINE } from '@/lib/nextFormat'

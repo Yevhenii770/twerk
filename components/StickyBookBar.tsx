@@ -33,11 +33,10 @@ export default function StickyBookBar({ links, price }: { links: Record<string, 
 
   return (
     <div className={`sbb${shown ? ' is-shown' : ''}`} aria-hidden={!shown}>
-      <div className="sbb-text">
-        <span className="sbb-label">{nextText ? 'Next class' : 'Twerk · High Heels'}</span>
-        <span className="sbb-when">{nextText ?? 'Beginner-friendly classes'}</span>
-      </div>
-      <Link href={href} className="sbb-btn" tabIndex={shown ? 0 : -1}>Book · ${price}</Link>
+      <p className="sbb-text">
+        {nextText ? <><span className="sbb-label">Next class ·</span> {nextText}</> : 'Twerk · High Heels'}
+      </p>
+      <Link href={href} className="sbb-btn" tabIndex={shown ? 0 : -1}>Save my spot · ${price}</Link>
       <style>{`
         .sbb{display:none;}
         @media (max-width:768px){
@@ -45,11 +44,10 @@ export default function StickyBookBar({ links, price }: { links: Record<string, 
             padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:rgba(253,250,247,.96);
             backdrop-filter:blur(10px);border-top:1px solid var(--border);transform:translateY(110%);transition:transform .3s ease;}
           .sbb.is-shown{transform:none;}
-          .sbb-text{display:flex;flex-direction:column;min-width:0;flex:1;}
-          .sbb-label{font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:var(--mid);}
-          .sbb-when{font-size:13px;font-weight:600;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-          .sbb .sbb-btn{flex-shrink:0;min-height:44px;display:inline-flex;align-items:center;padding:0 20px;background:var(--pink);color:#fff;
-            font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;text-decoration:none;}
+          .sbb-text{flex:1;min-width:0;margin:0;font-size:13px;font-weight:600;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+          .sbb-label{font-weight:400;color:var(--mid);}
+          .sbb .sbb-btn{flex-shrink:0;min-height:44px;display:inline-flex;align-items:center;padding:0 16px;background:var(--pink);color:#fff;
+            font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;text-decoration:none;white-space:nowrap;}
           .sbb .sbb-btn:focus-visible{outline:2px solid var(--dark);outline-offset:2px;}
         }
         @media (prefers-reduced-motion: reduce){.sbb{transition:none;}}

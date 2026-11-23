@@ -5,7 +5,7 @@ import ScrollFadeClient from '@/components/ScrollFadeClient'
 import { getCurrentUser, getSchedule, getClassSettings } from '@/lib/dal'
 import { DAY_NAMES, ID_TO_SLUG, CLASS_STATIC, CLASS_IDS, startingPrices, type ClassSchedule } from '@/lib/classes'
 import StickyBookBar from '@/components/StickyBookBar'
-import { getNextBookable, whenLabel, fmtClock } from '@/lib/nextSessions'
+import { getNextBookable, whenShort, fmtClock } from '@/lib/nextSessions'
 import { GUIDES } from '@/lib/guides'
 import InstagramLink from '@/components/InstagramLink'
 import { classAddress, directionsUrl } from '@/lib/studio'
@@ -16,7 +16,7 @@ export default async function MarketingLayout({ children }: { children: React.Re
   // falling back to the soonest class overall.
   const nextLinks = Object.fromEntries(CLASS_IDS.flatMap(id => {
     const s = next[id]
-    return s ? [[id, { href: `/book?session=${s.id}`, date: s.date, text: `${CLASS_STATIC[id].label} · ${whenLabel(s.date)} · ${fmtClock(s.startTime)}` }]] : []
+    return s ? [[id, { href: `/book?session=${s.id}`, date: s.date, text: `${CLASS_STATIC[id].label} ${whenShort(s.date)} ${fmtClock(s.startTime)}` }]] : []
   }))
   const addresses = CLASS_IDS.map(id => ({ id, address: classAddress(id, settings) }))
 
