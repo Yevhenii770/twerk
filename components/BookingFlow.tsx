@@ -10,6 +10,7 @@ import { track } from '@/lib/analytics'
 import { classAddress } from '@/lib/studio'
 import { purchaseEventId } from '@/lib/metaEventId'
 import ContactForm from '@/components/ContactForm'
+import { TRUST_LINE } from '@/lib/nextFormat'
 
 type Step = 'class' | 'session' | 'details' | 'payment'
 type BookingKind = 'dropin' | 'monthly'
@@ -35,6 +36,14 @@ declare global {
 
 interface SquarePayments {
   card: () => Promise<SquareCard>
+  paymentRequest: (req: { countryCode: string; currencyCode: string; total: { amount: string; label: string } }) => unknown
+  applePay: (req: unknown) => Promise<SquareWallet>
+  googlePay: (req: unknown) => Promise<SquareWallet>
+}
+interface SquareWallet {
+  attach?: (selector: string, opts?: Record<string, unknown>) => Promise<void>
+  tokenize: () => Promise<{ status: string; token?: string; errors?: { message: string }[] }>
+  destroy?: () => Promise<void>
 }
 interface SquareCard {
   attach: (selector: string) => Promise<void>
@@ -51,13 +60,26 @@ export default function BookingFlow({ sessionsByClass, monthlyPrices, dropinPric
 }) {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const paramClass = searchParams.get('class') as ClassId | null
+  const paramSession = searchParams.get('session')
+  // ?session=<id> (from "Next class → Book" links) or ?session=next (Instagram bio link): land
+  // straight on the details form with that date chosen. Falls back silently if it's gone/full.
+  const presetSession = useMemo(() => {
+    if (!paramSession) return null
+    const bookable = Object.values(sessionsByClass).flat()
+      .filter(s => !s.cancelled && s.bookingOpen && s.booked < s.capacity)
+      .sort((a, b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime))
+    const wantClass = searchParams.get('class')
+    if (paramSession === 'next') return bookable.find(s => !wantClass || s.classType === wantClass) ?? null
+    return bookable.find(s => String(s.id) === paramSession) ?? null
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  const paramClass = (presetSession?.classType ?? searchParams.get('class')) as ClassId | null
   const hasPresetClass = Boolean(paramClass && CLASS_IDS.includes(paramClass))
 
   const [classType, setClassType] = useState<ClassId>(hasPresetClass ? (paramClass as ClassId) : 'twerk')
   const [bookingKind, setBookingKind] = useState<BookingKind>('dropin')
-  const [step, setStep] = useState<Step>(hasPresetClass ? 'session' : 'class')
-  const [sessionId, setSessionId] = useState<number | null>(null)
+  const [step, setStep] = useState<Step>(presetSession ? 'details' : hasPresetClass ? 'session' : 'class')
+  const [sessionId, setSessionId] = useState<number | null>(presetSession?.id ?? null)
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
@@ -70,6 +92,8 @@ export default function BookingFlow({ sessionsByClass, monthlyPrices, dropinPric
   const [showContactHelp, setShowContactHelp] = useState(false)
 
   const cardRef = useRef<SquareCard | null>(null)
+  const walletsRef = useRef<{ applePay?: SquareWallet; googlePay?: SquareWallet }>({})
+  const [wallets, setWallets] = useState<{ applePay?: boolean; googlePay?: boolean }>({})
   const [cardReady, setCardReady] = useState(false)
   const [sdkError, setSdkError] = useState<string | null>(null)
   const [sdkErrorRecoverable, setSdkErrorRecoverable] = useState(true)
@@ -82,6 +106,20 @@ export default function BookingFlow({ sessionsByClass, monthlyPrices, dropinPric
   const monthlySessions = useMemo(() => nextBookableSessions(sessions, MONTHLY_PASS_SESSION_COUNT), [sessions])
   const monthlyPrice = monthlyPrices[classType]
   const monthlyAvailable = monthlyPrice != null && monthlySessions.length === MONTHLY_PASS_SESSION_COUNT
+
+  // Returning visitors: prefill name / email / phone from this browser (never required).
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('bl_contact') || 'null')
+      if (saved && typeof saved === 'object') {
+        if (saved.firstName) setFirstName(saved.firstName)
+        if (saved.lastName) setLastName(saved.lastName)
+        if (saved.email) setEmail(saved.email)
+        if (saved.phone) handlePhoneChange(saved.phone)
+      }
+    } catch {}
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     track('view_booking', { class_slug: hasPresetClass ? ID_TO_SLUG[paramClass as ClassId] : undefined })
@@ -128,6 +166,23 @@ export default function BookingFlow({ sessionsByClass, monthlyPrices, dropinPric
       if (cancelled) { card.destroy(); return }
       cardRef.current = card
       setCardReady(true)
+
+      // Apple Pay / Google Pay — shown only where the device + domain support them.
+      const amount = (isMonthly ? monthlyPrice ?? 0 : session?.price ?? 0).toFixed(2)
+      const req = payments.paymentRequest({ countryCode: 'US', currencyCode: 'USD', total: { amount, label: 'bounce lab' } })
+      try {
+        const gp = await payments.googlePay(req)
+        await gp.attach?.('#sq-gpay', { buttonColor: 'black', buttonType: 'long', buttonSizeMode: 'fill' })
+        if (cancelled) { gp.destroy?.(); return }
+        walletsRef.current.googlePay = gp
+        setWallets(w => ({ ...w, googlePay: true }))
+      } catch (e) { console.info('[booking] Google Pay unavailable:', e instanceof Error ? e.message : e) }
+      try {
+        const ap = await payments.applePay(req)
+        if (cancelled) return
+        walletsRef.current.applePay = ap
+        setWallets(w => ({ ...w, applePay: true }))
+      } catch (e) { console.info('[booking] Apple Pay unavailable:', e instanceof Error ? e.message : e) }
     }
 
     init().catch((err) => {
@@ -139,6 +194,9 @@ export default function BookingFlow({ sessionsByClass, monthlyPrices, dropinPric
       cancelled = true
       cardRef.current?.destroy().catch(() => {})
       cardRef.current = null
+      walletsRef.current.googlePay?.destroy?.().catch(() => {})
+      walletsRef.current = {}
+      setWallets({})
       setCardReady(false)
     }
   }, [step, sdkRetryToken])
@@ -159,17 +217,18 @@ export default function BookingFlow({ sessionsByClass, monthlyPrices, dropinPric
     if (!/^\S+@\S+\.\S+$/.test(email)) { setDetailsError('Please enter a valid email'); return false }
     if (phone.length !== 10) { setDetailsError('Please enter a valid phone number'); return false }
     setDetailsError(null)
+    try { localStorage.setItem('bl_contact', JSON.stringify({ firstName: firstName.trim(), lastName: lastName.trim(), email: email.trim(), phone })) } catch {}
     return true
   }
 
-  const handlePay = async () => {
-    if (!cardRef.current) return
+  const handlePay = async (method: { tokenize: SquareCard['tokenize'] } | null = cardRef.current) => {
+    if (!method) return
     if (isMonthly ? !monthlyAvailable : !session) return
     setPaymentError(null)
     setShowContactHelp(false)
     setPaying(true)
     try {
-      const tokenResult = await cardRef.current.tokenize()
+      const tokenResult = await method.tokenize()
       if (tokenResult.status !== 'OK' || !tokenResult.token) {
         setPaymentError(tokenResult.errors?.[0]?.message || 'Card details are invalid. Please check and try again.')
         setPaying(false)
@@ -227,7 +286,7 @@ export default function BookingFlow({ sessionsByClass, monthlyPrices, dropinPric
     <div style={{ maxWidth: 560, margin: '0 auto', padding: '48px 24px 80px' }}>
       <Stepper step={step} />
 
-      {(step === 'class' || step === 'session') && (
+      {(step === 'class' || step === 'session') && isMonthly && (
         <TicketSwitch
           bookingKind={bookingKind}
           onChange={setBookingKind}
@@ -360,6 +419,10 @@ export default function BookingFlow({ sessionsByClass, monthlyPrices, dropinPric
         </Section>
       )}
 
+      {!isMonthly && (step === 'class' || step === 'session' || step === 'details') && (
+        <MonthlyUpsell price={monthlyPrices[classType]} dropin={dropinPrices[classType]} onSwitch={() => setBookingKind('monthly')} />
+      )}
+
       {step === 'details' && (
         <Section step={3} title="Your details">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -429,6 +492,15 @@ export default function BookingFlow({ sessionsByClass, monthlyPrices, dropinPric
               </>
             ) : (
               <>
+                {wallets.applePay && (
+                  <button type="button" aria-label="Pay with Apple Pay" disabled={paying} className="bkf-applepay"
+                    onClick={() => handlePay(walletsRef.current.applePay ?? null)} />
+                )}
+                <div id="sq-gpay" onClick={() => { if (!paying && walletsRef.current.googlePay) handlePay(walletsRef.current.googlePay) }}
+                  style={{ marginBottom: wallets.googlePay ? 10 : 0, minHeight: wallets.googlePay ? 48 : 0 }} />
+                {(wallets.applePay || wallets.googlePay) && (
+                  <p style={{ textAlign: 'center', fontSize: 11, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--mid)', margin: '6px 0 12px' }}>or pay with card</p>
+                )}
                 <div id="sq-card-container" style={{ marginBottom: 12, minHeight: 90, border: '1px solid var(--border)', padding: cardReady ? 0 : '16px' }}>
                   {!cardReady && <p style={{ fontSize: 12, color: 'var(--mid)' }}>Loading secure payment form…</p>}
                 </div>
@@ -446,9 +518,10 @@ export default function BookingFlow({ sessionsByClass, monthlyPrices, dropinPric
                   Your card is processed securely by Square. We never see or store your card number.
                   Your spot is only confirmed once payment succeeds.
                 </p>
-                <button type="button" onClick={handlePay} disabled={!cardReady || paying} style={primaryBtnStyle}>
+                <button type="button" onClick={() => handlePay()} disabled={!cardReady || paying} style={primaryBtnStyle}>
                   {paying ? 'Processing…' : `Pay $${isMonthly ? monthlyPrice : session!.price}`}
                 </button>
+                <p className="mk-trust" style={{ textAlign: 'center' }}>{TRUST_LINE}</p>
                 {showContactHelp && (
                   <div style={{ marginTop: 24, paddingTop: 24, borderTop: '1px solid var(--border)' }}>
                     <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--dark)', marginBottom: 12 }}>
@@ -583,6 +656,28 @@ function TicketSwitch({ bookingKind, onChange, dropinPrice, monthlyPrice }: {
         }
       `}</style>
     </div>
+  )
+}
+
+function MonthlyUpsell({ price, dropin, onSwitch }: { price: number | null; dropin: number; onSwitch: () => void }) {
+  if (price == null) return null
+  const save = dropin * MONTHLY_PASS_SESSION_COUNT - price
+  return (
+    <button type="button" onClick={onSwitch} className="bkf-upsell">
+      <span>Coming every week? <strong>Monthly Pass</strong> — {MONTHLY_PASS_SESSION_COUNT} classes for ${price}{save > 0 ? ` (save $${save})` : ''}</span>
+      <span aria-hidden="true">→</span>
+      <style>{`
+        .bkf-upsell{display:flex;justify-content:space-between;align-items:center;gap:12px;width:100%;min-height:48px;margin:0 0 28px;padding:12px 16px;
+          background:transparent;border:1px dashed var(--border);color:var(--mid);font-family:inherit;font-size:12px;text-align:left;cursor:pointer;transition:border-color .2s,color .2s;}
+        .bkf-upsell strong{color:var(--dark);}
+        .bkf-upsell:hover{border-color:var(--pink);color:var(--dark);}
+        .bkf-upsell:focus-visible{outline:2px solid var(--pink);outline-offset:2px;}
+        .bkf-applepay{display:block;width:100%;height:48px;margin-bottom:10px;border:0;border-radius:4px;cursor:pointer;background:#000;}
+        @supports (-webkit-appearance: -apple-pay-button){
+          .bkf-applepay{-webkit-appearance:-apple-pay-button;-apple-pay-button-type:plain;-apple-pay-button-style:black;}
+        }
+      `}</style>
+    </button>
   )
 }
 

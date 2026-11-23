@@ -71,7 +71,7 @@ export async function sendBookingConfirmationEmail(data: BookingEmailData): Prom
         <tr><td style="padding:6px 0;color:#666">Reference</td><td style="padding:6px 0;font-weight:600">#${data.bookingId}</td></tr>
       </table>
       <p><a href="${directionsUrl(data.address)}" style="color:#C9A96E">Get Directions</a> &nbsp;·&nbsp; <a href="${calUrl}" style="color:#C9A96E">Add to Google Calendar</a></p>
-      <p><a href="${manageUrl}" style="color:#C9A96E">Manage your booking</a></p>
+      <p><a href="${manageUrl}" style="color:#C9A96E">Manage your booking</a> &nbsp;·&nbsp; <a href="${siteUrl()}/book?session=next&class=${data.classType}" style="color:#C9A96E">Book another class</a></p>
       <p style="color:#666;font-size:13px">Need to cancel or have a question? Reply to this email or contact us through the site.</p>
     </div>
   `;
@@ -205,6 +205,7 @@ export async function sendReminderEmail(data: ReminderEmailData): Promise<boolea
         <p style="color:#666;font-size:13px">Heads up: Twerk and Heels classes are held in two different studios, so please check the address above before you go.</p>
         <p><a href="${directionsUrl(data.address)}" style="color:#C9A96E">Get Directions</a></p>
         <p><a href="${manageUrl}" style="color:#C9A96E">Manage your booking</a></p>
+        <p style="margin-top:20px"><a href="${siteUrl()}/book?class=${data.classType}" style="display:inline-block;background:#E8167A;color:#fff;text-decoration:none;padding:12px 22px;font-size:12px;letter-spacing:.12em;text-transform:uppercase">Save a spot for next week</a></p>
       </div>
     `,
   }).catch(() => null);

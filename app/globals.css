@@ -784,3 +784,10 @@ section[id] { scroll-margin-top: 80px; }
 @media (max-width: 900px) {
   .cls-details { grid-template-columns: 1fr; padding: 52px 24px; gap: 40px; }
 }
+
+/* Reassurance line under booking buttons (lib/nextSessions TRUST_LINE) */
+.mk-trust { font-size: 11px; letter-spacing: 0.06em; color: var(--mid); margin-top: 14px; }
+.mk-trust--dark { color: rgba(255,255,255,0.7); }
+
+/* Room for the phone sticky Book bar */
+@media (max-width: 768px) { .marketing-root { padding-bottom: 72px; } }

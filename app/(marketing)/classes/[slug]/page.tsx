@@ -12,6 +12,7 @@ import InstagramLink from '@/components/InstagramLink'
 import { GUIDES } from '@/lib/guides'
 import { MAIN_POSTAL_ADDRESS, classAddress, directionsUrl } from '@/lib/studio'
 import { getUpcomingClosures, closureNotice } from '@/lib/closures'
+import { getNextBookable, whenLabel, fmtClock, TRUST_LINE } from '@/lib/nextSessions'
 
 // Contextual CTA verb per class — copy only, price/day/time always pulled from live data.
 const CTA_VERB: Record<ClassId, string> = {
@@ -75,7 +76,7 @@ export default async function ClassPage({ params }: Props) {
   const classId = SLUG_TO_ID[slug]
   if (!classId) notFound()
 
-  const [schedule, photoPositions, reviewsData, closureList] = await Promise.all([getSchedule(), getClassSettings(), getGoogleReviews(), getUpcomingClosures()])
+  const [schedule, photoPositions, reviewsData, closureList, nextByClass] = await Promise.all([getSchedule(), getClassSettings(), getGoogleReviews(), getUpcomingClosures(), getNextBookable()])
   const breaks = closureList.filter(c => c.classType == null || c.classType === SLUG_TO_ID[slug])
   const cls = CLASS_STATIC[classId]
   const sched = schedule.find(s => s.classType === classId)
@@ -93,6 +94,10 @@ export default async function ClassPage({ params }: Props) {
 
   const isBeginnerFriendly = cls.modalEyebrow.includes('Beginner Friendly')
   const ctaLabel = `${CTA_VERB[classId]} Your First ${cls.label} Class — $${prices.dropin}`
+  const nextSession = nextByClass[classId]
+  // Straight to the details form with the soonest open date already picked.
+  const bookHref = nextSession ? `/book?session=${nextSession.id}` : cls.bookUrl
+  const nextLeft = nextSession ? Math.max(0, nextSession.capacity - nextSession.booked) : 0
 
   const { reviews } = reviewsData
   const matchedReview = reviews.find(r => CLASS_KEYWORDS[classId].some(k => r.text.toLowerCase().includes(k)))
@@ -164,14 +169,17 @@ export default async function ClassPage({ params }: Props) {
             </p>
           )}
           <div className="cls-hero-btns">
-            <TrackedLink href={cls.bookUrl} className="btn-hero-primary" event="book_cta_clicked" params={{ class_slug: slug, class_name: cls.label, placement: 'hero' }}>
+            <TrackedLink href={bookHref} className="btn-hero-primary" event="book_cta_clicked" params={{ class_slug: slug, class_name: cls.label, placement: 'hero' }}>
               {ctaLabel}
             </TrackedLink>
             <Link href="/#classes" className="btn-hero-outline">All Classes</Link>
           </div>
-          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.75)', marginTop: 14 }}>
-            {dayName} · {sched?.timeDisplay} · {isBeginnerFriendly ? 'Beginner Friendly' : cls.level}
+          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)', marginTop: 14 }}>
+            {nextSession
+              ? <>Next class: <strong>{whenLabel(nextSession.date)} · {fmtClock(nextSession.startTime)}</strong>{nextLeft <= 5 && <> · {nextLeft} spot{nextLeft === 1 ? '' : 's'} left</>}</>
+              : <>{dayName} · {sched?.timeDisplay} · {isBeginnerFriendly ? 'Beginner Friendly' : cls.level}</>}
           </p>
+          <p className="mk-trust mk-trust--dark">{TRUST_LINE}</p>
         </div>
       </section>
 
@@ -183,7 +191,7 @@ export default async function ClassPage({ params }: Props) {
           {texts.map((t, i) => (
             <p key={i} className="mk-section-body" style={{ marginBottom: 20 }}>{t}</p>
           ))}
-          <TrackedLink href={cls.bookUrl} className="btn-outline-dark" style={{ marginTop: 12 }} event="book_cta_clicked" params={{ class_slug: slug, class_name: cls.label, placement: 'content' }}>
+          <TrackedLink href={bookHref} className="btn-outline-dark" style={{ marginTop: 12 }} event="book_cta_clicked" params={{ class_slug: slug, class_name: cls.label, placement: 'content' }}>
             Book {cls.label} →
           </TrackedLink>
         </div>
@@ -227,7 +235,7 @@ export default async function ClassPage({ params }: Props) {
                 <span className="cls-price-val">${prices.monthly} <span style={{ fontSize: 14, fontStyle: 'normal', color: '#6B6059' }}>/ mo</span></span>
               </div>
             )}
-            <TrackedLink href={cls.bookUrl} className="btn-price" style={{ marginTop: 32 }} event="book_cta_clicked" params={{ class_slug: slug, class_name: cls.label, placement: 'sidebar' }}>
+            <TrackedLink href={bookHref} className="btn-price" style={{ marginTop: 32 }} event="book_cta_clicked" params={{ class_slug: slug, class_name: cls.label, placement: 'sidebar' }}>
               Reserve Your Spot
             </TrackedLink>
 
@@ -361,9 +369,10 @@ export default async function ClassPage({ params }: Props) {
         <p className="mk-cta-pre">Ready to start?</p>
         <h2 className="mk-cta-title">Join {cls.label} in Portland</h2>
         <p className="mk-cta-sub">No experience needed. Just show up, feel the music, and let your body do the rest.</p>
-        <TrackedLink href={cls.bookUrl} className="btn-cta" event="book_cta_clicked" params={{ class_slug: slug, class_name: cls.label, placement: 'final_cta' }}>
+        <TrackedLink href={bookHref} className="btn-cta" event="book_cta_clicked" params={{ class_slug: slug, class_name: cls.label, placement: 'final_cta' }}>
           {ctaLabel}
         </TrackedLink>
+        <p className="mk-trust">{TRUST_LINE}</p>
       </section>
     </>
   )

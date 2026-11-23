@@ -3,13 +3,21 @@ import Link from 'next/link'
 import HeaderScrollClient from '@/components/HeaderScrollClient'
 import ScrollFadeClient from '@/components/ScrollFadeClient'
 import { getCurrentUser, getSchedule, getClassSettings } from '@/lib/dal'
-import { DAY_NAMES, ID_TO_SLUG, CLASS_STATIC, CLASS_IDS, type ClassSchedule } from '@/lib/classes'
+import { DAY_NAMES, ID_TO_SLUG, CLASS_STATIC, CLASS_IDS, startingPrices, type ClassSchedule } from '@/lib/classes'
+import StickyBookBar from '@/components/StickyBookBar'
+import { getNextBookable, whenLabel, fmtClock } from '@/lib/nextSessions'
 import { GUIDES } from '@/lib/guides'
 import InstagramLink from '@/components/InstagramLink'
 import { classAddress, directionsUrl } from '@/lib/studio'
 
 export default async function MarketingLayout({ children }: { children: React.ReactNode }) {
-  const [user, schedule, settings] = await Promise.all([getCurrentUser(), getSchedule(), getClassSettings()])
+  const [user, schedule, settings, next] = await Promise.all([getCurrentUser(), getSchedule(), getClassSettings(), getNextBookable()])
+  // Sticky phone bar: per-class next session (the bar picks the one matching the class page),
+  // falling back to the soonest class overall.
+  const nextLinks = Object.fromEntries(CLASS_IDS.flatMap(id => {
+    const s = next[id]
+    return s ? [[id, { href: `/book?session=${s.id}`, date: s.date, text: `${CLASS_STATIC[id].label} · ${whenLabel(s.date)} · ${fmtClock(s.startTime)}` }]] : []
+  }))
   const addresses = CLASS_IDS.map(id => ({ id, address: classAddress(id, settings) }))
 
   return (
@@ -18,6 +26,7 @@ export default async function MarketingLayout({ children }: { children: React.Re
       <main>{children}</main>
       <Footer schedule={schedule} addresses={addresses} />
       <ScrollFadeClient />
+      <StickyBookBar links={nextLinks} price={startingPrices(settings).dropin} />
     </div>
   )
 }
