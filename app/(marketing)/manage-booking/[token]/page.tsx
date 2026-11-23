@@ -22,6 +22,7 @@ function fmtTime(t: string) {
 
 const STATUS_LABEL: Record<string, string> = {
   paid: 'Confirmed', cancelled: 'Cancelled', refunded: 'Refunded', failed: 'Payment Failed',
+  refund_review: 'Cancelled — refund in review',
 }
 
 export default async function ManageBookingPage({
@@ -138,6 +139,12 @@ export default async function ManageBookingPage({
           </div>
         )}
 
+        {(booking.status === 'refund_review' || groupBookings.some(g => g.booking.status === 'refund_review')) && (
+          <p style={{ fontSize: 13, color: 'var(--mid)', marginBottom: 16, lineHeight: 1.6 }}>
+            Your booking is cancelled and your spot has been released. We review refunds personally after a few
+            cancellations in a month — we&apos;ll email you within 1–2 days.
+          </p>
+        )}
         <div style={{ display: 'flex', justifyContent: 'center' }}>
           <ManageBookingActions token={token} canCancel={hasPaidBooking} isGroup={isGroup} />
         </div>

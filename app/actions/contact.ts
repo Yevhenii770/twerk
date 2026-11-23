@@ -5,6 +5,7 @@ import { contactMessages } from "@/db/schema";
 import { z } from "zod";
 import { headers } from "next/headers";
 import { rateLimit } from "@/lib/rateLimit";
+import { verifyTurnstile } from "@/lib/turnstile";
 import { revalidateTag } from "next/cache";
 
 const ContactSchema = z.object({
@@ -55,24 +56,6 @@ export async function submitContactMessage(_: unknown, formData: FormData) {
     return { success: true };
   } catch {
     return { success: false, errors: { _: ["Something went wrong, please try again"] } };
-  }
-}
-
-async function verifyTurnstile(token: string, ip: string): Promise<boolean> {
-  const secret = process.env.TURNSTILE_SECRET_KEY;
-  if (!secret) return true; // not configured (e.g. local dev) — skip check
-  if (!token) return false;
-
-  try {
-    const res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ secret, response: token, remoteip: ip }),
-    });
-    const data = await res.json();
-    return data.success === true;
-  } catch {
-    return false;
   }
 }
 

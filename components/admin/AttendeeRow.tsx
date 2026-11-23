@@ -9,6 +9,7 @@ const STATUS_STYLE: Record<string, { bg: string; color: string }> = {
   paid: { bg: '#D4EDDA', color: '#155724' },
   cancelled: { bg: '#E2E2E2', color: '#444' },
   refunded: { bg: '#F0E68C', color: '#5C4E00' },
+  refund_review: { bg: '#FFE0B2', color: '#8A4B00' },
   failed: { bg: '#F8D7DA', color: '#721C24' },
 }
 
@@ -83,6 +84,17 @@ export default function AttendeeRow({ booking }: { booking: Booking }) {
           </button>
         )}
         <button disabled={pending} onClick={() => setEditing(true)} style={smallBtnStyle('#1565C0')}>Edit</button>
+        {booking.status === 'refund_review' && (
+          <>
+            <span style={{ fontSize: 11, color: '#8A4B00', alignSelf: 'center' }}>Cancelled by customer — refund limit reached</span>
+            <button disabled={pending} onClick={() => { if (window.confirm('Send the refund via Square?')) act(() => refundPaidBooking(booking.id)) }} style={smallBtnStyle('#C62828')}>
+              Refund
+            </button>
+            <button disabled={pending} onClick={() => { if (window.confirm('Keep the payment (no refund)?')) act(() => cancelPaidBooking(booking.id)) }} style={smallBtnStyle('#555')}>
+              No refund
+            </button>
+          </>
+        )}
         {booking.status === 'paid' && (
           <>
             <button disabled={pending} onClick={() => { if (window.confirm('Cancel this booking? Seat will be released. This does not refund the payment.')) act(() => cancelPaidBooking(booking.id)) }} style={smallBtnStyle('#555')}>

@@ -70,9 +70,10 @@ export async function refundBookingPayment(bookingId: number, reason: string): P
 
     await db.update(payments).set({ status: "refunded", updatedAt: new Date() }).where(eq(payments.id, payment.id));
     for (const linked of linkedBookings) {
-      if (linked.status !== "paid") continue; // already cancelled/refunded independently — leave as-is
+      if (linked.status !== "paid" && linked.status !== "refund_review") continue; // already cancelled/refunded independently — leave as-is
       await db.update(bookings).set({ status: "refunded" }).where(eq(bookings.id, linked.id));
-      if (linked.sessionId) await releaseSeat(linked.sessionId);
+      // refund_review seats were already released when the customer cancelled.
+      if (linked.sessionId && linked.status === "paid") await releaseSeat(linked.sessionId);
     }
 
     revalidateTag("bookings");

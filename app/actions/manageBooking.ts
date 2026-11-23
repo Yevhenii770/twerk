@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { bookings, classSessions, type Booking, type ClassSession } from "@/db/schema";
+import { bookings, classSessions, payments, type Booking, type ClassSession } from "@/db/schema";
 import { eq, inArray } from "drizzle-orm";
 import { headers } from "next/headers";
 import { revalidateTag } from "next/cache";
@@ -10,6 +10,7 @@ import { refundBookingPayment } from "@/lib/refund";
 import { classStartUtc } from "@/lib/studioTime";
 import { rateLimit } from "@/lib/rateLimit";
 import { isRefundEligible, REFUND_GRACE_MINUTES, REFUND_CUTOFF_HOURS } from "@/lib/refundPolicy";
+import { LIMITS, recentAutoRefunds, notify } from "@/lib/abuse";
 
 // Public, token-gated self-service booking management. The management token (a 32-byte
 // random value, see lib/token.ts) is the sole credential — knowing it proves ownership of
@@ -92,6 +93,26 @@ export async function cancelOwnBooking(token: string) {
     await db.update(bookings).set({ status: "cancelled" }).where(eq(bookings.id, booking.id));
     if (booking.sessionId) await releaseSeat(booking.sessionId);
     revalidateTag("bookings");
+    return { success: true };
+  }
+
+  // Anti-abuse: at most LIMITS.autoRefundsPer30Days automatic refunds per person (email, phone
+  // or the same card). Past that the booking is still cancelled and the seat freed — so nobody
+  // is stuck — but the money waits for the studio to approve it in admin ("refund_review").
+  const [pay] = await db.select().from(payments).where(eq(payments.id, booking.paymentId)).limit(1);
+  const used = await recentAutoRefunds({ email: booking.email, phone: booking.phone, cardFingerprint: pay?.cardFingerprint ?? null });
+  if (used >= LIMITS.autoRefundsPer30Days) {
+    const linked = await db.select().from(bookings).where(eq(bookings.paymentId, booking.paymentId));
+    for (const b of linked) {
+      if (b.status !== "paid") continue;
+      await db.update(bookings).set({ status: "refund_review" }).where(eq(bookings.id, b.id));
+      if (b.sessionId) await releaseSeat(b.sessionId);
+    }
+    revalidateTag("bookings");
+    await notify(
+      "Refund waiting for your approval",
+      `${booking.name} (${booking.email ?? "no email"}, ${booking.phone}) cancelled booking #${booking.id}. They already had ${used} automatic refunds in the last 30 days, so this refund was NOT sent automatically. Their spot is released. Open Admin → the class roster → "Refund" to send the money, or leave it.`,
+    );
     return { success: true };
   }
 

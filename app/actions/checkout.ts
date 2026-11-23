@@ -22,6 +22,8 @@ import { getClassSettings } from "@/lib/dal";
 import { classAddress } from "@/lib/studio";
 import { alertAdminError } from "@/lib/alerts";
 import { sendMetaPurchase } from "@/lib/metaCapi";
+import { checkoutBlockReason, afterDecline, normEmail, normPhone } from "@/lib/abuse";
+import { verifyTurnstile } from "@/lib/turnstile";
 import crypto from "crypto";
 
 const CheckoutSchema = z.object({
@@ -33,6 +35,7 @@ const CheckoutSchema = z.object({
   notes: z.string().trim().max(500).optional().or(z.literal("")),
   sourceId: z.string().min(1),
   idempotencyKey: z.string().uuid(),
+  turnstileToken: z.string().max(4096).optional(),
 });
 
 export type CheckoutInput = z.infer<typeof CheckoutSchema>;
@@ -78,6 +81,12 @@ async function createPaidBookingImpl(input: CheckoutInput): Promise<CheckoutResu
     return { success: false, error: "This booking is already being processed." };
   }
 
+  const blocked = await checkoutBlockReason({
+    email: data.email, phone: data.phone, ip, sessionIds: [data.sessionId],
+    humanVerified: await verifyTurnstile(data.turnstileToken ?? "", ip),
+  });
+  if (blocked) return { success: false, error: blocked };
+
   const session = await getSessionById(data.sessionId);
   if (!session) return { success: false, error: "This class no longer exists." };
   if (isSoldOut(session)) return { success: false, error: "Sorry, this class just sold out." };
@@ -107,6 +116,9 @@ async function createPaidBookingImpl(input: CheckoutInput): Promise<CheckoutResu
           idempotencyKey: data.idempotencyKey,
           amountCents,
           status: "pending",
+          buyerEmail: normEmail(data.email),
+          buyerPhone: normPhone(data.phone),
+          clientIp: ip,
         }).returning();
   } catch (err) {
     await releaseSeat(data.sessionId);
@@ -124,6 +136,7 @@ async function createPaidBookingImpl(input: CheckoutInput): Promise<CheckoutResu
   if (!paymentResult.ok) {
     await releaseSeat(data.sessionId);
     await db.update(payments).set({ status: "failed", updatedAt: new Date() }).where(eq(payments.id, paymentRow.id));
+    await afterDecline({ email: data.email, phone: data.phone, ip });
     return { success: false, error: paymentResult.error || "Payment failed. Please check your card details and try again." };
   }
 
@@ -131,6 +144,7 @@ async function createPaidBookingImpl(input: CheckoutInput): Promise<CheckoutResu
     status: "completed",
     squarePaymentId: paymentResult.paymentId,
     squareOrderId: paymentResult.orderId,
+    cardFingerprint: paymentResult.cardFingerprint ?? null,
     updatedAt: new Date(),
   }).where(eq(payments.id, paymentRow.id));
 
@@ -210,6 +224,7 @@ const MonthlyCheckoutSchema = z.object({
   notes: z.string().trim().max(500).optional().or(z.literal("")),
   sourceId: z.string().min(1),
   idempotencyKey: z.string().uuid(),
+  turnstileToken: z.string().max(4096).optional(),
 });
 
 export type MonthlyCheckoutInput = z.infer<typeof MonthlyCheckoutSchema>;
@@ -268,6 +283,12 @@ async function createPaidMonthlyBookingImpl(input: MonthlyCheckoutInput): Promis
     return { success: false, error: "Not enough upcoming classes are open right now for a Monthly Pass. Please contact us." };
   }
 
+  const blocked = await checkoutBlockReason({
+    email: data.email, phone: data.phone, ip, sessionIds: picks.map((s) => s.id),
+    humanVerified: await verifyTurnstile(data.turnstileToken ?? "", ip),
+  });
+  if (blocked) return { success: false, error: blocked };
+
   // Same release-on-any-failure guarantee as createPaidBookingImpl, above, applied to every
   // seat claimed for the pass: anything that throws before Square confirms the charge must give
   // all of them back, not just the ones covered by an explicit failure branch.
@@ -293,6 +314,9 @@ async function createPaidMonthlyBookingImpl(input: MonthlyCheckoutInput): Promis
           idempotencyKey: data.idempotencyKey,
           amountCents,
           status: "pending",
+          buyerEmail: normEmail(data.email),
+          buyerPhone: normPhone(data.phone),
+          clientIp: ip,
         }).returning();
   } catch (err) {
     for (const id of claimedIds) await releaseSeat(id);
@@ -310,6 +334,7 @@ async function createPaidMonthlyBookingImpl(input: MonthlyCheckoutInput): Promis
   if (!paymentResult.ok) {
     for (const id of claimedIds) await releaseSeat(id);
     await db.update(payments).set({ status: "failed", updatedAt: new Date() }).where(eq(payments.id, paymentRow.id));
+    await afterDecline({ email: data.email, phone: data.phone, ip });
     return { success: false, error: paymentResult.error || "Payment failed. Please check your card details and try again." };
   }
 
@@ -317,6 +342,7 @@ async function createPaidMonthlyBookingImpl(input: MonthlyCheckoutInput): Promis
     status: "completed",
     squarePaymentId: paymentResult.paymentId,
     squareOrderId: paymentResult.orderId,
+    cardFingerprint: paymentResult.cardFingerprint ?? null,
     updatedAt: new Date(),
   }).where(eq(payments.id, paymentRow.id));
 

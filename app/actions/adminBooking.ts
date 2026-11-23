@@ -23,7 +23,8 @@ export async function cancelPaidBooking(id: number) {
   if (booking.status === "cancelled" || booking.status === "refunded") return { success: true };
 
   await db.update(bookings).set({ status: "cancelled" }).where(eq(bookings.id, id));
-  if (booking.sessionId) await releaseSeat(booking.sessionId);
+  // A refund_review booking's seat was already released when the customer cancelled.
+  if (booking.sessionId && booking.status === "paid") await releaseSeat(booking.sessionId);
 
   revalidateTag("bookings");
   return { success: true };

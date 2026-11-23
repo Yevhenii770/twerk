@@ -24,7 +24,7 @@ function locationId(): string {
 }
 
 export type CreatePaymentResult =
-  | { ok: true; paymentId: string; orderId?: string; status: string; receiptUrl?: string }
+  | { ok: true; paymentId: string; orderId?: string; status: string; cardFingerprint?: string | null; receiptUrl?: string }
   | { ok: false; error: string };
 
 // Square often returns GENERIC_DECLINE alongside a second, more specific error (e.g.
@@ -91,6 +91,7 @@ export async function createSquarePayment(params: {
       orderId: payment.order_id,
       status: payment.status,
       receiptUrl: payment.receipt_url,
+      cardFingerprint: payment.card_details?.card?.fingerprint ?? null,
     };
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : "Unexpected payment error" };

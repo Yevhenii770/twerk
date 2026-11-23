@@ -46,6 +46,12 @@ export const payments = pgTable("payments", {
   amountCents:      integer("amount_cents").notNull(),
   currency:         text("currency").default("USD").notNull(),
   status:           text("status").default("pending").notNull(), // pending | completed | refunding | failed | refunded
+  // Anti-abuse signals (nullable: older rows predate them). Square's card fingerprint is the same
+  // for the same physical card across payments, even if the buyer changes email/phone.
+  cardFingerprint:  text("card_fingerprint"),
+  buyerEmail:       text("buyer_email"), // lowercased
+  buyerPhone:       text("buyer_phone"), // digits only
+  clientIp:         text("client_ip"),
   createdAt:        timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
   updatedAt:        timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
 });
@@ -93,6 +99,7 @@ export const bookings = pgTable("bookings", {
   date: date("date").notNull(),
   price: integer("price").notNull(),
   // pending (legacy, no payment) | pending_payment | paid | failed | cancelled | refunded
+  // | refund_review (customer cancelled past the monthly auto-refund limit: seat released, admin decides)
   status: text("status").default("pending").notNull(),
   adminNotes: text("admin_notes"),
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),

@@ -28,6 +28,11 @@ function fmtTime(t: string) {
 
 declare global {
   interface Window {
+    turnstile?: {
+      render: (el: HTMLElement, opts: Record<string, unknown>) => string
+      reset: (id?: string) => void
+      remove: (id?: string) => void
+    }
     Square?: {
       payments: (appId: string, locationId: string) => Promise<SquarePayments>
     }
@@ -93,6 +98,10 @@ export default function BookingFlow({ sessionsByClass, monthlyPrices, dropinPric
 
   const cardRef = useRef<SquareCard | null>(null)
   const walletsRef = useRef<{ applePay?: SquareWallet; googlePay?: SquareWallet }>({})
+  // Invisible Cloudflare bot check on the payment step (anti card-testing). Real visitors almost
+  // never see it; if it can't load (ad blocker), payment still works with stricter server limits.
+  const turnstileToken = useRef('')
+  const turnstileId = useRef<string | null>(null)
   const [wallets, setWallets] = useState<{ applePay?: boolean; googlePay?: boolean }>({})
   const [cardReady, setCardReady] = useState(false)
   const [sdkError, setSdkError] = useState<string | null>(null)
@@ -201,6 +210,38 @@ export default function BookingFlow({ sessionsByClass, monthlyPrices, dropinPric
     }
   }, [step, sdkRetryToken])
 
+  useEffect(() => {
+    const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
+    if (step !== 'payment' || !siteKey) return
+    let cancelled = false
+    const mount = () => {
+      const el = document.getElementById('bkf-turnstile')
+      if (cancelled || !el || !window.turnstile || turnstileId.current) return
+      turnstileId.current = window.turnstile.render(el, {
+        sitekey: siteKey,
+        appearance: 'interaction-only',
+        callback: (t: string) => { turnstileToken.current = t },
+        'expired-callback': () => { turnstileToken.current = '' },
+        'error-callback': () => { turnstileToken.current = '' },
+      })
+    }
+    if (window.turnstile) mount()
+    else if (!document.getElementById('cf-turnstile-script')) {
+      const sc = document.createElement('script')
+      sc.id = 'cf-turnstile-script'
+      sc.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'
+      sc.async = true
+      sc.onload = mount
+      document.body.appendChild(sc)
+    } else document.getElementById('cf-turnstile-script')!.addEventListener('load', mount)
+    return () => {
+      cancelled = true
+      if (turnstileId.current) { try { window.turnstile?.remove(turnstileId.current) } catch {} }
+      turnstileId.current = null
+      turnstileToken.current = ''
+    }
+  }, [step])
+
   const handlePhoneChange = (raw: string) => {
     const digits = raw.replace(/\D/g, '').slice(0, 10)
     setPhone(digits)
@@ -251,6 +292,7 @@ export default function BookingFlow({ sessionsByClass, monthlyPrices, dropinPric
             notes: notes.trim() || undefined,
             sourceId: tokenResult.token,
             idempotencyKey: crypto.randomUUID(),
+            turnstileToken: turnstileToken.current || undefined,
           })
         : await createPaidBooking({
             sessionId: session!.id,
@@ -261,11 +303,15 @@ export default function BookingFlow({ sessionsByClass, monthlyPrices, dropinPric
             notes: notes.trim() || undefined,
             sourceId: tokenResult.token,
             idempotencyKey: crypto.randomUUID(),
+            turnstileToken: turnstileToken.current || undefined,
           })
 
       if (!result.success) {
         setPaymentError(result.error)
         setPaying(false)
+        // Turnstile tokens are single-use: get a fresh one for the next attempt.
+        turnstileToken.current = ''
+        if (turnstileId.current) { try { window.turnstile?.reset(turnstileId.current) } catch {} }
         return
       }
 
@@ -501,6 +547,7 @@ export default function BookingFlow({ sessionsByClass, monthlyPrices, dropinPric
                 {(wallets.applePay || wallets.googlePay) && (
                   <p style={{ textAlign: 'center', fontSize: 11, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--mid)', margin: '6px 0 12px' }}>or pay with card</p>
                 )}
+                <div id="bkf-turnstile" style={{ display: 'flex', justifyContent: 'center' }} />
                 <div id="sq-card-container" style={{ marginBottom: 12, minHeight: 90, border: '1px solid var(--border)', padding: cardReady ? 0 : '16px' }}>
                   {!cardReady && <p style={{ fontSize: 12, color: 'var(--mid)' }}>Loading secure payment form…</p>}
                 </div>

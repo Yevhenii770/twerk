@@ -212,6 +212,18 @@ export async function sendReminderEmail(data: ReminderEmailData): Promise<boolea
   return !!res && !res.error;
 }
 
+/** Security / abuse alert to the studio's admin inbox (same address as booking notifications). */
+export async function sendAdminAlertEmail(subject: string, body: string): Promise<void> {
+  const resend = client();
+  if (!resend || !ADMIN_EMAIL) return;
+  await resend.emails.send({
+    from: FROM,
+    to: ADMIN_EMAIL,
+    subject: `⚠️ ${subject}`,
+    html: `<div style="font-family:sans-serif;max-width:520px;color:#111"><p>${escapeHtml(body)}</p><p style="color:#666;font-size:12px">Automatic alert from bounce-lab.com</p></div>`,
+  }).catch(() => {});
+}
+
 function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] as string));
 }
