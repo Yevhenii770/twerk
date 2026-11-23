@@ -48,9 +48,9 @@ export default function StickyBookBar({ links, price }: { links: Record<string, 
           .sbb-text{display:flex;flex-direction:column;min-width:0;flex:1;}
           .sbb-label{font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:var(--mid);}
           .sbb-when{font-size:13px;font-weight:600;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-          .sbb-btn{flex-shrink:0;min-height:44px;display:inline-flex;align-items:center;padding:0 20px;background:var(--pink);color:#fff;
+          .sbb .sbb-btn{flex-shrink:0;min-height:44px;display:inline-flex;align-items:center;padding:0 20px;background:var(--pink);color:#fff;
             font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;text-decoration:none;}
-          .sbb-btn:focus-visible{outline:2px solid var(--dark);outline-offset:2px;}
+          .sbb .sbb-btn:focus-visible{outline:2px solid var(--dark);outline-offset:2px;}
         }
         @media (prefers-reduced-motion: reduce){.sbb{transition:none;}}
       `}</style>

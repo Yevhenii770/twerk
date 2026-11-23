@@ -45,13 +45,13 @@ export default function NextClasses({ next, only, tone = 'light' }: {
         .nxc-left{font-size:11px;font-weight:600;color:var(--pink);}
         .nxc-go{font-size:11px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;margin-left:auto;}
         .nxc--dark .nxc-label{color:rgba(255,255,255,.55);}
-        .nxc--dark .nxc-item{color:#fff;border-color:rgba(255,255,255,.28);background:rgba(0,0,0,.18);}
+        .nxc.nxc--dark .nxc-item{color:#fff;border-color:rgba(255,255,255,.28);background:rgba(0,0,0,.18);}
         .nxc--dark .nxc-item:hover{border-color:#fff;background:rgba(255,255,255,.08);}
         .nxc--dark .nxc-left{color:#ff7fb6;}
         .nxc--light .nxc-label{color:var(--mid);}
-        .nxc--light .nxc-item{color:var(--dark);border-color:var(--border);background:#fff;}
+        .nxc.nxc--light .nxc-item{color:var(--dark);border-color:var(--border);background:#fff;}
         .nxc--light .nxc-item:hover{border-color:var(--dark);}
-        .nxc--light .nxc-go{color:var(--pink);}
+        .nxc.nxc--light .nxc-go{color:var(--pink);}
         .nxc-item:focus-visible{outline:2px solid var(--pink);outline-offset:3px;}
         .nxc--dark{display:flex;flex-direction:column;align-items:center;}
         .nxc--dark .nxc-list{justify-content:center;}
