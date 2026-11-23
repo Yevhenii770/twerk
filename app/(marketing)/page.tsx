@@ -12,8 +12,7 @@ import { DAY_SHORT, describeSchedule, startingPrices } from '@/lib/classes'
 import { getGoogleReviews } from '@/lib/reviews'
 import { homeFaqs, faqSchema } from '@/lib/seoContent'
 import { MAIN_POSTAL_ADDRESS, classAddress } from '@/lib/studio'
-import NextClasses from '@/components/NextClasses'
-import { getNextBookable, TRUST_LINE } from '@/lib/nextSessions'
+import { TRUST_LINE } from '@/lib/nextSessions'
 
 export async function generateMetadata(): Promise<Metadata> {
   const [schedule, classSettings] = await Promise.all([getSchedule(), getClassSettings()])
@@ -52,7 +51,7 @@ const instaOverlay = (
 )
 
 export default async function HomePage() {
-  const [instaPosts, schedule, photoPositions, reviewsData, next] = await Promise.all([fetchInstagramPosts(), getSchedule(), getClassSettings(), getGoogleReviews(), getNextBookable()])
+  const [instaPosts, schedule, photoPositions, reviewsData] = await Promise.all([fetchInstagramPosts(), getSchedule(), getClassSettings(), getGoogleReviews()])
   const { reviews, rating: googleRating, totalCount: googleReviewCount } = reviewsData
   const scheduleDays = [...schedule].sort((a, b) => a.dayOfWeek - b.dayOfWeek).map(s => DAY_SHORT[s.dayOfWeek]).join(' · ')
   const prices = startingPrices(photoPositions)
@@ -118,7 +117,6 @@ export default async function HomePage() {
             <Link href="#classes" className="btn-hero-outline">See Classes</Link>
           </div>
           <p className="mk-trust mk-trust--dark">{TRUST_LINE}</p>
-          <NextClasses next={next} tone="dark" />
         </div>
         <div className="mk-scroll-hint">
           <span className="mk-scroll-line" />

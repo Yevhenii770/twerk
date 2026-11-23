@@ -208,7 +208,8 @@ section[id] { scroll-margin-top: 80px; }
 
 /* ─── HERO ─── */
 .mk-hero {
-  position: relative; height: 100vh; min-height: 600px;
+  /* grows with its content and always clears the fixed header, so the tag line can never slide under it */
+  position: relative; min-height: max(100svh, 600px); padding: 104px 0 64px; box-sizing: border-box;
   display: flex; align-items: center; justify-content: center;
   overflow: hidden;
 }
