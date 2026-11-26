@@ -58,6 +58,7 @@ export function buildFollowup(d: FollowupInput): { subject: string; html: string
         <h2>Thanks for dancing with us, ${name}!</h2>
         <p>Hope you had fun at ${label} ${whenAttended(d.attended, d.today)}. The best way to get better fast is to come every week.</p>
         ${nextBlock}
+        <p style="font-size:14px;margin-top:20px"><b>Bring a friend</b> — it's more fun together. Just forward this email, or send them <a href="${d.siteUrl}/book?class=${d.classType}" style="color:#E8167A">this link</a>.</p>
         <p style="color:#666;font-size:13px">Planning to come every week? Check out the <a href="${d.siteUrl}/book?class=${d.classType}" style="color:#C9A96E">Monthly Pass</a>.</p>
         <p style="color:#666;font-size:13px;margin-top:24px">See you on the floor,<br>Bounce Lab</p>
       </div>`
