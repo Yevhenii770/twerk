@@ -212,6 +212,14 @@ export async function sendReminderEmail(data: ReminderEmailData): Promise<boolea
   return !!res && !res.error;
 }
 
+/** "Thanks for your first class" email (copy built in lib/followupCopy.ts). */
+export async function sendFollowupEmail(to: string, subject: string, html: string): Promise<boolean> {
+  const resend = client();
+  if (!resend) return false;
+  const res = await resend.emails.send({ from: FROM, to, subject, html }).catch(() => null);
+  return !!res && !res.error;
+}
+
 /** Security / abuse alert to the studio's admin inbox (same address as booking notifications). */
 export async function sendAdminAlertEmail(subject: string, body: string): Promise<void> {
   const resend = client();

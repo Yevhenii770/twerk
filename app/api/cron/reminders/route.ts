@@ -5,6 +5,8 @@ import { bookings, classSessions } from "@/db/schema";
 import { getClassSettings } from "@/lib/dal";
 import { classAddress } from "@/lib/studio";
 import { sendReminderEmail } from "@/lib/email";
+import { runFirstClassFollowups } from "@/lib/followup";
+import { alertAdminError } from "@/lib/alerts";
 
 export const dynamic = "force-dynamic";
 
@@ -64,5 +66,15 @@ export async function GET(req: NextRequest) {
     else await db.update(bookings).set({ reminderSentAt: null }).where(eq(bookings.id, booking.id));
   }
 
-  return NextResponse.json({ date, candidates: rows.length, sent });
+  // Same daily run: "thanks for your first class" emails to new students (lib/followup.ts).
+  let followups: { sent: number; skipped: number } | { error: string };
+  try {
+    const res = await runFirstClassFollowups();
+    followups = { sent: res.filter(r => r.action === "sent").length, skipped: res.filter(r => r.action === "skipped").length };
+  } catch (e) {
+    await alertAdminError("first-class followups", e);
+    followups = { error: "failed" };
+  }
+
+  return NextResponse.json({ date, candidates: rows.length, sent, followups });
 }

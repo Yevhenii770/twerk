@@ -116,6 +116,7 @@ export const bookings = pgTable("bookings", {
   managementToken:  text("management_token").unique(), // secure token for the "Manage Booking" email link
   attended:         boolean("attended"),
   reminderSentAt:   timestamp("reminder_sent_at", { mode: "date" }), // day-before reminder email sent
+  followupSentAt:   timestamp("followup_sent_at", { mode: "date" }), // "thanks for your first class" email handled (sent or skipped)
 });
 
 // Leads from visitors who like a class but can't make its current scheduled time.
