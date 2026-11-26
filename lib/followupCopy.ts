@@ -1,5 +1,5 @@
 // Text of the "thanks for your first class" email. Pure (no DB, no env) so every wording case is
-// unit-tested: same slot next week, schedule changed, no open class, or the cron ran late.
+// unit-tested. One template only; day/time/price/address come from the live schedule.
 
 export type FollowupInput = {
   firstName: string
@@ -7,7 +7,7 @@ export type FollowupInput = {
   /** The class they just attended. */
   attended: { date: string; startTime: string }
   /** Next bookable class of the same type, read from the live schedule at send time. */
-  next: { id: number; date: string; startTime: string; endTime: string; price: number } | null
+  next: { id: number; date: string; startTime: string; endTime: string; price: number }
   address: string
   /** Portland "today", YYYY-MM-DD (the day the email goes out). */
   today: string
@@ -44,21 +44,14 @@ export function whenAttended(attended: { date: string; startTime: string }, toda
 export function buildFollowup(d: FollowupInput): { subject: string; html: string } {
   const label = LABELS[d.classType] ?? d.classType
   const name = esc(d.firstName.trim() || 'there')
-  const sameSlot = d.next && weekday(d.next.date) === weekday(d.attended.date) && d.next.startTime === d.attended.startTime
-
-  const subject = !d.next
-    ? `Thanks for coming to ${label}, ${d.firstName.trim() || 'friend'}!`
-    : sameSlot
-      ? `Thanks for coming, ${d.firstName.trim()}! Same time next ${weekday(d.next.date)}?`
-      : `Thanks for coming, ${d.firstName.trim()}! Your next ${label} class is ${weekday(d.next.date)}`
-
-  const bookUrl = d.next ? `${d.siteUrl}/book?session=${d.next.id}` : `${d.siteUrl}/book?class=${d.classType}`
-  const nextBlock = d.next
-    ? `<p style="font-size:16px"><b>Next class:</b> ${label} — ${shortDate(d.next.date)}, ${clock(d.next.startTime)} – ${clock(d.next.endTime)}</p>
+  // One template only (owner, 2026-11-26). The weekday always comes from the live schedule, so
+  // after a schedule change it simply names the new day.
+  const subject = `Thanks for coming, ${d.firstName.trim() || 'friend'}! Same time next ${weekday(d.next.date)}?`
+  const bookUrl = `${d.siteUrl}/book?session=${d.next.id}`
+  const nextBlock = `<p style="font-size:16px"><b>Next class:</b> ${label} — ${shortDate(d.next.date)}, ${clock(d.next.startTime)} – ${clock(d.next.endTime)}</p>
         <p><b>Where:</b> ${esc(d.address)}</p>
         <p style="margin-top:20px"><a href="${bookUrl}" style="display:inline-block;background:#E8167A;color:#fff;text-decoration:none;padding:12px 22px;font-size:12px;letter-spacing:.12em;text-transform:uppercase">Save my spot · $${d.next.price}</a></p>
         <p style="color:#666;font-size:13px">Free cancellation up to 24h before class.</p>`
-    : `<p style="margin-top:20px"><a href="${bookUrl}" style="display:inline-block;background:#E8167A;color:#fff;text-decoration:none;padding:12px 22px;font-size:12px;letter-spacing:.12em;text-transform:uppercase">See upcoming classes</a></p>`
 
   const html = `
       <div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#111">

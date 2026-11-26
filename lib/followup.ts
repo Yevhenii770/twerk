@@ -84,12 +84,14 @@ export async function runFirstClassFollowups(opts: { dryRun?: boolean } = {}): P
       continue;
     }
 
-    const n = next[session.classType as ClassId] ?? null;
+    const n = next[session.classType as ClassId];
+    // No open class to offer (vacation / sold out): don't send yet, try again tomorrow.
+    if (!n) { out.push({ email, action: "skipped", reason: "no open class yet, will retry" }); continue; }
     const { subject, html } = buildFollowup({
       firstName: booking.firstName || booking.name.split(" ")[0],
       classType: session.classType,
       attended: { date: session.date, startTime: session.startTime },
-      next: n ? { id: n.id, date: n.date, startTime: n.startTime, endTime: n.endTime, price: n.price } : null,
+      next: { id: n.id, date: n.date, startTime: n.startTime, endTime: n.endTime, price: n.price },
       address: classAddress(session.classType, settings),
       today,
       siteUrl: process.env.NEXT_PUBLIC_SITE_URL || "https://bounce-lab.com",

@@ -63,16 +63,10 @@ describe("first-class follow-up email copy", () => {
     expect(html).toContain("$30");
     expect(html).toContain("last night");
   });
-  it("schedule changed → names the new day/time instead of 'same time'", () => {
+  it("schedule changed → same email, with the new day and time from the schedule", () => {
     const { subject, html } = buildFollowup({ ...base, next: { id: 43, date: "2026-12-05", startTime: "11:00", endTime: "12:00", price: 30 } });
-    expect(subject).toBe("Thanks for coming, Anna! Your next Twerk class is Saturday");
+    expect(subject).toBe("Thanks for coming, Anna! Same time next Saturday?");
     expect(html).toContain("Sat, Dec 5, 11:00 AM – 12:00 PM");
-  });
-  it("no open class → no date, button to the class schedule", () => {
-    const { subject, html } = buildFollowup({ ...base, next: null });
-    expect(subject).toBe("Thanks for coming to Twerk, Anna!");
-    expect(html).toContain("/book?class=twerk");
-    expect(html).not.toContain("Next class:");
   });
   it("cron ran late → 'on Thursday' instead of 'last night'", () => {
     expect(whenAttended({ date: "2026-11-26", startTime: "19:00" }, "2026-11-29")).toBe("on Thursday");
