@@ -10,6 +10,9 @@ export const REFUND_CUTOFF_HOURS = 24;
  * still more than REFUND_CUTOFF_HOURS away (no session at all counts as "far enough out"). */
 export function isRefundEligible(params: { paidAt: Date; classStart: Date | null; now?: Date }): boolean {
   const now = params.now ?? new Date();
+  // Once class has started there's no self-service refund — otherwise someone could pay at the
+  // studio, take the class, and cancel within the 30-minute grace window.
+  if (params.classStart && now.getTime() >= params.classStart.getTime()) return false;
   const minutesSincePayment = (now.getTime() - params.paidAt.getTime()) / (1000 * 60);
   if (minutesSincePayment < REFUND_GRACE_MINUTES) return true;
 

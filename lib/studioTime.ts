@@ -29,3 +29,26 @@ export function classStartUtc(date: string, time: string): Date {
   const offsetMinutes = offsetMinutesAt(guess, STUDIO_TIMEZONE);
   return new Date(guess.getTime() - offsetMinutes * 60_000);
 }
+
+/** Today's date ("YYYY-MM-DD") in Portland, not UTC. Using UTC made an evening class vanish from
+ * booking around 4-5 PM local time, because UTC had already rolled over to tomorrow. */
+export function studioTodayIso(now: Date = new Date()): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: STUDIO_TIMEZONE, year: "numeric", month: "2-digit", day: "2-digit" }).format(now);
+}
+
+/** Booking stays open through the class and this long after it ends, so students who came
+ * without booking can pay at the studio (owner request 2026-11-26). */
+export const BOOKING_CLOSES_AFTER_END_MIN = 30;
+
+export function bookingClosesAt(s: { date: string; endTime: string }): Date {
+  return new Date(classStartUtc(s.date, s.endTime).getTime() + BOOKING_CLOSES_AFTER_END_MIN * 60_000);
+}
+
+export function isBookingWindowOpen(s: { date: string; endTime: string }, now: number = Date.now()): boolean {
+  return now < bookingClosesAt(s).getTime();
+}
+
+/** Class has started (or ended) but booking is still open — "pay at the studio" period. */
+export function isInProgress(s: { date: string; startTime: string; endTime: string }, now: number = Date.now()): boolean {
+  return now >= classStartUtc(s.date, s.startTime).getTime() && isBookingWindowOpen(s, now);
+}

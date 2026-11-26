@@ -7,6 +7,7 @@ import { z } from "zod";
 import { headers } from "next/headers";
 import { revalidateTag } from "next/cache";
 import { getSessionById, getUpcomingSessions, isSoldOut } from "@/lib/sessions";
+import { isBookingWindowOpen } from "@/lib/studioTime";
 import { claimSeat, releaseSeat } from "@/lib/reserve";
 import { createSquarePayment } from "@/lib/square";
 import { generateManagementToken } from "@/lib/token";
@@ -90,6 +91,7 @@ async function createPaidBookingImpl(input: CheckoutInput): Promise<CheckoutResu
 
   const session = await getSessionById(data.sessionId);
   if (!session) return { success: false, error: "This class no longer exists." };
+  if (!isBookingWindowOpen(session)) return { success: false, error: "Booking for this class has closed. Please choose another date." };
   if (isSoldOut(session)) return { success: false, error: "Sorry, this class just sold out." };
 
   const claimed = await claimSeat(data.sessionId);

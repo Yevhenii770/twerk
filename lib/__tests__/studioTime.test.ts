@@ -21,3 +21,29 @@ describe("classStartUtc", () => {
     expect(result.toISOString()).toBe("2026-03-08T18:00:00.000Z");
   });
 });
+
+import { studioTodayIso, isBookingWindowOpen, isInProgress } from "@/lib/studioTime";
+import { isRefundEligible } from "@/lib/refundPolicy";
+
+describe("booking window (open until 30 min after class ends)", () => {
+  // Thu 2026-11-26 class 19:00-20:00 Portland (PST, UTC-8) → 03:00-04:00 UTC Fri
+  const s = { date: "2026-11-26", startTime: "19:00", endTime: "20:00" };
+  it("uses Portland's date, not UTC, in the evening", () => {
+    expect(studioTodayIso(new Date("2026-11-27T02:00:00Z"))).toBe("2026-11-26");
+  });
+  it("is open before and during class, and up to 30 min after it ends", () => {
+    expect(isBookingWindowOpen(s, Date.parse("2026-11-27T02:00:00Z"))).toBe(true);
+    expect(isBookingWindowOpen(s, Date.parse("2026-11-27T03:30:00Z"))).toBe(true);
+    expect(isBookingWindowOpen(s, Date.parse("2026-11-27T04:29:00Z"))).toBe(true);
+    expect(isBookingWindowOpen(s, Date.parse("2026-11-27T04:30:00Z"))).toBe(false);
+  });
+  it("marks the class in progress only between start and close", () => {
+    expect(isInProgress(s, Date.parse("2026-11-27T02:59:00Z"))).toBe(false);
+    expect(isInProgress(s, Date.parse("2026-11-27T03:10:00Z"))).toBe(true);
+    expect(isInProgress(s, Date.parse("2026-11-27T04:31:00Z"))).toBe(false);
+  });
+  it("no self-service refund for a payment made during class", () => {
+    const now = new Date("2026-11-27T03:20:00Z");
+    expect(isRefundEligible({ paidAt: new Date("2026-11-27T03:10:00Z"), classStart: new Date("2026-11-27T03:00:00Z"), now })).toBe(false);
+  });
+});

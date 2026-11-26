@@ -11,6 +11,7 @@ import { classAddress } from '@/lib/studio'
 import { purchaseEventId } from '@/lib/metaEventId'
 import ContactForm from '@/components/ContactForm'
 import { TRUST_LINE } from '@/lib/nextFormat'
+import { isInProgress } from '@/lib/studioTime'
 
 type Step = 'class' | 'session' | 'details' | 'payment'
 type BookingKind = 'dropin' | 'monthly'
@@ -74,7 +75,8 @@ export default function BookingFlow({ sessionsByClass, monthlyPrices, dropinPric
       .filter(s => !s.cancelled && s.bookingOpen && s.booked < s.capacity)
       .sort((a, b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime))
     const wantClass = searchParams.get('class')
-    if (paramSession === 'next') return bookable.find(s => !wantClass || s.classType === wantClass) ?? null
+    // "next" means the next class that hasn't started (today's running class is only picked from the list).
+    if (paramSession === 'next') return bookable.find(s => (!wantClass || s.classType === wantClass) && !isInProgress(s)) ?? null
     return bookable.find(s => String(s.id) === paramSession) ?? null
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -406,6 +408,7 @@ export default function BookingFlow({ sessionsByClass, monthlyPrices, dropinPric
             {sessions.map(s => {
               const remaining = Math.max(0, s.capacity - s.booked)
               const soldOut = s.cancelled || !s.bookingOpen || remaining <= 0
+              const live = !soldOut && isInProgress(s)
               return (
                 <button
                   key={s.id}
@@ -422,8 +425,8 @@ export default function BookingFlow({ sessionsByClass, monthlyPrices, dropinPric
                     <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--dark)', marginBottom: 3 }}>{fmtDate(s.date)}</p>
                     <p style={{ fontSize: 12, color: 'var(--mid)' }}>{fmtTime(s.startTime)} – {fmtTime(s.endTime)}</p>
                   </div>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: soldOut ? '#999' : remaining <= 3 ? 'var(--pink)' : 'var(--mid)' }}>
-                    {soldOut ? 'Sold Out' : `${remaining} spot${remaining === 1 ? '' : 's'} left`}
+                  <span style={{ fontSize: 12, fontWeight: 600, color: soldOut ? '#999' : live || remaining <= 3 ? 'var(--pink)' : 'var(--mid)' }}>
+                    {soldOut ? 'Sold Out' : live ? 'In class now · pay here' : `${remaining} spot${remaining === 1 ? '' : 's'} left`}
                   </span>
                 </button>
               )

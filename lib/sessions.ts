@@ -5,11 +5,12 @@ import { unstable_cache } from "next/cache";
 import { CLASS_STATIC, parseTimeRange, type ClassId } from "@/lib/classes";
 import { getClassSettings } from "@/lib/dal";
 import { getUpcomingClosures, isClosed } from "@/lib/closures";
+import { studioTodayIso, isBookingWindowOpen } from "@/lib/studioTime";
 
 const WEEKS_AHEAD = 8;
 
 function todayIso(): string {
-  return new Date().toISOString().split("T")[0];
+  return studioTodayIso();
 }
 
 function nextOccurrences(dayOfWeek: number, count: number): string[] {
@@ -77,7 +78,7 @@ const DEFAULT_CAPACITY: Record<string, number> = {
   highheels: 15,
 };
 
-export const getUpcomingSessions = unstable_cache(
+const getUpcomingSessionsCached = unstable_cache(
   async () => {
     const today = todayIso();
     return db
@@ -89,6 +90,13 @@ export const getUpcomingSessions = unstable_cache(
   ["upcoming-class-sessions"],
   { tags: ["class-sessions"], revalidate: 60 }
 );
+
+/** Upcoming sessions still open for booking: today's class stays listed until
+ * BOOKING_CLOSES_AFTER_END_MIN after it ends (filtered after the cache, so it's exact). */
+export async function getUpcomingSessions() {
+  const now = Date.now();
+  return (await getUpcomingSessionsCached()).filter((s) => isBookingWindowOpen(s, now));
+}
 
 export async function getSessionById(id: number) {
   const rows = await db.select().from(classSessions).where(eq(classSessions.id, id)).limit(1);
