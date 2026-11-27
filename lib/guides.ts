@@ -244,6 +244,182 @@ export const GUIDES: Guide[] = [
       },
     ],
   },
+  {
+    slug: 'how-to-twerk-for-beginners',
+    title: 'How to Twerk for Beginners: 5 Basic Moves to Practice at Home',
+    metaTitle: 'How to Twerk for Beginners — 5 Basic Moves (Step by Step)',
+    description: 'Learn to twerk from zero: the stance, the basic hip pop, the bounce, the wine and a simple combo, plus the most common beginner mistakes. Step-by-step guide from a Portland twerk studio.',
+    classSlug: 'twerk',
+    published: '2026-11-27',
+    intro: "Twerking looks like it's all in the booty, but the secret is your stance, your knees and your lower back. Here are the five basic moves we start every beginner with at bounce lab in Portland. Put on a song, stand in front of a mirror and try them slowly first.",
+    blocks: [
+      {
+        h2: '1. The stance (everything starts here)',
+        list: [
+          'Feet a little wider than your hips, toes turned slightly out.',
+          'Bend your knees and sit back like you are about to sit on a high chair.',
+          'Lean your chest a little forward and put your hands on your thighs or knees.',
+          'Keep your weight in your heels and your knees tracking over your toes.',
+          'If your thighs are working, you are doing it right. Most beginners stand too straight — sit lower than you think.',
+        ],
+        p: ['Get the stance right and every other move gets easier.'],
+      },
+      {
+        h2: '2. The hip pop (arch and tuck)',
+        p: [
+          'From the stance, push your hips back and arch your lower back (pop), then tuck your pelvis under and round the lower back (drop). Arch, tuck, arch, tuck.',
+          'Start slowly on every second beat of the music, then speed up. Only the hips and lower back move — keep your shoulders and chest still.',
+        ],
+      },
+      {
+        h2: '3. The bounce',
+        p: ['Keep the same stance and bounce gently through the knees while you keep popping. The movement comes from your legs and hips working together, not from shaking your whole body. Small and controlled looks better than big and messy.'],
+      },
+      {
+        h2: '4. The wine (hip circles)',
+        p: ['Stand a little taller, knees soft, and draw slow circles with your hips: forward, side, back, side. Then make them smaller and faster. Winding teaches you to isolate your hips from your upper body, which makes every other twerk move look cleaner.'],
+      },
+      {
+        h2: '5. Put it together: a mini combo',
+        list: [
+          '4 slow hip pops in the stance.',
+          '4 fast hip pops.',
+          '2 slow hip circles, standing taller.',
+          'Sit back into the stance and finish with 8 bounces.',
+          'Repeat it to a song you love. When it feels easy, try it facing away from the mirror, looking over your shoulder.',
+        ],
+        p: ['Try this short combination once each move feels comfortable on its own:'],
+      },
+      {
+        h2: 'Common beginner mistakes',
+        list: [
+          'Standing too straight — sit back and bend your knees more.',
+          'Moving the shoulders instead of the hips — keep the chest still and let the lower back do the work.',
+          'Knees caving in — push them out over your toes to protect them.',
+          'Holding your breath — breathe out on every pop.',
+          'Going full speed on day one — slow and clean first, speed comes with practice.',
+        ],
+      },
+      {
+        h2: 'Learning at home vs in a class',
+        p: [
+          'You can practice these basics at home, but most people learn much faster with an instructor who can see what your hips are actually doing and fix it in a second. In class we break every move down step by step, add music and simple choreography, and there is no pressure to be good on day one.',
+          'If you want to learn twerk properly, practice these five moves, then come to a beginner class and we will take it from there.',
+        ],
+      },
+    ],
+  },
+  {
+    slug: 'start-dancing-as-an-adult-beginner',
+    title: "Never Danced Before? How to Start Dancing as an Adult",
+    metaTitle: 'Dance Classes for Adult Beginners — How to Start (Portland)',
+    description: "Never danced and feel too old, stiff or shy to start? How adult beginners pick a first dance style, what a beginner class is really like and how to keep it affordable. Honest guide from a Portland dance studio.",
+    classSlug: 'both',
+    published: '2026-11-27',
+    intro: "Most adults who walk into their first dance class say the same thing: \"I have zero rhythm and I've never done this.\" That's normal — and it's exactly who beginner classes are for. Here's how to start dancing as an adult without feeling lost.",
+    blocks: [
+      {
+        h2: "It's not too late (and you're not too stiff)",
+        p: [
+          'Adults learn dance differently from kids, not worse. You understand instructions, you notice details in the mirror and you show up because you want to. Flexibility and rhythm both improve with practice — nobody is born with them.',
+          'Many of our students at bounce lab had never taken a dance class before their first one with us.',
+        ],
+      },
+      {
+        h2: 'How to choose your first style',
+        list: [
+          'Want a fun workout and to loosen up? Try twerk — high energy, hip and glute focused, done in sneakers.',
+          'Want to feel more confident and work on posture? Try heels dance — choreography, walks and poses, and you can start in socks or flats.',
+          'Not sure? Pick the class whose day and time you can actually make every week. Consistency matters more than the style.',
+        ],
+      },
+      {
+        h2: 'What a beginner class is really like',
+        p: [
+          'A warm-up, a few basic moves broken down slowly, then a short combination set to music. The instructor repeats things more than once and shows easier versions. Nobody is watching you — everyone is busy looking at themselves in the mirror.',
+          'Come 5–10 minutes early, tell the instructor it is your first class and stand wherever you feel comfortable. The back row is a perfectly good place to start.',
+        ],
+      },
+      {
+        h2: 'How to keep it affordable',
+        list: [
+          'Start with a single drop-in class instead of a long contract.',
+          'Once you know you like it, a monthly pass usually costs less per class than paying each time.',
+          'Look for studios with free cancellation, so a busy week does not cost you a class.',
+          'Prices change, so always check the current price on the booking page.',
+        ],
+      },
+      {
+        h2: 'Your first month',
+        p: [
+          'Plan on one class a week for a month. The first class is about getting through it, the second feels familiar, and by the third or fourth the moves start to stick and you can enjoy the music instead of counting.',
+          "Expect sore legs after the first couple of classes — that's your body learning something new.",
+        ],
+      },
+      {
+        h2: 'What to bring',
+        list: [
+          'Comfortable clothes you can move and sweat in.',
+          'Sneakers for twerk; socks, flats or stable heels for heels dance.',
+          'A water bottle and a hair tie.',
+          'An open mind — the first class is the hardest one, and it is still fun.',
+        ],
+      },
+    ],
+  },
+  {
+    slug: 'is-twerking-a-good-workout',
+    title: 'Is Twerking a Good Workout? What It Trains and What to Expect',
+    metaTitle: 'Is Twerking a Good Workout? Muscles, Cardio & Benefits',
+    description: 'Is twerk real exercise? Which muscles twerking works, how it compares to a gym leg day, how sore you will be and how often to train. Straight answers from a Portland twerk studio.',
+    classSlug: 'twerk',
+    published: '2026-11-27',
+    intro: "People come to twerk class for the fun and are surprised by how hard it is. Yes, twerking is a real workout. Here's what it actually trains, how it feels and how to get the most out of it.",
+    blocks: [
+      {
+        h2: 'Which muscles twerking works',
+        list: [
+          'Glutes — every pop, bounce and squat-based move.',
+          'Quads and hamstrings — you spend most of the class in a low, bent-knee stance.',
+          'Core and lower back — they control the arch and tuck of the hips.',
+          'Calves and ankles — bounces and changes of level.',
+          'Hip mobility — isolations and circles move the hips in every direction.',
+        ],
+      },
+      {
+        h2: 'Cardio, too',
+        p: ['A twerk class keeps you moving to music for most of the hour, with short breaks to learn the next move. Your heart rate goes up, you sweat, and because you are focused on the choreography, the time goes faster than on a treadmill.'],
+      },
+      {
+        h2: 'Twerk vs a gym leg day',
+        p: [
+          'Heavy squats build strength faster, so twerk will not replace lifting if strength is your main goal. What twerk adds is endurance in a low stance, coordination, hip mobility and rhythm — and many people stick with it longer because it is fun.',
+          'Lots of students do both: gym for strength, twerk for cardio, mobility and confidence.',
+        ],
+      },
+      {
+        h2: 'How sore will I be?',
+        p: ['Expect to feel your glutes and thighs for a day or two after your first classes. That fades as your body adapts. Drink water, stretch your hips and quads after class, and keep moving lightly the next day.'],
+      },
+      {
+        h2: 'How often should I twerk?',
+        p: ['Once a week is enough to see progress in your technique and stamina. Twice a week speeds things up. Give your knees and lower back a rest day between sessions, especially at the start.'],
+      },
+      {
+        h2: 'Keep it safe',
+        list: [
+          'Warm up your hips, knees and lower back before you start.',
+          'Keep your knees over your toes — never let them cave in.',
+          'Move from your hips and legs, not by jerking your lower back.',
+          'Tell your instructor about any knee or back injuries so they can give you easier options.',
+        ],
+      },
+      {
+        h2: 'The part nobody expects',
+        p: ["Most students say the biggest change isn't in their legs — it's in their confidence. You learn to move your body without overthinking it, and that carries over outside the studio."],
+      },
+    ],
+  },
 ]
 
 export const GUIDE_BY_SLUG: Record<string, Guide> = Object.fromEntries(GUIDES.map(g => [g.slug, g]))
